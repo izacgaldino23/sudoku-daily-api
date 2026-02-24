@@ -9,7 +9,7 @@
 
 ```
 📂 sudoku-daily-api/			# root
-├── 📂 app/					# internal app files
+├── 📂 src/					# internal app files
 │   ├── 📂 adapters/			# adapters
 │   │   ├── 📁 drivens			# databases, queues
 │   │   └── 📁 drivers			# Input ways rest, grpc
