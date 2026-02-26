@@ -1,4 +1,4 @@
-package helpers
+package pkg
 
 import "github.com/gofiber/fiber/v3"
 

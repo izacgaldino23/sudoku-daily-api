@@ -2,8 +2,8 @@ package usecase
 
 import (
 	"context"
-	"sudoku-daily-api/src/adapters/outbound/persistence"
 	"sudoku-daily-api/src/domain/entities"
+	"sudoku-daily-api/src/infrastructure/persistence"
 	"time"
 )
 

@@ -3,7 +3,7 @@ package sudoku
 import (
 	"net/http"
 	"strconv"
-	"sudoku-daily-api/src/adapters/helpers"
+	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/application/usecase"
 	"sudoku-daily-api/src/domain/entities"
 
@@ -33,18 +33,18 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	)
 
 	if sizeParam == "" {
-		return helpers.JsonError(c, "Invalid size")
+		return pkg.JsonError(c, "Invalid size")
 	}
 
 	size, err = strconv.Atoi(sizeParam)
 	if err != nil {
-		return helpers.JsonError(c, "Invalid size")
+		return pkg.JsonError(c, "Invalid size")
 	}
 
 	var dailySudoku *entities.Sudoku
 	dailySudoku, err = sh.getDailyUseCase.Execute(ctxReq, size)
 	if err != nil {
-		return helpers.JsonErrorWithStatus(c, err.Error(), http.StatusInternalServerError)
+		return pkg.JsonErrorWithStatus(c, err.Error(), http.StatusInternalServerError)
 	}
 
 	var response GetDailySudokuResponse

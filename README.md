@@ -24,23 +24,22 @@
 │   ├── 📂 config/				# configs initializing
 │   └── 📂 database/			# database initialization
 ├── 📂 src/						# internal app files
-│   ├── 📂 adapters/			# adapters
-│   │   ├── 📁 persistence			# databases, queues
-│   │   └── 📁 http			# Input ways http, grpc
-│   ├── 📂 core/				# core domain structs and interfaces accessed by adapters
+│   ├── 📂 infrastructure/		# infrastructure
+│   │   ├── 📁 persistence		# databases, queues
+│   │   └── 📁 http				# Input ways http, grpc
+│   ├── 📂 core/				# core domain structs and interfaces accessed by infrastructure
 │   │   ├── 📁 models			# structs and their methods
 │   │   └── 📁 ports			# interfaces
 │   ├── 📁 application			# app logic called by main
-│   └── 📁 services			# business logic
-├── 📁 tests				# for tests (integration)
+│   └── 📁 services				# business logic
+└── 📁 tests					# for tests (integration)
 ```
 
 ## Endpoints/Features
 
-- [ ] Daily generation
-
 ### Sudoku
 - [x] GET /api/sudoku/daily?size=9
+- [ ] POST /api/sudoku/generate # Daily generation
 - [ ] POST /api/sudoku/submit
 
 ### Auth
