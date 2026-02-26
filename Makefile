@@ -1,0 +1,15 @@
+.PHONY: new-migration run-migrations
+
+MIGRATIONS_PATH = migrations/sql
+DATABASE_HOST = localhost
+DATABASE_PORT = 5432
+DATABASE_USER = postgres
+DATABASE_PASSWORD = postgres
+DATABASE_NAME = sudoku_db
+
+# run migrate command with a custom name from args
+new-migration:
+	@migrate create -ext sql -dir $(MIGRATIONS_PATH) -seq $(name)
+
+run-migrations:
+	set ENV=local&& go run cmd/migrate/main.go

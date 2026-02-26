@@ -23,13 +23,19 @@
 └── ▶️ main.go
 ```
 
-## Endpoints
+## Endpoints/Features
+
+- [ ] Daily generation
 
 ### Sudoku
-- [ ] GET /api/sudoku/daily?size=9
+- [x] GET /api/sudoku/daily?size=9
 - [ ] POST /api/sudoku/submit
 
 ### Auth
 - [ ] POST /api/auth/register
 - [ ] POST /api/auth/login
 - [ ] GET /api/auth/me
+
+## Migrations
+
+The migrations run on the entrypoint cmd/migrate/main.go. It'll be called on Github Actions Pipe.

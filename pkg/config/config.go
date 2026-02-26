@@ -1,43 +1,87 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/spf13/viper"
+)
 
 type Config struct {
-	ApiPort  string
-	Database Database
+	ApiPort  string   `mapstructure:"API_PORT"`
+	Database Database `mapstructure:"DATABASE"`
 }
 
 type Database struct {
-	Host         string
-	Port         string
-	Username     string
-	Password     string
-	Name         string
-	MaxOpenConns int
-	MaxIdleConns int
-	MaxLifetime  int
+	Host         string `mapstructure:"HOST"`
+	Port         string `mapstructure:"PORT"`
+	Username     string `mapstructure:"USERNAME"`
+	Password     string `mapstructure:"PASSWORD"`
+	Name         string `mapstructure:"NAME"`
+	SSLMode      string `mapstructure:"SSL_MODE"`
+	MaxOpenConns int    `mapstructure:"MAX_OPEN_CONNS"`
+	MaxIdleConns int    `mapstructure:"MAX_IDLE_CONNS"`
+	MaxLifetime  int    `mapstructure:"MAX_LIFETIME"`
 }
 
-func viperInit() error {
-	viper.SetConfigName("")
-	viper.SetConfigType("env")
-	viper.AddConfigPath(".")
+func (d *Database) DSNPostgres() string {
+	return fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v", d.Host, d.Username, d.Password, d.Name, d.Port, d.SSLMode)
+}
 
-	return viper.ReadInConfig()
+func viperInit() (*Config, error) {
+	v := viper.New()
+
+	v.AutomaticEnv()
+	v.SetEnvKeyReplacer(strings.NewReplacer("_", "."))
+	v.SetConfigType("env")
+
+	name := os.Getenv("ENV")
+	if name == "" {
+		name = "local"
+	}
+	// evita que alguém passe "local.env" na ENV
+	name = strings.TrimSuffix(name, ".env")
+
+	v.SetConfigName(name) // sem a extensão
+	v.AddConfigPath(".")  // procura no cwd
+
+	if _, err := os.Stat(name + ".env"); err != nil {
+		return nil, err
+	}
+
+	v.SetDefault("DATABASE.SSL_MODE", "disable")
+
+	if err := v.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			return nil, err
+		} else {
+			return nil, err
+		}
+	}
+
+	for _, key := range v.AllKeys() {
+		if strings.Contains(key, "_") {
+			newKey := strings.Replace(key, "_", ".", -1)
+			v.Set(newKey, v.Get(key))
+		}
+	}
+
+	c := &Config{}
+
+	err := v.Unmarshal(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func Load() (*Config, error) {
-	err := viperInit()
+	c, err := viperInit()
 	if err != nil {
 		return nil, err
 	}
 
-	c := Config{}
-
-	err = viper.Unmarshal(&c)
-	if err != nil {
-		return nil, err
-	}
-
-	return &c, nil
+	return c, nil
 }
