@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"sudoku-daily-api/src/adapters/repository"
+	"sudoku-daily-api/src/adapters/outbound/persistence"
 	"sudoku-daily-api/src/domain/entities"
 	"time"
 )
@@ -13,11 +13,11 @@ type (
 	}
 
 	sudokuGetDailyUseCase struct {
-		repository repository.ISudokuRepository
+		repository persistence.ISudokuRepository
 	}
 )
 
-func NewSudokuGetDailyUseCase(repository repository.ISudokuRepository) ISudokuGetDailyUseCase {
+func NewSudokuGetDailyUseCase(repository persistence.ISudokuRepository) ISudokuGetDailyUseCase {
 	return &sudokuGetDailyUseCase{repository: repository}
 }
 

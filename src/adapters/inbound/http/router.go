@@ -1,7 +1,7 @@
-package rest
+package http
 
 import (
-	"sudoku-daily-api/src/adapters/rest/sudoku"
+	"sudoku-daily-api/src/adapters/inbound/http/sudoku"
 
 	"github.com/gofiber/fiber/v3"
 )

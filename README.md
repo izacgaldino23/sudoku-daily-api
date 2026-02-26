@@ -3,24 +3,36 @@
 ## Dependencies
 
 **Fiber**: Rest api package manager;
-**Gorm**: To manage entities from the database;
+**Bun**: To manage entities from the database;
+**Postgres**: Database;
+**Golang-migrate**: To manage database migrations;
+**Viper**: To manage environment variables;
 
 ## Structure
 
 ```
 📂 sudoku-daily-api/			# root
-├── 📂 src/					# internal app files
+├── 📂 cmd/						# For main files
+│   ├── 📂 api/					# api entrypoint
+│   │   └── ▶️ main.go
+│   ├── 📂 migrate/				# migrations entrypoint
+│   │   └── ▶️ main.go
+├── 📂 migrations/				# For migration logic/files
+│   ├── 📂 sql/					# sql up/down files
+│   └── ▶️ migrate.go			# migration logic
+├─ 📂 pkg/						# external logic like helpers
+│   ├── 📂 config/				# configs initializing
+│   └── 📂 database/			# database initialization
+├── 📂 src/						# internal app files
 │   ├── 📂 adapters/			# adapters
-│   │   ├── 📁 drivens			# databases, queues
-│   │   └── 📁 drivers			# Input ways rest, grpc
+│   │   ├── 📁 persistence			# databases, queues
+│   │   └── 📁 http			# Input ways http, grpc
 │   ├── 📂 core/				# core domain structs and interfaces accessed by adapters
 │   │   ├── 📁 models			# structs and their methods
 │   │   └── 📁 ports			# interfaces
 │   ├── 📁 application			# app logic called by main
 │   └── 📁 services			# business logic
-├── 📁 pkg					# external logic like helpers
 ├── 📁 tests				# for tests (integration)
-└── ▶️ main.go
 ```
 
 ## Endpoints/Features
