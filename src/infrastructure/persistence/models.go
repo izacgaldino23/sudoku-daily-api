@@ -26,3 +26,10 @@ func (s *Sudoku) ToDomain() *entities.Sudoku {
 		Date:  s.Date,
 	}
 }
+
+func (s *Sudoku) FromDomain(sudoku *entities.Sudoku) {
+	s.ID = sudoku.ID
+	s.Size = sudoku.Size
+	s.Board = sudoku.Board
+	s.Date = sudoku.Date
+}
