@@ -39,19 +39,26 @@ func (s *sudokuGenerateAllUseCase) Execute(ctx context.Context) ([]entities.Sudo
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
-	for _, boardSize := range entities.BoardSizes {
-		sudoku := s.sudokuService.GenerateDaily(boardSize, "easy", today.UnixNano())
-
-		sudoku.Date = today
-		sudoku.ID = s.uuidHelper.NewUUID()
-
-		err := s.repository.Create(ctx, sudoku)
-		if err != nil {
-			return nil, err
+	if err := s.repository.WithinTransaction(ctx, func(ctx context.Context) error {
+		for _, boardSize := range entities.BoardSizes {
+			sudoku := s.sudokuService.GenerateDaily(boardSize, "easy", today.UnixNano())
+	
+			sudoku.Date = today
+			sudoku.ID = s.uuidHelper.NewUUID()
+	
+			err := s.repository.Create(ctx, sudoku)
+			if err != nil {
+				return err
+			}
+	
+			sudokuList = append(sudokuList, *sudoku)
 		}
 
-		sudokuList = append(sudokuList, *sudoku)
+		return nil
+	}); err != nil {
+		return nil, err
 	}
+
 
 	return sudokuList, nil
 }

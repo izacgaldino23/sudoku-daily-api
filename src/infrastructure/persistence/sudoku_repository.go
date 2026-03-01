@@ -2,8 +2,8 @@ package persistence
 
 import (
 	"context"
-	"database/sql"
 	"sudoku-daily-api/src/domain/entities"
+	"sudoku-daily-api/src/domain/repository"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -11,24 +11,32 @@ import (
 
 type (
 	ISudokuRepository interface {
-		GetByDateAndSize(ctx context.Context, date time.Time, size int) (*entities.Sudoku, error)
+		WithinTransaction(ctx context.Context, fn func(ctx context.Context) error) error
 		Create(ctx context.Context, sudoku *entities.Sudoku) error
-		RunTransaction(ctx context.Context, fn func(ctx context.Context, tx bun.Tx) error) error
+		GetByDateAndSize(ctx context.Context, date time.Time, size int) (*entities.Sudoku, error)
 	}
 
 	sudokuRepository struct {
 		db bun.IDB
+		tm repository.TransactionManager
 	}
 )
 
-func NewSudokuRepository(db bun.IDB) ISudokuRepository {
-	return &sudokuRepository{db: db}
+func NewSudokuRepository(db bun.IDB, transactionManager repository.TransactionManager) ISudokuRepository {
+	return &sudokuRepository{
+		db: db,
+		tm: transactionManager,
+	}
+}
+
+func (s *sudokuRepository) WithinTransaction(ctx context.Context, fn func(ctx context.Context) error) error {
+	return s.tm.WithinTransaction(ctx, fn)
 }
 
 func (s *sudokuRepository) GetByDateAndSize(ctx context.Context, date time.Time, size int) (*entities.Sudoku, error) {
 	var sudokuResp Sudoku
 
-	err := s.db.NewSelect().Model(&sudokuResp).Where("size = ? and date = ?", size, date).Scan(ctx)
+	err := s.getExecutor(ctx).NewSelect().Model(&sudokuResp).Where("size = ? and date = ?", size, date).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -36,19 +44,23 @@ func (s *sudokuRepository) GetByDateAndSize(ctx context.Context, date time.Time,
 	return sudokuResp.ToDomain(), nil
 }
 
-func (s *sudokuRepository) RunTransaction(ctx context.Context, fn func(ctx context.Context, tx bun.Tx) error) error {
-	return s.db.RunInTx(ctx, &sql.TxOptions{}, fn)
-}
-
 func (s *sudokuRepository) Create(ctx context.Context, sudoku *entities.Sudoku) error {
 	var sudokuModel Sudoku
 	sudokuModel.FromDomain(sudoku)
 
-	result, err := s.db.NewInsert().Model(sudokuModel).Exec(ctx)
+	result, err := s.getExecutor(ctx).NewInsert().Model(sudokuModel).Exec(ctx)
 	if err != nil {
 		return err
 	}
 
 	_, err = result.RowsAffected()
 	return err
+}
+
+func (s *sudokuRepository) getExecutor(ctx context.Context) bun.IDB {
+	if tx, ok := extractTx(ctx); ok {
+		return tx
+	}
+
+	return s.db
 }
