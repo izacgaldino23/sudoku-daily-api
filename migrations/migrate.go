@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"sudoku-daily-api/pkg/database"
 
-	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func RunMigrations() error {
-	driver, err := postgres.WithInstance(database.GetDB(), &postgres.Config{})
+	driver, err := postgres.WithInstance(database.GetDB().SqlConnection, &postgres.Config{})
 	if err != nil {
 		return fmt.Errorf("Error creating driver: %w", err)
 	}

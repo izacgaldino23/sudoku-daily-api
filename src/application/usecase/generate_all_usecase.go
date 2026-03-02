@@ -4,7 +4,7 @@ import (
 	"context"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
-	"sudoku-daily-api/src/domain/helpers"
+	"sudoku-daily-api/src/domain/vo"
 	"sudoku-daily-api/src/infrastructure/persistence"
 	"time"
 )
@@ -15,21 +15,18 @@ type (
 	}
 
 	sudokuGenerateAllUseCase struct {
-		repository persistence.ISudokuRepository
-		sudokuService domain.Generator
-		uuidHelper helpers.UUIDHelper
+		repository    persistence.ISudokuRepository
+		sudokuService domain.SudokuGenerator
 	}
 )
 
 func NewSudokuGenerateAllUseCase(
-	repository persistence.ISudokuRepository, 
-	sudokuService domain.Generator,
-	uuidHelper helpers.UUIDHelper,
-	) ISudokuGenerateAllUseCase {
+	repository persistence.ISudokuRepository,
+	sudokuService domain.SudokuGenerator,
+) ISudokuGenerateAllUseCase {
 	return &sudokuGenerateAllUseCase{
-		repository: repository,
+		repository:    repository,
 		sudokuService: sudokuService,
-		uuidHelper: uuidHelper,
 	}
 }
 
@@ -41,16 +38,16 @@ func (s *sudokuGenerateAllUseCase) Execute(ctx context.Context) ([]entities.Sudo
 
 	if err := s.repository.WithinTransaction(ctx, func(ctx context.Context) error {
 		for _, boardSize := range entities.BoardSizes {
-			sudoku := s.sudokuService.GenerateDaily(boardSize, "easy", today.UnixNano())
-	
+			sudoku := s.sudokuService.GenerateDaily(boardSize, today.UnixNano())
+
 			sudoku.Date = today
-			sudoku.ID = s.uuidHelper.NewUUID()
-	
+			sudoku.ID = string(vo.NewUUID())
+
 			err := s.repository.Create(ctx, sudoku)
 			if err != nil {
 				return err
 			}
-	
+
 			sudokuList = append(sudokuList, *sudoku)
 		}
 
@@ -58,7 +55,6 @@ func (s *sudokuGenerateAllUseCase) Execute(ctx context.Context) ([]entities.Sudo
 	}); err != nil {
 		return nil, err
 	}
-
 
 	return sudokuList, nil
 }

@@ -8,12 +8,12 @@ import (
 )
 
 func init() {
-	c, err := config.Load()
+	err := config.Load()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err = database.ConnectDB(c); err != nil {
+	if err = database.ConnectDB(config.GetConfig()); err != nil {
 		log.Fatal(err)
 	}
 }

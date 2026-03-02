@@ -6,10 +6,13 @@ import (
 	"sudoku-daily-api/pkg/config"
 
 	_ "github.com/lib/pq"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
 )
 
 type DatabaseConnection struct {
-	SqlConnection  *sql.DB
+	SqlConnection *sql.DB
+	BunConnection *bun.DB
 }
 
 var (
@@ -22,11 +25,17 @@ func ConnectDB(configEnv *config.Config) (err error) {
 	if err != nil {
 		return fmt.Errorf("Error connecting to database: %w", err)
 	}
+
 	dbConnection.SqlConnection = sqlDB
+	dbConnection.BunConnection = bun.NewDB(sqlDB, sqlitedialect.New())
 
 	return
 }
 
-func GetDB() *sql.DB {
-	return dbConnection.SqlConnection
+func GetDB() DatabaseConnection {
+	if dbConnection.SqlConnection == nil {
+		_ = ConnectDB(config.GetConfig())
+	}
+
+	return dbConnection
 }

@@ -4,8 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/spf13/viper"
+)
+
+var (
+	configEnv *Config
 )
 
 type Config struct {
@@ -77,11 +82,21 @@ func viperInit() (*Config, error) {
 	return c, nil
 }
 
-func Load() (*Config, error) {
-	c, err := viperInit()
-	if err != nil {
-		return nil, err
+func Load() (err error) {
+	if configEnv == nil {
+		once := sync.Once{}
+		once.Do(func() {
+			configEnv, err = viperInit()
+		})
 	}
 
-	return c, nil
+	return
+}
+
+func GetConfig() *Config {
+	if configEnv == nil {
+		_ = Load()
+	}
+
+	return configEnv
 }
