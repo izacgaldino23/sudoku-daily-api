@@ -25,9 +25,9 @@ var (
 
 	minimumClues = map[BoardSize]map[Difficulty]Clue{
 		BoardSize4: {
-			DifficultyEasy:   Clue{minimum: 8, maximum: 10},
-			DifficultyMedium: Clue{minimum: 6, maximum: 7},
-			DifficultyHard:   Clue{minimum: 4, maximum: 5},
+			DifficultyEasy:   Clue{minimum: 9, maximum: 10},
+			DifficultyMedium: Clue{minimum: 7, maximum: 8},
+			DifficultyHard:   Clue{minimum: 5, maximum: 6},
 		},
 		BoardSize6: {
 			DifficultyEasy:   Clue{minimum: 18, maximum: 22},
@@ -113,10 +113,10 @@ func (s *Sudoku) GetSize() int {
 }
 
 func (b *Board) SetCell(row, col, value int) {
-	
+
 	if value == 0 {
 		n := b.cells[row][col]
-		
+
 		b.RowCount[row].Remove(n)
 		b.ColCount[col].Remove(n)
 		b.GridCount[b.GetGridByPosition(row, col)].Remove(n)
@@ -142,29 +142,33 @@ func (b *Board) GetBoard() [][]int {
 }
 
 func (b *Board) GetPossibleByPosition(row, col int) vo.Binary {
-	var possible = b.getFullCount()
+	var possible = b.GetFullCount()
+	var current vo.Binary
 
-	possible.Sub(b.RowCount[row])
-	possible.Sub(b.ColCount[col])
-	possible.Sub(b.GridCount[b.GetGridByPosition(row, col)])
+	current.Union(b.RowCount[row], b.ColCount[col], b.GridCount[b.GetGridByPosition(row, col)])
 
-	return possible
+	return current.Missing(possible)
+	// possible.Sub(b.RowCount[row])
+	// possible.Sub(b.ColCount[col])
+	// possible.Sub(b.GridCount[b.GetGridByPosition(row, col)])
+
+	// return possible
 }
 
 func (b *Board) GetRowMissingNumbers(row int) []int {
-	missing := b.RowCount[row].Missing(b.getFullCount())
+	missing := b.RowCount[row].Missing(b.GetFullCount())
 
 	return missing.Values()
 }
 
 func (b *Board) GetColMissingNumbers(col int) []int {
-	missing := b.ColCount[col].Missing(b.getFullCount())
+	missing := b.ColCount[col].Missing(b.GetFullCount())
 
 	return missing.Values()
 }
 
 func (b *Board) GetGridMissingNumbers(row, col int) []int {
-	missing := b.GridCount[b.GetGridByPosition(row, col)].Missing(b.getFullCount())
+	missing := b.GridCount[b.GetGridByPosition(row, col)].Missing(b.GetFullCount())
 
 	return missing.Values()
 }
@@ -186,7 +190,7 @@ func (b *Board) HasNumber(row, col, number int) bool {
 	return b.RowCount[row].Contains(number) || b.ColCount[col].Contains(number) || b.GridCount[b.GetGridByPosition(row, col)].Contains(number)
 }
 
-func (b *Board) getFullCount() vo.Binary {
+func (b *Board) GetFullCount() vo.Binary {
 	if b.fullCount == 0 {
 		b.fullCount = vo.NewFullBinary(b.GetSize())
 	}

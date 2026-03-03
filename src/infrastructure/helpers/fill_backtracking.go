@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"math/rand"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/helpers"
@@ -37,7 +36,6 @@ func (f *fillBacktracking) fillCell(board *entities.Sudoku, currentRow, currentC
 		}
 
 		board.Board.SetCell(currentRow, currentCol, n)
-		fmt.Printf("+ Row: %v, Col: %v, Value: %v, size: %v\n", currentRow, currentCol, n, board.Size)
 
 		// go to next in the same row
 		if currentCol == board.GetSize()-1 {
@@ -52,7 +50,6 @@ func (f *fillBacktracking) fillCell(board *entities.Sudoku, currentRow, currentC
 		}
 
 		// backtracking
-		fmt.Printf("- Row: %v, Col: %v, Value: %v, size: %v\n", currentRow, currentCol, n, board.Size)
 		board.Board.SetCell(currentRow, currentCol, 0)
 	}
 

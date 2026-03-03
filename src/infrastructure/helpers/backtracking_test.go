@@ -50,6 +50,8 @@ func TestHideBacktracking(t *testing.T) {
 
 	r := rand.New(rand.NewSource(fakeDate.Unix()))
 	sudoku := generateValidSudoku(size, r)
+	sudoku.Date = fakeDate
+	sudoku.Difficulty = entities.DifficultyMedium
 
 	h.Hide(sudoku, r)
 
@@ -64,8 +66,10 @@ func TestHideBacktracking(t *testing.T) {
 
 	min, max := entities.GetClue(entities.BoardSize(size), entities.DifficultyMedium)
 
-	assert.GreaterOrEqual(t, emptyCells, min)
-	assert.LessOrEqual(t, emptyCells, max)
+	totalCells := size * size
+
+	assert.GreaterOrEqual(t, totalCells-emptyCells, min)
+	assert.LessOrEqual(t, totalCells-emptyCells, max)
 }
 
 func TestSolver(t *testing.T) {
@@ -96,4 +100,40 @@ func generateValidSudoku(size int, r *rand.Rand) *entities.Sudoku {
 	f.Fill(sudoku, r)
 
 	return sudoku
+}
+
+func TestGenerateComplete(t *testing.T) {
+	hideBacktracking := NewHideBacktracking()
+	fillBacktracking := NewFillBacktracking()
+
+	size := entities.BoardSize4
+
+	fakeDate, err := time.Parse("2006-01-02", "2022-01-01")
+	assert.NoError(t, err)
+
+	r := rand.New(rand.NewSource(fakeDate.Unix()))
+
+	sudoku := entities.NewSudoku(size)
+
+	sudoku.Difficulty = entities.DifficultyMedium
+	sudoku.Date = fakeDate
+
+	fillBacktracking.Fill(sudoku, r)
+	hideBacktracking.Hide(sudoku, r)
+
+	emptyCells := 0
+	for _, row := range sudoku.Board.GetBoard() {
+		for _, cell := range row {
+			if cell == 0 {
+				emptyCells++
+			}
+		}
+	}
+
+	min, max := entities.GetClue(sudoku.Size, sudoku.Difficulty)
+
+	totalCells := int(size * size)
+
+	assert.GreaterOrEqual(t, totalCells-emptyCells, min, "min value for difficulty %v is %v", sudoku.Difficulty, min)
+	assert.LessOrEqual(t, totalCells-emptyCells, max, "max value for difficulty %v is %v", sudoku.Difficulty, max)
 }

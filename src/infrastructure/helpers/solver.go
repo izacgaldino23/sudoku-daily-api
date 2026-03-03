@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	Solver struct {}
+	Solver struct{}
 
 	cell struct {
 		row      int
@@ -23,20 +23,22 @@ func NewSolver() *Solver {
 func (s *Solver) Execute(board *entities.Sudoku) int {
 	empty := make([]cell, 0)
 
+	full := board.Board.GetFullCount()
+
 	for i := 0; i < board.GetSize(); i++ {
+		if board.Board.RowCount[i] == full {
+			continue
+		}
+
 		for j := 0; j < board.GetSize(); j++ {
 			if board.Board.GetCell(i, j) == 0 {
 				empty = append(empty, cell{
-					row:      i,
-					col:      j,
+					row: i,
+					col: j,
+					possible: board.Board.GetPossibleByPosition(i, j),
 				})
 			}
 		}
-	}
-
-	for i := range empty {
-		v := &empty[i]
-		v.possible = vo.Binary(board.Board.GetPossibleByPosition(v.row, v.col))
 	}
 
 	// put the item with less possible values first
@@ -53,8 +55,13 @@ func (s *Solver) guess(board *entities.Sudoku, empty []cell, current int, soluti
 	}
 
 	row, col := empty[current].row, empty[current].col
+	possibilities := board.Board.GetPossibleByPosition(row, col)
 
-	for _, n := range empty[current].possible.Values() {
+	if possibilities.Count() == 0 {
+		return solutions
+	}
+
+	for _, n := range possibilities.Values() {
 		if !board.Board.HasNumber(row, col, n) {
 			board.Board.SetCell(row, col, n)
 

@@ -30,30 +30,23 @@ func (s *hideBacktracking) hideNumbers(board *entities.Sudoku, r *rand.Rand) {
 	}
 
 	solver := NewSolver()
-	current := 0
 
-	for {
-		if current + hideTotal > len(cellReference) {
-			current = 0
-		}
+	const maxRetry = 1000
 
-		if current == 0 {
-			r.Shuffle(len(cellReference), func(i, j int) {
-				cellReference[i], cellReference[j] = cellReference[j], cellReference[i]
-			})
-		}
+	for i := 0; i < maxRetry; i++ {
+		r.Shuffle(len(cellReference), func(i, j int) {
+			cellReference[i], cellReference[j] = cellReference[j], cellReference[i]
+		})
 
 		// hide numbers
-		if ok := s.hideCell(board, cellReference, current, hideTotal, solver); ok {
-			break
+		if ok := s.hideCell(board, cellReference, 0, hideTotal, solver); ok {
+			return
 		}
-
-		current++
 	}
 }
 
 func (s *hideBacktracking) hideCell(board *entities.Sudoku, toHide [][2]int, current, hideTotal int, solver *Solver) bool {
-	if current == hideTotal {
+	if current+1 == hideTotal {
 		return true
 	}
 
@@ -62,26 +55,21 @@ func (s *hideBacktracking) hideCell(board *entities.Sudoku, toHide [][2]int, cur
 
 	board.Board.SetCell(row, col, 0)
 
-	// test solutions
-	solutions := solver.Execute(board)
-	if solutions != 1 {
-		board.Board.SetCell(row, col, n)
-		return false
+	next := false
+	if v := solver.Execute(board); v == 1 {
+		next = s.hideCell(board, toHide, current+1, hideTotal, solver)
 	}
 
-	return s.hideCell(board, toHide, current+1, hideTotal, solver)
+	if !next {
+		board.Board.SetCell(row, col, n)
+	}
+
+	return next
 }
 
 func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Rand) int {
-	difficulties := []entities.Difficulty{
-		entities.DifficultyEasy,
-		entities.DifficultyMedium,
-		entities.DifficultyHard,
-	}
-
 	// get random difficulty
-	difficulty := difficulties[r.Intn(len(difficulties))]
-	min, max := entities.GetClue(entities.BoardSize(board.Size), difficulty)
+	min, max := entities.GetClue(board.Size, board.Difficulty)
 
 	// get clue number between the range
 	clueCount := r.Intn(max-min+1) + min
