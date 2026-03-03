@@ -16,7 +16,7 @@ type (
 
 func (g *GetDailySudokuResponse) FromDomain(s *entities.Sudoku) {
 	g.ID = s.ID
-	g.Size = s.Size
-	g.Board = s.Board
+	g.Size = s.GetSize()
+	g.Board = s.Board.GetBoard()
 	g.Date = s.Date
 }

@@ -21,15 +21,15 @@ type (
 func (s *Sudoku) ToDomain() *entities.Sudoku {
 	return &entities.Sudoku{
 		ID:    s.ID,
-		Size:  s.Size,
-		Board: s.Board,
+		Size:  entities.BoardSize(s.Size),
+		Board: entities.NewFilledBoard(s.Board),
 		Date:  s.Date,
 	}
 }
 
 func (s *Sudoku) FromDomain(sudoku *entities.Sudoku) {
 	s.ID = sudoku.ID
-	s.Size = sudoku.Size
-	s.Board = sudoku.Board
+	s.Size = sudoku.GetSize()
+	s.Board = sudoku.Board.GetBoard()
 	s.Date = sudoku.Date
 }

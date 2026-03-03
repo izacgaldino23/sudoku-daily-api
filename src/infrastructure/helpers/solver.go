@@ -1,41 +1,72 @@
 package helpers
 
 import (
+	"slices"
+	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
 )
 
-func isLineValid(board [][]int, row, col, lines, cols int) bool {
-	var (
-		nonZero int
-		size    = len(board)
-	)
+type (
+	Solver struct {}
 
-	// line := make([]int, 0, lines*cols)
-	var line vo.Binary
+	cell struct {
+		row      int
+		col      int
+		possible vo.Binary
+	}
+)
 
-	for i := range lines {
-		for j := range cols {
-			v := board[row+i][col+j]
+func NewSolver() *Solver {
+	return &Solver{}
+}
 
-			if v != 0 && line.Contains(v) {
-				return false
-			}
+func (s *Solver) Execute(board *entities.Sudoku) int {
+	empty := make([]cell, 0)
 
-			line.Add(v)
-			if v != 0 {
-				nonZero++
+	for i := 0; i < board.GetSize(); i++ {
+		for j := 0; j < board.GetSize(); j++ {
+			if board.Board.GetCell(i, j) == 0 {
+				empty = append(empty, cell{
+					row:      i,
+					col:      j,
+				})
 			}
 		}
 	}
 
-	// check unique number from 1 to size
-	if nonZero == size {
-		for i := 1; i <= size; i++ {
-			if !line.Contains(i) {
-				return false
+	for i := range empty {
+		v := &empty[i]
+		v.possible = vo.Binary(board.Board.GetPossibleByPosition(v.row, v.col))
+	}
+
+	// put the item with less possible values first
+	slices.SortFunc(empty, func(a, b cell) int {
+		return a.possible.Count() - b.possible.Count()
+	})
+
+	return s.guess(board, empty, 0, 0)
+}
+
+func (s *Solver) guess(board *entities.Sudoku, empty []cell, current int, solutions int) int {
+	if current == len(empty) {
+		return solutions + 1
+	}
+
+	row, col := empty[current].row, empty[current].col
+
+	for _, n := range empty[current].possible.Values() {
+		if !board.Board.HasNumber(row, col, n) {
+			board.Board.SetCell(row, col, n)
+
+			if v := s.guess(board, empty, current+1, solutions); v > 1 {
+				return v
+			} else {
+				solutions = v
 			}
+
+			board.Board.SetCell(row, col, 0)
 		}
 	}
 
-	return true
+	return solutions
 }

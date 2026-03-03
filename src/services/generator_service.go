@@ -24,21 +24,13 @@ func NewGenerator(
 	}
 }
 
-func (s *sudokuGenerator) GenerateDaily(size int, seed int64) *entities.Sudoku {
+func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, seed int64) *entities.Sudoku {
 	sum := 0
-	for i := 0; i < size; i++ {
+	for i := 0; i < int(size); i++ {
 		sum += i + 1
 	}
 
-	board := &entities.Sudoku{
-		Size:  size,
-		Board: make([][]int, size),
-	}
-
-	// initialize board
-	for i := range board.Board {
-		board.Board[i] = make([]int, size)
-	}
+	board := entities.NewSudoku(size)
 
 	r := rand.New(rand.NewSource(board.Date.Unix()))
 

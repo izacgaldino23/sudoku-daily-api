@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"sudoku-daily-api/src/domain/vo"
 	"time"
 )
 
@@ -53,10 +54,18 @@ type (
 
 	Sudoku struct {
 		ID         string
-		Size       int
-		Board      [][]int
+		Size       BoardSize
+		Board      Board
 		Difficulty Difficulty
 		Date       time.Time
+	}
+
+	Board struct {
+		cells     [][]int
+		RowCount  []vo.Binary
+		ColCount  []vo.Binary
+		GridCount []vo.Binary
+		fullCount vo.Binary
 	}
 
 	Grid struct {
@@ -67,28 +76,121 @@ type (
 	}
 )
 
-func (s *Sudoku) GetGrids(size int) []Grid {
-	grids := make([]Grid, 0)
+func NewSudoku(size BoardSize) *Sudoku {
+	return &Sudoku{Size: size, Board: newBoard(int(size))}
+}
 
-	gridRows := BoardSizes[BoardSize(size)]
-	gridCols := size / gridRows
+func newBoard(size int) Board {
+	cells := make([][]int, size)
 
-	for i := 0; i < gridRows; i++ {
-		for j := 0; j < gridCols; j++ {
-			grids = append(grids, Grid{
-				Row:      i * gridRows,
-				Col:      j * gridCols,
-				RowCount: gridRows,
-				ColCount: gridCols,
-			})
+	for i := range cells {
+		cells[i] = make([]int, size)
+	}
+
+	return Board{
+		cells:     cells,
+		RowCount:  make([]vo.Binary, size),
+		ColCount:  make([]vo.Binary, size),
+		GridCount: make([]vo.Binary, size*size),
+		fullCount: vo.NewFullBinary(size),
+	}
+}
+
+func NewFilledBoard(values [][]int) Board {
+	board := newBoard(len(values))
+
+	for i := range values {
+		for j := range values[i] {
+			board.SetCell(i, j, values[i][j])
 		}
 	}
 
-	return grids
+	return board
 }
 
-func (g *Grid) IsLastPosition(row, col int) bool {
-	return row == g.Row+g.RowCount-1 && col == g.Col+g.ColCount-1
+func (s *Sudoku) GetSize() int {
+	return int(s.Size)
+}
+
+func (b *Board) SetCell(row, col, value int) {
+	
+	if value == 0 {
+		n := b.cells[row][col]
+		
+		b.RowCount[row].Remove(n)
+		b.ColCount[col].Remove(n)
+		b.GridCount[b.GetGridByPosition(row, col)].Remove(n)
+	} else {
+		b.RowCount[row].Add(value)
+		b.ColCount[col].Add(value)
+		b.GridCount[b.GetGridByPosition(row, col)].Add(value)
+	}
+
+	b.cells[row][col] = value
+}
+
+func (b *Board) GetCell(row, col int) int {
+	return b.cells[row][col]
+}
+
+func (b *Board) GetSize() int {
+	return len(b.cells)
+}
+
+func (b *Board) GetBoard() [][]int {
+	return b.cells
+}
+
+func (b *Board) GetPossibleByPosition(row, col int) vo.Binary {
+	var possible = b.getFullCount()
+
+	possible.Sub(b.RowCount[row])
+	possible.Sub(b.ColCount[col])
+	possible.Sub(b.GridCount[b.GetGridByPosition(row, col)])
+
+	return possible
+}
+
+func (b *Board) GetRowMissingNumbers(row int) []int {
+	missing := b.RowCount[row].Missing(b.getFullCount())
+
+	return missing.Values()
+}
+
+func (b *Board) GetColMissingNumbers(col int) []int {
+	missing := b.ColCount[col].Missing(b.getFullCount())
+
+	return missing.Values()
+}
+
+func (b *Board) GetGridMissingNumbers(row, col int) []int {
+	missing := b.GridCount[b.GetGridByPosition(row, col)].Missing(b.getFullCount())
+
+	return missing.Values()
+}
+
+func (b *Board) GetGridByPosition(currentRow, currentCol int) int {
+	size := b.GetSize()
+	rowsPerGrid := BoardSizes[BoardSize(size)]
+	colsPerGrid := size / rowsPerGrid
+
+	numGridsWide := size / colsPerGrid
+
+	gridX := currentCol / colsPerGrid
+	gridY := currentRow / rowsPerGrid
+
+	return gridX + (gridY * numGridsWide)
+}
+
+func (b *Board) HasNumber(row, col, number int) bool {
+	return b.RowCount[row].Contains(number) || b.ColCount[col].Contains(number) || b.GridCount[b.GetGridByPosition(row, col)].Contains(number)
+}
+
+func (b *Board) getFullCount() vo.Binary {
+	if b.fullCount == 0 {
+		b.fullCount = vo.NewFullBinary(b.GetSize())
+	}
+	return b.fullCount
 }
 
 func GetClue(boardSize BoardSize, difficulty Difficulty) (int, int) {

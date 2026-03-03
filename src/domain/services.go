@@ -4,6 +4,6 @@ import "sudoku-daily-api/src/domain/entities"
 
 type (
 	SudokuGenerator interface {
-		GenerateDaily(size int, seed int64) *entities.Sudoku
+		GenerateDaily(size entities.BoardSize, seed int64) *entities.Sudoku
 	}
 )
