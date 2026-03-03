@@ -7,6 +7,6 @@ import (
 )
 
 func RegisterRoutes(api fiber.Router, sudokuHandler sudoku.ISudokuHandler) {
-	api.Get("/sudoku/:size", sudokuHandler.GetDailySudoku)
+	api.Get("/sudoku", sudokuHandler.GetDailySudoku)
 	api.Post("/sudoku/generate", sudokuHandler.CreateSudoku)
 }

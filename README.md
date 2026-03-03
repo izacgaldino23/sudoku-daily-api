@@ -39,7 +39,7 @@
 
 ### Sudoku
 - [x] GET /api/sudoku/daily?size=9
-- [ ] POST /api/sudoku/generate # Daily generation
+- [x] POST /api/sudoku/generate # Daily generation
 - [ ] POST /api/sudoku/submit
 
 ### Auth

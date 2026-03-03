@@ -45,7 +45,7 @@ func (s *sudokuRepository) GetByDateAndSize(ctx context.Context, date time.Time,
 }
 
 func (s *sudokuRepository) Create(ctx context.Context, sudoku *entities.Sudoku) error {
-	var sudokuModel Sudoku
+	var sudokuModel = &Sudoku{}
 	sudokuModel.FromDomain(sudoku)
 
 	result, err := s.getExecutor(ctx).NewInsert().Model(sudokuModel).Exec(ctx)

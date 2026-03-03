@@ -37,8 +37,8 @@ func (s *sudokuGenerateAllUseCase) Execute(ctx context.Context) ([]entities.Sudo
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
 	if err := s.repository.WithinTransaction(ctx, func(ctx context.Context) error {
-		for _, boardSize := range entities.BoardSizes {
-			sudoku := s.sudokuService.GenerateDaily(boardSize, today.UnixNano())
+		for boardSize := range entities.BoardSizes {
+			sudoku := s.sudokuService.GenerateDaily(int(boardSize), today.UnixNano())
 
 			sudoku.Date = today
 			sudoku.ID = string(vo.NewUUID())

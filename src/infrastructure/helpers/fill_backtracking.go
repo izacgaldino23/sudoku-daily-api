@@ -2,14 +2,14 @@ package helpers
 
 import (
 	"math/rand"
-	"slices"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/helpers"
+	"sudoku-daily-api/src/domain/vo"
 )
 
 type (
 	fillBacktracking struct {
-		baseNumber []int
+		baseNumbers vo.Binary
 	}
 )
 
@@ -18,25 +18,19 @@ func NewFillBacktracking() helpers.FillBacktracking {
 }
 
 func (f *fillBacktracking) Fill(board *entities.Sudoku, r *rand.Rand) {
-	f.baseNumber = make([]int, board.Size)
 	for i := 0; i < board.Size; i++ {
-		f.baseNumber[i] = i + 1
+		f.baseNumbers.Add(i + 1)
 	}
 
-	f.fillCell(board, 0, 0, []int{}, r, board.GetGrids(board.Size))
+	f.fillCell(board, 0, 0, 0, r, board.GetGrids(board.Size))
 }
 
-func (f *fillBacktracking) fillCell(board *entities.Sudoku, currentRow, currentCol int, chosen []int, r *rand.Rand, grids []entities.Grid) bool {
-	var currentDecision []int
+func (f *fillBacktracking) fillCell(board *entities.Sudoku, currentRow, currentCol int, chosen vo.Binary, r *rand.Rand, grids []entities.Grid) bool {
+	var currentDecision = []int{}
 
-	if len(chosen) == 0 {
-		currentDecision = make([]int, board.Size-len(chosen))
-		copy(currentDecision, f.baseNumber)
-	} else {
-		for i := range board.Size {
-			if !slices.Contains(chosen, i+1) {
-				currentDecision = append(currentDecision, i+1)
-			}
+	for i := range board.Size {
+		if !chosen.Contains(i + 1) {
+			currentDecision = append(currentDecision, i+1)
 		}
 	}
 
@@ -63,11 +57,12 @@ func (f *fillBacktracking) fillCell(board *entities.Sudoku, currentRow, currentC
 
 		// validate grid
 		valid := true
-		for _, grid := range grids {
-			if grid.IsLastPosition(currentRow, currentCol) {
-				if !isLineValid(board.Board, grid.Row, grid.Col, grid.RowCount, grid.ColCount) {
-					valid = false
-				}
+		gridRows := entities.BoardSizes[entities.BoardSize(board.Size)]
+		gridCols := board.Size / gridRows
+		if currentRow+1%gridRows == 0 {
+			gridCol := (currentCol / gridCols) * gridCols
+			if !isLineValid(board.Board, currentRow-gridRows+1, gridCol, gridRows, gridCols) {
+				valid = false
 			}
 		}
 		if !valid {
@@ -79,14 +74,16 @@ func (f *fillBacktracking) fillCell(board *entities.Sudoku, currentRow, currentC
 		}
 
 		if currentCol == board.Size-1 {
-			if f.fillCell(board, currentRow+1, 0, []int{}, r, grids) {
+			if f.fillCell(board, currentRow+1, 0, 0, r, grids) {
 				return true
 			}
 		} else {
 			// call the next cell
-			if f.fillCell(board, currentRow, currentCol+1, append(chosen, n), r, grids) {
+			chosen.Add(n)
+			if f.fillCell(board, currentRow, currentCol+1, chosen, r, grids) {
 				return true
 			}
+			chosen.Remove(n)
 		}
 	}
 

@@ -31,14 +31,18 @@ func init() {
 func main() {
 	app := fiber.New()
 
-	configApi(app)
+	configApi(app.Group("/api"))
 
-	fmt.Println("🚀 Server running on port 3000")
+	port := ":" + config.GetConfig().ApiPort
+	fmt.Println("🚀 Server running on port", port)
 
-	_ = app.Listen(config.GetConfig().ApiPort)
+	err := app.Listen(port)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func configApi(app *fiber.App) {
+func configApi(app fiber.Router) {
 	// others
 	databaseConnection := database.GetDB()
 	transactionManager := persistence.NewTransactionManager(databaseConnection.BunConnection)

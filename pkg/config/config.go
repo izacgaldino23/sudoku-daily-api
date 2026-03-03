@@ -34,7 +34,7 @@ func (d *Database) DSNPostgres() string {
 	return fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v", d.Host, d.Username, d.Password, d.Name, d.Port, d.SSLMode)
 }
 
-func viperInit() (*Config, error) {
+func viperInit() error {
 	v := viper.New()
 
 	v.AutomaticEnv()
@@ -52,16 +52,16 @@ func viperInit() (*Config, error) {
 	v.AddConfigPath(".")  // procura no cwd
 
 	if _, err := os.Stat(name + ".env"); err != nil {
-		return nil, err
+		return fmt.Errorf("File %s does not exist: %w", v.ConfigFileUsed(), err)
 	}
 
 	v.SetDefault("DATABASE.SSL_MODE", "disable")
 
 	if err := v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			return nil, err
+			return err
 		} else {
-			return nil, err
+			return err
 		}
 	}
 
@@ -72,21 +72,21 @@ func viperInit() (*Config, error) {
 		}
 	}
 
-	c := &Config{}
+	configEnv = &Config{}
 
-	err := v.Unmarshal(c)
+	err := v.Unmarshal(configEnv)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return c, nil
+	return nil
 }
 
 func Load() (err error) {
 	if configEnv == nil {
 		once := sync.Once{}
 		once.Do(func() {
-			configEnv, err = viperInit()
+			err = viperInit()
 		})
 	}
 

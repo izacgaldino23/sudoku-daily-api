@@ -34,25 +34,25 @@ func NewSudokuHandler(
 
 func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	var (
-		sizeParam = c.Params("size")
+		sizeParam = c.Query("size", "4")
 		ctxReq    = c.Context()
 		size      int
 		err       error
 	)
 
 	if sizeParam == "" {
-		return pkg.JsonError(c, "Invalid size")
+		return pkg.JsonError(c, pkg.QueryParamInvalid)
 	}
 
 	size, err = strconv.Atoi(sizeParam)
 	if err != nil {
-		return pkg.JsonError(c, "Invalid size")
+		return pkg.JsonError(c, pkg.QueryParamInvalid)
 	}
 
 	var dailySudoku *entities.Sudoku
 	dailySudoku, err = sh.getDailyUseCase.Execute(ctxReq, size)
 	if err != nil {
-		return pkg.JsonErrorWithStatus(c, err.Error(), http.StatusInternalServerError)
+		return pkg.JsonError(c, err)
 	}
 
 	var response GetDailySudokuResponse
@@ -70,7 +70,7 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	var dailySudoku []entities.Sudoku
 	dailySudoku, err = sh.createSudokuUseCase.Execute(ctxReq)
 	if err != nil {
-		return pkg.JsonErrorWithStatus(c, err.Error(), http.StatusInternalServerError)
+		return pkg.JsonError(c, err)
 	}
 
 	var response []GetDailySudokuResponse
