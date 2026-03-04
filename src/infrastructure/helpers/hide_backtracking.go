@@ -15,11 +15,7 @@ func NewHideBacktracking() helpers.HideBacktracking {
 	return &hideBacktracking{}
 }
 
-func (h *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) {
-	h.hideNumbers(board, r)
-}
-
-func (s *hideBacktracking) hideNumbers(board *entities.Sudoku, r *rand.Rand) {
+func (s *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) bool {
 	hideTotal := s.defineToHideCount(board, r)
 
 	cellReference := make([][2]int, 0)
@@ -40,9 +36,15 @@ func (s *hideBacktracking) hideNumbers(board *entities.Sudoku, r *rand.Rand) {
 
 		// hide numbers
 		if ok := s.hideCell(board, cellReference, 0, hideTotal, solver); ok {
-			return
+			for j := 0; j < hideTotal; j++ {
+				board.Board.SetCell(cellReference[j][0], cellReference[j][1], 0)
+			}
+
+			return true
 		}
 	}
+
+	return false
 }
 
 func (s *hideBacktracking) hideCell(board *entities.Sudoku, toHide [][2]int, current, hideTotal int, solver *Solver) bool {

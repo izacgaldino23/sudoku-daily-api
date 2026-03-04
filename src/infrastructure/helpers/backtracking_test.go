@@ -13,8 +13,8 @@ import (
 func TestFillBacktracking(t *testing.T) {
 	f := NewFillBacktracking()
 
-	fakeDate, err := time.Parse("2006-01-02", "2022-01-01")
-	assert.NoError(t, err)
+	now := time.Now()
+	fakeDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
 	r := rand.New(rand.NewSource(fakeDate.Unix()))
 
@@ -43,8 +43,8 @@ func TestFillBacktracking(t *testing.T) {
 func TestHideBacktracking(t *testing.T) {
 	h := NewHideBacktracking()
 
-	fakeDate, err := time.Parse("2006-01-02", "2022-01-01")
-	assert.NoError(t, err)
+	now := time.Now()
+	fakeDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
 	size := 6
 
@@ -68,8 +68,8 @@ func TestHideBacktracking(t *testing.T) {
 
 	totalCells := size * size
 
-	assert.GreaterOrEqual(t, totalCells-emptyCells, min)
-	assert.LessOrEqual(t, totalCells-emptyCells, max)
+	assert.GreaterOrEqual(t, totalCells-emptyCells, min, "min value for difficulty %v is %v", sudoku.Difficulty, min)
+	assert.LessOrEqual(t, totalCells-emptyCells, max, "max value for difficulty %v is %v", sudoku.Difficulty, max)
 }
 
 func TestSolver(t *testing.T) {
@@ -108,8 +108,8 @@ func TestGenerateComplete(t *testing.T) {
 
 	size := entities.BoardSize4
 
-	fakeDate, err := time.Parse("2006-01-02", "2022-01-01")
-	assert.NoError(t, err)
+	now := time.Now()
+	fakeDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
 	r := rand.New(rand.NewSource(fakeDate.Unix()))
 

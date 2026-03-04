@@ -14,8 +14,8 @@ func NewFillBacktracking() helpers.FillBacktracking {
 	return &fillBacktracking{}
 }
 
-func (f *fillBacktracking) Fill(board *entities.Sudoku, r *rand.Rand) {
-	f.fillCell(board, 0, 0, r)
+func (f *fillBacktracking) Fill(board *entities.Sudoku, r *rand.Rand) bool{
+	return f.fillCell(board, 0, 0, r)
 }
 
 func (f *fillBacktracking) fillCell(board *entities.Sudoku, currentRow, currentCol int, r *rand.Rand) bool {

@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
@@ -38,12 +39,15 @@ func (s *sudokuGenerateAllUseCase) Execute(ctx context.Context) ([]entities.Sudo
 
 	if err := s.repository.WithinTransaction(ctx, func(ctx context.Context) error {
 		for boardSize := range entities.BoardSizes {
-			sudoku := s.sudokuService.GenerateDaily(boardSize, today.UnixNano())
+			sudoku, err := s.sudokuService.GenerateDaily(boardSize, today.UnixNano())
+			if err != nil {
+				return fmt.Errorf("Failed to generate sudoku for size %v: %w", boardSize,err)
+			}
 
 			sudoku.Date = today
 			sudoku.ID = string(vo.NewUUID())
 
-			err := s.repository.Create(ctx, sudoku)
+			err = s.repository.Create(ctx, sudoku)
 			if err != nil {
 				return err
 			}

@@ -7,10 +7,10 @@ import (
 
 type (
 	FillBacktracking interface {
-		Fill(board *entities.Sudoku, r *rand.Rand)
+		Fill(board *entities.Sudoku, r *rand.Rand) bool
 	}
 
 	HideBacktracking interface {
-		Hide(board *entities.Sudoku, r *rand.Rand)
+		Hide(board *entities.Sudoku, r *rand.Rand) bool
 	}
 )
