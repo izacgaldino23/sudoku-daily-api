@@ -106,34 +106,35 @@ func TestGenerateComplete(t *testing.T) {
 	hideBacktracking := NewHideBacktracking()
 	fillBacktracking := NewFillBacktracking()
 
-	size := entities.BoardSize4
-
 	now := time.Now()
 	fakeDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
 	r := rand.New(rand.NewSource(fakeDate.Unix()))
 
-	sudoku := entities.NewSudoku(size)
+	for size := range entities.BoardSizes {
+		t.Run(fmt.Sprintf("TestFillBacktracking_%v", size), func(t *testing.T) {
 
-	sudoku.Difficulty = entities.DifficultyMedium
-	sudoku.Date = fakeDate
-
-	fillBacktracking.Fill(sudoku, r)
-	hideBacktracking.Hide(sudoku, r)
-
-	emptyCells := 0
-	for _, row := range sudoku.Board.GetBoard() {
-		for _, cell := range row {
-			if cell == 0 {
-				emptyCells++
+			sudoku := entities.NewSudoku(size)
+		
+			sudoku.Difficulty = entities.DifficultyMedium
+			sudoku.Date = fakeDate
+		
+			fillBacktracking.Fill(sudoku, r)
+			hideBacktracking.Hide(sudoku, r)
+		
+			filledCells := 0
+			for _, row := range sudoku.Board.GetBoard() {
+				for _, cell := range row {
+					if cell != 0 {
+						filledCells++
+					}
+				}
 			}
-		}
+		
+			minClues, maxClues := entities.GetClue(sudoku.Size, sudoku.Difficulty)
+		
+			assert.GreaterOrEqual(t, filledCells, minClues, "min value for difficulty %v is %v", sudoku.Difficulty, minClues)
+			assert.LessOrEqual(t, filledCells, maxClues, "max value for difficulty %v is %v", sudoku.Difficulty, maxClues)
+		})
 	}
-
-	min, max := entities.GetClue(sudoku.Size, sudoku.Difficulty)
-
-	totalCells := int(size * size)
-
-	assert.GreaterOrEqual(t, totalCells-emptyCells, min, "min value for difficulty %v is %v", sudoku.Difficulty, min)
-	assert.LessOrEqual(t, totalCells-emptyCells, max, "max value for difficulty %v is %v", sudoku.Difficulty, max)
 }

@@ -65,7 +65,9 @@ func (s *Solver) guess(board *entities.Sudoku, empty []cell, current int, soluti
 		if !board.Board.HasNumber(row, col, n) {
 			board.Board.SetCell(row, col, n)
 
-			if v := s.guess(board, empty, current+1, solutions); v > 1 {
+			v := s.guess(board, empty, current+1, solutions)
+			board.Board.SetCell(row, col, 0)
+			if v > 1 {
 				return v
 			} else {
 				solutions = v

@@ -33,7 +33,7 @@ func main() {
 
 	configApi(app.Group("/api"))
 
-	port := ":" + config.GetConfig().ApiPort
+	port := config.GetConfig().ApiPort
 	fmt.Println("🚀 Server running on port", port)
 
 	err := app.Listen(port)

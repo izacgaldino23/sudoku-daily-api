@@ -79,6 +79,10 @@ func viperInit() error {
 		return err
 	}
 
+	if name == "local" {
+		configEnv.ApiPort = "127.0.0.1:" + configEnv.ApiPort
+	}
+
 	return nil
 }
 

@@ -16,57 +16,33 @@ func NewHideBacktracking() helpers.HideBacktracking {
 }
 
 func (s *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) bool {
-	hideTotal := s.defineToHideCount(board, r)
-
-	cellReference := make([][2]int, 0)
-	for i := 0; i < board.GetSize(); i++ {
-		for j := 0; j < board.GetSize(); j++ {
-			cellReference = append(cellReference, [2]int{i, j})
-		}
-	}
+	targetToHide := s.defineToHideCount(board, r)
 
 	solver := NewSolver()
 
-	const maxRetry = 1000
-
-	for i := 0; i < maxRetry; i++ {
-		r.Shuffle(len(cellReference), func(i, j int) {
-			cellReference[i], cellReference[j] = cellReference[j], cellReference[i]
-		})
-
-		// hide numbers
-		if ok := s.hideCell(board, cellReference, 0, hideTotal, solver); ok {
-			for j := 0; j < hideTotal; j++ {
-				board.Board.SetCell(cellReference[j][0], cellReference[j][1], 0)
+	const maxTries = 1000
+	
+	for i := 0; i < maxTries; i++ {
+		cells := s.getCellShuffled(board, r)
+		var hidden int
+		for j := range cells {
+			cell := cells[j]
+			if hidden >= targetToHide {
+				return true
 			}
 
-			return true
+			val := board.Board.GetCell(cell[0], cell[1])
+			board.Board.SetCell(cell[0], cell[1], 0)
+
+			if solver.Execute(board) == 1 {
+				hidden++
+			} else {
+				board.Board.SetCell(cell[0], cell[1], val)
+			}
 		}
 	}
 
 	return false
-}
-
-func (s *hideBacktracking) hideCell(board *entities.Sudoku, toHide [][2]int, current, hideTotal int, solver *Solver) bool {
-	if current+1 == hideTotal {
-		return true
-	}
-
-	row, col := toHide[current][0], toHide[current][1]
-	n := board.Board.GetCell(row, col)
-
-	board.Board.SetCell(row, col, 0)
-
-	next := false
-	if v := solver.Execute(board); v == 1 {
-		next = s.hideCell(board, toHide, current+1, hideTotal, solver)
-	}
-
-	if !next {
-		board.Board.SetCell(row, col, n)
-	}
-
-	return next
 }
 
 func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Rand) int {
@@ -76,4 +52,22 @@ func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Ran
 	// get clue number between the range
 	clueCount := r.Intn(max-min+1) + min
 	return board.GetSize()*board.GetSize() - clueCount
+}
+
+func (s *hideBacktracking) getCellShuffled(board *entities.Sudoku, r *rand.Rand) [][2]int {
+	cellReference := make([][2]int, 0)
+
+	for row := range board.Board.GetBoard() {
+		for col := range board.Board.GetBoard()[row] {
+			if board.Board.GetCell(row, col) != 0 {
+				cellReference = append(cellReference, [2]int{row, col})
+			}
+		}
+	}
+
+	r.Shuffle(len(cellReference), func(i, j int) {
+		cellReference[i], cellReference[j] = cellReference[j], cellReference[i]
+	})
+
+	return cellReference
 }
