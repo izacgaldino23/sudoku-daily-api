@@ -7,7 +7,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/dialect/sqlitedialect"
+	"github.com/uptrace/bun/dialect/pgdialect"
 )
 
 type DatabaseConnection struct {
@@ -27,7 +27,7 @@ func ConnectDB(configEnv *config.Config) (err error) {
 	}
 
 	dbConnection.SqlConnection = sqlDB
-	dbConnection.BunConnection = bun.NewDB(sqlDB, sqlitedialect.New())
+	dbConnection.BunConnection = bun.NewDB(sqlDB, pgdialect.New())
 
 	return
 }

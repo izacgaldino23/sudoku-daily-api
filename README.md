@@ -42,14 +42,14 @@
 ## Endpoints/Features
 
 ### Sudoku
-- [x] GET /api/sudoku/daily?size=9
-- [x] POST /api/sudoku/generate # Daily generation
-- [ ] POST /api/sudoku/submit
+- [x] GET 	/api/sudoku/daily?size=9
+- [x] POST 	/api/sudoku/generate # Daily generation
+- [ ] POST 	/api/sudoku/submit
 
 ### Auth
-- [ ] POST /api/auth/register
-- [ ] POST /api/auth/login
-- [ ] GET /api/auth/me
+- [ ] POST 	/api/auth/register
+- [ ] POST 	/api/auth/login
+- [ ] GET 	/api/auth/me
 
 ## Migrations
 

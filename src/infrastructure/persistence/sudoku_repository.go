@@ -48,7 +48,11 @@ func (s *sudokuRepository) Create(ctx context.Context, sudoku *entities.Sudoku) 
 	var sudokuModel = &Sudoku{}
 	sudokuModel.FromDomain(sudoku)
 
-	result, err := s.getExecutor(ctx).NewInsert().Model(sudokuModel).Exec(ctx)
+	result, err := s.getExecutor(ctx).
+		NewInsert().
+		Model(sudokuModel).
+		Column("id", "size", "difficulty", "board", "date").
+		Exec(ctx)
 	if err != nil {
 		return err
 	}

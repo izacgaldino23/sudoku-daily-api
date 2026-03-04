@@ -28,28 +28,49 @@ func (s *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) bool {
 
 	for i := 0; i < maxTries; i++ {
 		cells := s.getCellShuffled(board, r)
-		var hidden int
-		for j := range cells {
-			cell := cells[j]
-			if hidden >= targetToHide {
-				return true
-			}
 
-			val := board.Board.GetCell(cell[0], cell[1])
-			board.Board.SetCell(cell[0], cell[1], 0)
-
-			if s.solver.Execute(board) == 1 {
-				hidden++
-			} else {
-				board.Board.SetCell(cell[0], cell[1], val)
-			}
+		if s.solveRecursive(board, cells, 0, 0, targetToHide) {
+			return true
 		}
 	}
 
 	return false
 }
 
+func (s *hideBacktracking) solveRecursive(board *entities.Sudoku, cells [][2]int, index int, hiddenCount int, target int) bool {
+    if hiddenCount >= target {
+        return true
+    }
+
+    if index >= len(cells) {
+        return false
+    }
+
+    cell := cells[index]
+    row, col := cell[0], cell[1]
+    originalVal := board.Board.GetCell(row, col)
+
+    board.Board.SetCell(row, col, 0)
+
+    if s.solver.Execute(board) == 1 {
+        if s.solveRecursive(board, cells, index+1, hiddenCount+1, target) {
+            return true
+        }
+    }
+
+    board.Board.SetCell(row, col, originalVal)
+
+    // Tenta esconder as próximas SEM esconder esta atual
+    return s.solveRecursive(board, cells, index+1, hiddenCount, target)
+}
+
 func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Rand) int {
+	if board.Difficulty == "" {
+		// generate random difficulty
+		difficulties := []entities.Difficulty{entities.DifficultyEasy, entities.DifficultyMedium, entities.DifficultyHard}
+		board.Difficulty = difficulties[r.Intn(len(difficulties))]
+	}
+
 	min, max := entities.GetClue(board.Size, board.Difficulty)
 
 	clueCount := r.Intn(max-min+1) + min

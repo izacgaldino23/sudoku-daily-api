@@ -119,8 +119,11 @@ func TestGenerateComplete(t *testing.T) {
 			sudoku.Difficulty = entities.DifficultyMedium
 			sudoku.Date = fakeDate
 
-			fillStrategy.Fill(sudoku, r)
-			hideStrategy.Hide(sudoku, r)
+			filled := fillStrategy.Fill(sudoku, r)
+			assert.True(t, filled)
+
+			hidden := hideStrategy.Hide(sudoku, r)
+			assert.True(t, hidden)
 
 			filledCells := 0
 			for _, row := range sudoku.Board.GetBoard() {
