@@ -5,24 +5,24 @@ import (
 	"math/rand"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
-	"sudoku-daily-api/src/domain/helpers"
+	"sudoku-daily-api/src/domain/strategies"
 	"time"
 )
 
 type (
 	sudokuGenerator struct {
-		fillBacktracking helpers.FillBacktracking
-		hideBacktracking helpers.HideBacktracking
+		fillStrategy strategies.FillStrategy
+		hideStrategy strategies.HideStrategy
 	}
 )
 
 func NewGenerator(
-	fillBacktracking helpers.FillBacktracking,
-	hideBacktracking helpers.HideBacktracking,
+	fillStrategy strategies.FillStrategy,
+	hideStrategy strategies.HideStrategy,
 ) domain.SudokuGenerator {
 	return &sudokuGenerator{
-		fillBacktracking: fillBacktracking,
-		hideBacktracking: hideBacktracking,
+		fillStrategy: fillStrategy,
+		hideStrategy: hideStrategy,
 	}
 }
 
@@ -38,12 +38,12 @@ func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, seed int64) (*e
 	start := time.Now()
 	fmt.Printf("Start generating %v x %v sudoku at %v\n", size, size, start)
 
-	filled := s.fillBacktracking.Fill(sudoku, r)
+	filled := s.fillStrategy.Fill(sudoku, r)
 	if !filled {
 		return nil, fmt.Errorf("failed to fill sudoku")
 	}
 
-	hide := s.hideBacktracking.Hide(sudoku, r)
+	hide := s.hideStrategy.Hide(sudoku, r)
 	if !hide {
 		return nil, fmt.Errorf("failed to hide sudoku")
 	}

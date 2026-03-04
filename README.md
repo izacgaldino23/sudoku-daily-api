@@ -15,23 +15,27 @@
 ├── 📂 cmd/						# For main files
 │   ├── 📂 api/					# api entrypoint
 │   │   └── ▶️ main.go
-│   ├── 📂 migrate/				# migrations entrypoint
-│   │   └── ▶️ main.go
+│   └── 📂 migrate/				# migrations entrypoint
+│       └── ▶️ main.go
 ├── 📂 migrations/				# For migration logic/files
 │   ├── 📂 sql/					# sql up/down files
 │   └── ▶️ migrate.go			# migration logic
-├─ 📂 pkg/						# external logic like helpers
+├── 📂 pkg/						# external logic like helpers
 │   ├── 📂 config/				# configs initializing
 │   └── 📂 database/			# database initialization
 ├── 📂 src/						# internal app files
-│   ├── 📂 infrastructure/		# infrastructure
-│   │   ├── 📁 persistence		# databases, queues
-│   │   └── 📁 http				# Input ways http, grpc
-│   ├── 📂 core/				# core domain structs and interfaces accessed by infrastructure
-│   │   ├── 📁 models			# structs and their methods
-│   │   └── 📁 ports			# interfaces
-│   ├── 📁 application			# app logic called by main
-│   └── 📁 services				# business logic
+│   ├── 📂 domain/				# Domain layer
+│   │   ├── 📂 entities/		# Domain entities
+│   │   ├── 📂 vo/				# Value objects
+│   │   ├── 📂 repository/		# Repository interfaces
+│   │   ├── 📂 strategies/		# Generation algorithms
+│   │   └── ▶️ services.go		# Domain service interfaces
+│   ├── 📂 application/			# Use cases
+│   │   └── 📂 usecase/
+│   ├── 📂 infrastructure/		# Infrastructure layer
+│   │   ├── 📂 http/			# HTTP handlers
+│   │   └── 📂 persistence/		# Database persistence
+│   └── 📂 services/			# Application services
 └── 📁 tests					# for tests (integration)
 ```
 

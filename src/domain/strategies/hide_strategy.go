@@ -1,27 +1,31 @@
-package helpers
+package strategies
 
 import (
 	"math/rand"
 	"sudoku-daily-api/src/domain/entities"
-	"sudoku-daily-api/src/domain/helpers"
 )
 
 type (
+	HideStrategy interface {
+		Hide(board *entities.Sudoku, r *rand.Rand) bool
+	}
+
 	hideBacktracking struct {
+		solver *solver
 	}
 )
 
-func NewHideBacktracking() helpers.HideBacktracking {
-	return &hideBacktracking{}
+func NewHideStrategy() HideStrategy {
+	return &hideBacktracking{
+		solver: newSolver(),
+	}
 }
 
 func (s *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) bool {
 	targetToHide := s.defineToHideCount(board, r)
 
-	solver := NewSolver()
-
 	const maxTries = 1000
-	
+
 	for i := 0; i < maxTries; i++ {
 		cells := s.getCellShuffled(board, r)
 		var hidden int
@@ -34,7 +38,7 @@ func (s *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) bool {
 			val := board.Board.GetCell(cell[0], cell[1])
 			board.Board.SetCell(cell[0], cell[1], 0)
 
-			if solver.Execute(board) == 1 {
+			if s.solver.Execute(board) == 1 {
 				hidden++
 			} else {
 				board.Board.SetCell(cell[0], cell[1], val)
@@ -46,10 +50,8 @@ func (s *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) bool {
 }
 
 func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Rand) int {
-	// get random difficulty
 	min, max := entities.GetClue(board.Size, board.Difficulty)
 
-	// get clue number between the range
 	clueCount := r.Intn(max-min+1) + min
 	return board.GetSize()*board.GetSize() - clueCount
 }

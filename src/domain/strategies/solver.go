@@ -1,4 +1,4 @@
-package helpers
+package strategies
 
 import (
 	"slices"
@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	Solver struct{}
+	solver struct{}
 
 	cell struct {
 		row      int
@@ -16,11 +16,11 @@ type (
 	}
 )
 
-func NewSolver() *Solver {
-	return &Solver{}
+func newSolver() *solver {
+	return &solver{}
 }
 
-func (s *Solver) Execute(board *entities.Sudoku) int {
+func (s *solver) Execute(board *entities.Sudoku) int {
 	empty := make([]cell, 0)
 
 	full := board.Board.GetFullCount()
@@ -33,15 +33,14 @@ func (s *Solver) Execute(board *entities.Sudoku) int {
 		for j := 0; j < board.GetSize(); j++ {
 			if board.Board.GetCell(i, j) == 0 {
 				empty = append(empty, cell{
-					row: i,
-					col: j,
+					row:      i,
+					col:      j,
 					possible: board.Board.GetPossibleByPosition(i, j),
 				})
 			}
 		}
 	}
 
-	// put the item with less possible values first
 	slices.SortFunc(empty, func(a, b cell) int {
 		return a.possible.Count() - b.possible.Count()
 	})
@@ -49,7 +48,7 @@ func (s *Solver) Execute(board *entities.Sudoku) int {
 	return s.guess(board, empty, 0, 0)
 }
 
-func (s *Solver) guess(board *entities.Sudoku, empty []cell, current int, solutions int) int {
+func (s *solver) guess(board *entities.Sudoku, empty []cell, current int, solutions int) int {
 	if current == len(empty) {
 		return solutions + 1
 	}

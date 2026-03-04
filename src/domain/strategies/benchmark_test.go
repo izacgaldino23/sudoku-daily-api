@@ -1,4 +1,4 @@
-package helpers
+package strategies
 
 import (
 	"math/rand"
@@ -7,20 +7,20 @@ import (
 	"time"
 )
 
-func BenchmarkFillBacktracking4(b *testing.B) {
-	benchmarkFillBacktracking(b, entities.BoardSize4)
+func BenchmarkFillStrategy4(b *testing.B) {
+	benchmarkFillStrategy(b, entities.BoardSize4)
 }
 
-func BenchmarkFillBacktracking6(b *testing.B) {
-	benchmarkFillBacktracking(b, entities.BoardSize6)
+func BenchmarkFillStrategy6(b *testing.B) {
+	benchmarkFillStrategy(b, entities.BoardSize6)
 }
 
-func BenchmarkFillBacktracking9(b *testing.B) {
-	benchmarkFillBacktracking(b, entities.BoardSize9)
+func BenchmarkFillStrategy9(b *testing.B) {
+	benchmarkFillStrategy(b, entities.BoardSize9)
 }
 
-func benchmarkFillBacktracking(b *testing.B, size entities.BoardSize) {
-	f := NewFillBacktracking()
+func benchmarkFillStrategy(b *testing.B, size entities.BoardSize) {
+	f := NewFillStrategy()
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	b.ResetTimer()
@@ -30,21 +30,21 @@ func benchmarkFillBacktracking(b *testing.B, size entities.BoardSize) {
 	}
 }
 
-func BenchmarkHideBacktracking4(b *testing.B) {
-	benchmarkHideBacktracking(b, entities.BoardSize4)
+func BenchmarkHideStrategy4(b *testing.B) {
+	benchmarkHideStrategy(b, entities.BoardSize4)
 }
 
-func BenchmarkHideBacktracking6(b *testing.B) {
-	benchmarkHideBacktracking(b, entities.BoardSize6)
+func BenchmarkHideStrategy6(b *testing.B) {
+	benchmarkHideStrategy(b, entities.BoardSize6)
 }
 
-func BenchmarkHideBacktracking9(b *testing.B) {
-	benchmarkHideBacktracking(b, entities.BoardSize9)
+func BenchmarkHideStrategy9(b *testing.B) {
+	benchmarkHideStrategy(b, entities.BoardSize9)
 }
 
-func benchmarkHideBacktracking(b *testing.B, size entities.BoardSize) {
-	h := NewHideBacktracking()
-	f := NewFillBacktracking()
+func benchmarkHideStrategy(b *testing.B, size entities.BoardSize) {
+	h := NewHideStrategy()
+	f := NewFillStrategy()
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	b.ResetTimer()
@@ -69,8 +69,8 @@ func BenchmarkSolver9(b *testing.B) {
 }
 
 func benchmarkSolver(b *testing.B, size entities.BoardSize) {
-	solver := NewSolver()
-	f := NewFillBacktracking()
+	solver := newSolver()
+	f := NewFillStrategy()
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	sudoku := entities.NewSudoku(size)
@@ -96,8 +96,8 @@ func BenchmarkSolverEmpty9(b *testing.B) {
 }
 
 func benchmarkSolverEmpty(b *testing.B, size entities.BoardSize) {
-	solver := NewSolver()
-	f := NewFillBacktracking()
+	solver := newSolver()
+	f := NewFillStrategy()
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	sudoku := entities.NewSudoku(size)

@@ -1,20 +1,23 @@
-package helpers
+package strategies
 
 import (
 	"math/rand"
 	"sudoku-daily-api/src/domain/entities"
-	"sudoku-daily-api/src/domain/helpers"
 )
 
 type (
+	FillStrategy interface {
+		Fill(board *entities.Sudoku, r *rand.Rand) bool
+	}
+
 	fillBacktracking struct{}
 )
 
-func NewFillBacktracking() helpers.FillBacktracking {
+func NewFillStrategy() FillStrategy {
 	return &fillBacktracking{}
 }
 
-func (f *fillBacktracking) Fill(board *entities.Sudoku, r *rand.Rand) bool{
+func (f *fillBacktracking) Fill(board *entities.Sudoku, r *rand.Rand) bool {
 	return f.fillCell(board, 0, 0, r)
 }
 
@@ -37,19 +40,16 @@ func (f *fillBacktracking) fillCell(board *entities.Sudoku, currentRow, currentC
 
 		board.Board.SetCell(currentRow, currentCol, n)
 
-		// go to next in the same row
 		if currentCol == board.GetSize()-1 {
 			if f.fillCell(board, currentRow+1, 0, r) {
 				return true
 			}
 		} else {
-			// call the next row
 			if f.fillCell(board, currentRow, currentCol+1, r) {
 				return true
 			}
 		}
 
-		// backtracking
 		board.Board.SetCell(currentRow, currentCol, 0)
 	}
 

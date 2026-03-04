@@ -1,4 +1,4 @@
-package helpers
+package strategies
 
 import (
 	"fmt"
@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFillBacktracking(t *testing.T) {
-	f := NewFillBacktracking()
+func TestFillStrategy(t *testing.T) {
+	f := NewFillStrategy()
 
 	now := time.Now()
 	fakeDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
@@ -19,7 +19,7 @@ func TestFillBacktracking(t *testing.T) {
 	r := rand.New(rand.NewSource(fakeDate.Unix()))
 
 	for size := range entities.BoardSizes {
-		t.Run(fmt.Sprintf("TestFillBacktracking_%v", size), func(t *testing.T) {
+		t.Run(fmt.Sprintf("TestFillStrategy_%v", size), func(t *testing.T) {
 			sudoku := entities.NewSudoku(size)
 			sudoku.Date = fakeDate
 			sudoku.Difficulty = entities.DifficultyMedium
@@ -40,8 +40,8 @@ func TestFillBacktracking(t *testing.T) {
 	}
 }
 
-func TestHideBacktracking(t *testing.T) {
-	h := NewHideBacktracking()
+func TestHideStrategy(t *testing.T) {
+	h := NewHideStrategy()
 
 	now := time.Now()
 	fakeDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
@@ -87,13 +87,13 @@ func TestSolver(t *testing.T) {
 	sudoku := entities.NewSudoku(size)
 	sudoku.Board = entities.NewFilledBoard(board)
 
-	solver := NewSolver()
+	solver := newSolver()
 
 	assert.Equal(t, 2, solver.Execute(sudoku))
 }
 
 func generateValidSudoku(size int, r *rand.Rand) *entities.Sudoku {
-	f := NewFillBacktracking()
+	f := NewFillStrategy()
 
 	sudoku := entities.NewSudoku(entities.BoardSize(size))
 
@@ -103,8 +103,8 @@ func generateValidSudoku(size int, r *rand.Rand) *entities.Sudoku {
 }
 
 func TestGenerateComplete(t *testing.T) {
-	hideBacktracking := NewHideBacktracking()
-	fillBacktracking := NewFillBacktracking()
+	hideStrategy := NewHideStrategy()
+	fillStrategy := NewFillStrategy()
 
 	now := time.Now()
 	fakeDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
@@ -112,16 +112,16 @@ func TestGenerateComplete(t *testing.T) {
 	r := rand.New(rand.NewSource(fakeDate.Unix()))
 
 	for size := range entities.BoardSizes {
-		t.Run(fmt.Sprintf("TestFillBacktracking_%v", size), func(t *testing.T) {
+		t.Run(fmt.Sprintf("TestFillStrategy_%v", size), func(t *testing.T) {
 
 			sudoku := entities.NewSudoku(size)
-		
+
 			sudoku.Difficulty = entities.DifficultyMedium
 			sudoku.Date = fakeDate
-		
-			fillBacktracking.Fill(sudoku, r)
-			hideBacktracking.Hide(sudoku, r)
-		
+
+			fillStrategy.Fill(sudoku, r)
+			hideStrategy.Hide(sudoku, r)
+
 			filledCells := 0
 			for _, row := range sudoku.Board.GetBoard() {
 				for _, cell := range row {
@@ -130,9 +130,9 @@ func TestGenerateComplete(t *testing.T) {
 					}
 				}
 			}
-		
+
 			minClues, maxClues := entities.GetClue(sudoku.Size, sudoku.Difficulty)
-		
+
 			assert.GreaterOrEqual(t, filledCells, minClues, "min value for difficulty %v is %v", sudoku.Difficulty, minClues)
 			assert.LessOrEqual(t, filledCells, maxClues, "max value for difficulty %v is %v", sudoku.Difficulty, maxClues)
 		})

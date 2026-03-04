@@ -6,7 +6,7 @@ import (
 	"sudoku-daily-api/pkg/config"
 	"sudoku-daily-api/pkg/database"
 	"sudoku-daily-api/src/application/usecase"
-	"sudoku-daily-api/src/infrastructure/helpers"
+	"sudoku-daily-api/src/domain/strategies"
 	"sudoku-daily-api/src/infrastructure/http"
 	"sudoku-daily-api/src/infrastructure/http/sudoku"
 	"sudoku-daily-api/src/infrastructure/persistence"
@@ -47,15 +47,15 @@ func configApi(app fiber.Router) {
 	databaseConnection := database.GetDB()
 	transactionManager := persistence.NewTransactionManager(databaseConnection.BunConnection)
 
-	// helpers
-	fillBacktracking := helpers.NewFillBacktracking()
-	hideBacktracking := helpers.NewHideBacktracking()
+	// strategies
+	fillStrategy := strategies.NewFillStrategy()
+	hideStrategy := strategies.NewHideStrategy()
 
 	// repositories
 	sudokuRepository := persistence.NewSudokuRepository(databaseConnection.BunConnection, transactionManager)
 
 	// services
-	generatorService := services.NewGenerator(fillBacktracking, hideBacktracking)
+	generatorService := services.NewGenerator(fillStrategy, hideStrategy)
 
 	// use cases
 	getDailySudoku := usecase.NewSudokuGetDailyUseCase(sudokuRepository)
