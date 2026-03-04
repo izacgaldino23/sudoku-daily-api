@@ -56,6 +56,7 @@ type (
 		ID         string
 		Size       BoardSize
 		Board      Board
+		Solution   Board
 		Difficulty Difficulty
 		Date       time.Time
 	}
@@ -148,29 +149,6 @@ func (b *Board) GetPossibleByPosition(row, col int) vo.Binary {
 	current.Union(b.RowCount[row], b.ColCount[col], b.GridCount[b.GetGridByPosition(row, col)])
 
 	return current.Missing(possible)
-	// possible.Sub(b.RowCount[row])
-	// possible.Sub(b.ColCount[col])
-	// possible.Sub(b.GridCount[b.GetGridByPosition(row, col)])
-
-	// return possible
-}
-
-func (b *Board) GetRowMissingNumbers(row int) []int {
-	missing := b.RowCount[row].Missing(b.GetFullCount())
-
-	return missing.Values()
-}
-
-func (b *Board) GetColMissingNumbers(col int) []int {
-	missing := b.ColCount[col].Missing(b.GetFullCount())
-
-	return missing.Values()
-}
-
-func (b *Board) GetGridMissingNumbers(row, col int) []int {
-	missing := b.GridCount[b.GetGridByPosition(row, col)].Missing(b.GetFullCount())
-
-	return missing.Values()
 }
 
 func (b *Board) GetGridByPosition(currentRow, currentCol int) int {

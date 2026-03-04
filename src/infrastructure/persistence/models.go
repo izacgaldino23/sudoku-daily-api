@@ -16,9 +16,19 @@ type (
 		Size       int       `bun:",notnull"`
 		Difficulty string    `bun:",notnull"`
 		Board      []byte    `bun:"type:,notnull"`
+		Solution   []byte    `bun:"type:,notnull"`
 		Date       time.Time `bun:"type:date,notnull"`
 	}
 )
+
+func (s *Sudoku) FromDomain(sudoku *entities.Sudoku) {
+	s.ID = sudoku.ID
+	s.Size = sudoku.GetSize()
+	s.Difficulty = string(sudoku.Difficulty)
+	s.Board = boardFromDomain(&sudoku.Board)
+	s.Solution = boardFromDomain(&sudoku.Solution)
+	s.Date = sudoku.Date
+}
 
 func (s *Sudoku) ToDomain() *entities.Sudoku {
 	return &entities.Sudoku{
@@ -26,6 +36,7 @@ func (s *Sudoku) ToDomain() *entities.Sudoku {
 		Size:       entities.BoardSize(s.Size),
 		Difficulty: entities.Difficulty(s.Difficulty),
 		Board:      boardToDomain(s.Board),
+		Solution:   boardToDomain(s.Solution),
 		Date:       s.Date,
 	}
 }
@@ -57,12 +68,4 @@ func boardFromDomain(board *entities.Board) []byte {
 	}
 
 	return linearBoard
-}
-
-func (s *Sudoku) FromDomain(sudoku *entities.Sudoku) {
-	s.ID = sudoku.ID
-	s.Size = sudoku.GetSize()
-	s.Difficulty = string(sudoku.Difficulty)
-	s.Board = boardFromDomain(&sudoku.Board)
-	s.Date = sudoku.Date
 }

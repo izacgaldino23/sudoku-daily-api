@@ -29,7 +29,7 @@ func (s *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) bool {
 	for i := 0; i < maxTries; i++ {
 		cells := s.getCellShuffled(board, r)
 
-		if s.solveRecursive(board, cells, 0, 0, targetToHide) {
+		if s.solveRecursive(&board.Board, cells, 0, 0, targetToHide) {
 			return true
 		}
 	}
@@ -37,7 +37,7 @@ func (s *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) bool {
 	return false
 }
 
-func (s *hideBacktracking) solveRecursive(board *entities.Sudoku, cells [][2]int, index int, hiddenCount int, target int) bool {
+func (s *hideBacktracking) solveRecursive(board *entities.Board, cells [][2]int, index int, hiddenCount int, target int) bool {
     if hiddenCount >= target {
         return true
     }
@@ -48,9 +48,9 @@ func (s *hideBacktracking) solveRecursive(board *entities.Sudoku, cells [][2]int
 
     cell := cells[index]
     row, col := cell[0], cell[1]
-    originalVal := board.Board.GetCell(row, col)
+    originalVal := board.GetCell(row, col)
 
-    board.Board.SetCell(row, col, 0)
+    board.SetCell(row, col, 0)
 
     if s.solver.Execute(board) == 1 {
         if s.solveRecursive(board, cells, index+1, hiddenCount+1, target) {
@@ -58,7 +58,7 @@ func (s *hideBacktracking) solveRecursive(board *entities.Sudoku, cells [][2]int
         }
     }
 
-    board.Board.SetCell(row, col, originalVal)
+    board.SetCell(row, col, originalVal)
 
     // Tenta esconder as próximas SEM esconder esta atual
     return s.solveRecursive(board, cells, index+1, hiddenCount, target)

@@ -79,7 +79,7 @@ func benchmarkSolver(b *testing.B, size entities.BoardSize) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		solver.Execute(sudoku)
+		solver.Execute(&sudoku.Board)
 	}
 }
 
@@ -113,6 +113,6 @@ func benchmarkSolverEmpty(b *testing.B, size entities.BoardSize) {
 				emptyBoard.Board.SetCell(r, c, sudoku.Board.GetCell(r, c))
 			}
 		}
-		solver.Execute(emptyBoard)
+		solver.Execute(&emptyBoard.Board)
 	}
 }

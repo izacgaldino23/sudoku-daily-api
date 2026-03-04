@@ -20,22 +20,22 @@ func newSolver() *solver {
 	return &solver{}
 }
 
-func (s *solver) Execute(board *entities.Sudoku) int {
+func (s *solver) Execute(board *entities.Board) int {
 	empty := make([]cell, 0)
 
-	full := board.Board.GetFullCount()
+	full := board.GetFullCount()
 
 	for i := 0; i < board.GetSize(); i++ {
-		if board.Board.RowCount[i] == full {
+		if board.RowCount[i] == full {
 			continue
 		}
 
 		for j := 0; j < board.GetSize(); j++ {
-			if board.Board.GetCell(i, j) == 0 {
+			if board.GetCell(i, j) == 0 {
 				empty = append(empty, cell{
 					row:      i,
 					col:      j,
-					possible: board.Board.GetPossibleByPosition(i, j),
+					possible: board.GetPossibleByPosition(i, j),
 				})
 			}
 		}
@@ -48,31 +48,31 @@ func (s *solver) Execute(board *entities.Sudoku) int {
 	return s.guess(board, empty, 0, 0)
 }
 
-func (s *solver) guess(board *entities.Sudoku, empty []cell, current int, solutions int) int {
+func (s *solver) guess(board *entities.Board, empty []cell, current int, solutions int) int {
 	if current == len(empty) {
 		return solutions + 1
 	}
 
 	row, col := empty[current].row, empty[current].col
-	possibilities := board.Board.GetPossibleByPosition(row, col)
+	possibilities := board.GetPossibleByPosition(row, col)
 
 	if possibilities.Count() == 0 {
 		return solutions
 	}
 
 	for _, n := range possibilities.Values() {
-		if !board.Board.HasNumber(row, col, n) {
-			board.Board.SetCell(row, col, n)
+		if !board.HasNumber(row, col, n) {
+			board.SetCell(row, col, n)
 
 			v := s.guess(board, empty, current+1, solutions)
-			board.Board.SetCell(row, col, 0)
+			board.SetCell(row, col, 0)
 			if v > 1 {
 				return v
 			} else {
 				solutions = v
 			}
 
-			board.Board.SetCell(row, col, 0)
+			board.SetCell(row, col, 0)
 		}
 	}
 

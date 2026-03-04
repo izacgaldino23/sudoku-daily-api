@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	GetDailySudokuResponse struct {
+	SudokuResponse struct {
 		ID    string `json:"id"`
 		Size  int    `json:"size"`
 		Board []Cell `json:"board"`
@@ -20,7 +20,7 @@ type (
 	}
 )
 
-func (g *GetDailySudokuResponse) FromDomain(s *entities.Sudoku) {
+func (g *SudokuResponse) FromDomain(s *entities.Sudoku) {
 	g.ID = s.ID
 	g.Size = s.GetSize()
 	g.Board = BoardFromDomain(s.Board)

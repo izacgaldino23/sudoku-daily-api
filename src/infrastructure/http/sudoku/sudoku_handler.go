@@ -55,7 +55,7 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	var response GetDailySudokuResponse
+	var response SudokuResponse
 	response.FromDomain(dailySudoku)
 
 	return c.Status(http.StatusOK).JSON(response)
@@ -73,9 +73,9 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	var response []GetDailySudokuResponse
+	var response []SudokuResponse
 	for _, sudoku := range dailySudoku {
-		s := GetDailySudokuResponse{}
+		s := SudokuResponse{}
 		s.FromDomain(&sudoku)
 		response = append(response, s)
 	}

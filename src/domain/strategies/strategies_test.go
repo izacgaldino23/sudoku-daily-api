@@ -89,7 +89,7 @@ func TestSolver(t *testing.T) {
 
 	solver := newSolver()
 
-	assert.Equal(t, 2, solver.Execute(sudoku))
+	assert.Equal(t, 2, solver.Execute(&sudoku.Board))
 }
 
 func generateValidSudoku(size int, r *rand.Rand) *entities.Sudoku {

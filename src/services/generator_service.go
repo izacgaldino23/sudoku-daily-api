@@ -43,12 +43,14 @@ func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, seed int64) (*e
 		return nil, fmt.Errorf("failed to fill sudoku")
 	}
 
+	sudoku.Board = sudoku.Solution
+
 	hide := s.hideStrategy.Hide(sudoku, r)
 	if !hide {
 		return nil, fmt.Errorf("failed to hide sudoku")
 	}
 
-	fmt.Printf("Finish generating %v x %v sudoku at %v\n", size, size, time.Since(start).Seconds())
+	fmt.Printf("Finish generating %v x %v sudoku in %vms\n", size, size, time.Since(start).Milliseconds())
 
 	return sudoku, nil
 }
