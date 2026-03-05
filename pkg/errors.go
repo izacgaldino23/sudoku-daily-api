@@ -12,6 +12,7 @@ var (
 	ErrQueryParamInvalid      = errors.New("invalid query param")
 	ErrInvalidEmail           = errors.New("invalid email")
 	ErrEmailAlreadyRegistered = errors.New("email already registered")
+	ErrInvalidCredentials     = errors.New("invalid credentials")
 )
 
 type (
@@ -46,6 +47,8 @@ func MapErrorToStatus(err error) int {
 		return http.StatusNotFound
 	case ErrInvalidEmail, ErrEmailAlreadyRegistered, ErrQueryParamInvalid:
 		return http.StatusBadRequest
+	case ErrInvalidCredentials:
+		return http.StatusUnauthorized
 	default:
 		return http.StatusInternalServerError
 	}

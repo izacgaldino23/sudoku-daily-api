@@ -1,0 +1,10 @@
+-- Create refresh token table
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+	id SERIAL PRIMARY KEY,
+	user_id INTEGER NOT NULL,
+	token_hash VARCHAR(255) NOT NULL,
+	expires_at TIMESTAMP NOT NULL,
+	revoked BOOLEAN DEFAULT FALSE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
