@@ -8,8 +8,10 @@ import (
 )
 
 var (
-	ErrorNotFound     = errors.New("not found")
-	QueryParamInvalid = errors.New("invalid query param")
+	ErrNotFound               = errors.New("not found")
+	ErrQueryParamInvalid      = errors.New("invalid query param")
+	ErrInvalidEmail           = errors.New("invalid email")
+	ErrEmailAlreadyRegistered = errors.New("email already registered")
 )
 
 type (
@@ -34,14 +36,16 @@ func JsonError(c fiber.Ctx, err error) error {
 	return c.Status(MapErrorToStatus(err)).JSON(FromError(err))
 }
 
-func JsonErrorWithStatus(c fiber.Ctx, msg string, status int) error {
-	return c.Status(status).JSON(NewError(msg))
+func JsonErrorWithStatus(c fiber.Ctx, err error, status int) error {
+	return c.Status(status).JSON(FromError(err))
 }
 
 func MapErrorToStatus(err error) int {
 	switch err {
-	case ErrorNotFound:
+	case ErrNotFound:
 		return http.StatusNotFound
+	case ErrInvalidEmail, ErrEmailAlreadyRegistered, ErrQueryParamInvalid:
+		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError
 	}

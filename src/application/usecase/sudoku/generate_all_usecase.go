@@ -1,12 +1,12 @@
-package usecase
+package sudoku
 
 import (
 	"context"
 	"fmt"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
+	"sudoku-daily-api/src/domain/repository"
 	"sudoku-daily-api/src/domain/vo"
-	"sudoku-daily-api/src/infrastructure/persistence"
 	"time"
 )
 
@@ -16,13 +16,13 @@ type (
 	}
 
 	sudokuGenerateAllUseCase struct {
-		repository    persistence.ISudokuRepository
+		repository    repository.SudokuRepository
 		sudokuService domain.SudokuGenerator
 	}
 )
 
 func NewSudokuGenerateAllUseCase(
-	repository persistence.ISudokuRepository,
+	repository repository.SudokuRepository,
 	sudokuService domain.SudokuGenerator,
 ) ISudokuGenerateAllUseCase {
 	return &sudokuGenerateAllUseCase{

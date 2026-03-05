@@ -19,6 +19,20 @@ type (
 		Solution   []byte    `bun:"type:,notnull"`
 		Date       time.Time `bun:"type:date,notnull"`
 	}
+
+	User struct {
+		bun.BaseModel `bun:"table:user"`
+
+		ID            string  `bun:"id,pk"`
+		Username      string  `bun:",unique,notnull"`
+		Email         string  `bun:",unique,notnull"`
+		PasswordHash  []byte  `bun:",notnull"`
+		Provider      string  `bun:",notnull"`
+		ProviderID    *string `bun:",notnull"`
+		EmailVerified bool    `bun:",notnull"`
+		CreatedAt     time.Time
+		UpdatedAt     time.Time
+	}
 )
 
 func (s *Sudoku) FromDomain(sudoku *entities.Sudoku) {
@@ -68,4 +82,36 @@ func boardFromDomain(board *entities.Board) []byte {
 	}
 
 	return linearBoard
+}
+
+func (u *User) FromDomain(user *entities.User) {
+	u.ID = string(user.ID)
+	u.Email = user.Email.String()
+	u.Username = user.Username
+	u.Provider = string(user.Provider)
+	u.ProviderID = user.ProviderID
+	u.EmailVerified = user.EmailVerified
+	u.CreatedAt = user.CreatedAt
+
+	if user.PasswordHash != nil {
+		u.PasswordHash = []byte(*user.PasswordHash)
+	}
+}
+
+func (u *User) ToDomain() *entities.User {
+	var passwordHash *string
+	if u.PasswordHash != nil {
+		hashStr := string(u.PasswordHash)
+		passwordHash = &hashStr
+	}
+	return &entities.User{
+		ID:            entities.UserID(u.ID),
+		Email:         entities.Email(u.Email),
+		Username:      u.Username,
+		PasswordHash:  passwordHash,
+		Provider:      entities.AuthProvider(u.Provider),
+		ProviderID:    u.ProviderID,
+		EmailVerified: u.EmailVerified,
+		CreatedAt:     u.CreatedAt,
+	}
 }

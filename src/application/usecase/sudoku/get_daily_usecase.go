@@ -1,4 +1,4 @@
-package usecase
+package sudoku
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"errors"
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain/entities"
-	"sudoku-daily-api/src/infrastructure/persistence"
+	"sudoku-daily-api/src/domain/repository"
 	"time"
 )
 
@@ -16,11 +16,11 @@ type (
 	}
 
 	sudokuGetDailyUseCase struct {
-		repository persistence.ISudokuRepository
+		repository repository.SudokuRepository
 	}
 )
 
-func NewSudokuGetDailyUseCase(repository persistence.ISudokuRepository) ISudokuGetDailyUseCase {
+func NewSudokuGetDailyUseCase(repository repository.SudokuRepository) ISudokuGetDailyUseCase {
 	return &sudokuGetDailyUseCase{repository: repository}
 }
 
@@ -32,7 +32,7 @@ func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size int) (*entitie
 	board, err := s.repository.GetByDateAndSize(ctx, today, size)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, pkg.ErrorNotFound
+			return nil, pkg.ErrNotFound
 		}
 		return nil, err
 	}

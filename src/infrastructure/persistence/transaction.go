@@ -32,6 +32,14 @@ func (tm *transactionManager) WithinTransaction(ctx context.Context, fn func(ctx
     })
 }
 
+func (tm *transactionManager) GetExecutor(ctx context.Context) bun.IDB {
+	if tx, ok := extractTx(ctx); ok {
+		return tx
+	}
+
+	return tm.db
+}
+
 func injectTx(ctx context.Context, tx bun.Tx) context.Context {
 	return context.WithValue(ctx, txKey{}, tx)
 }

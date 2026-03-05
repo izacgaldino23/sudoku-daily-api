@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"sudoku-daily-api/pkg"
-	"sudoku-daily-api/src/application/usecase"
+	"sudoku-daily-api/src/application/usecase/sudoku"
 	"sudoku-daily-api/src/domain/entities"
 
 	"github.com/gofiber/fiber/v3"
@@ -17,14 +17,14 @@ type (
 	}
 
 	sudokuHandler struct {
-		getDailyUseCase     usecase.ISudokuGetDailyUseCase
-		createSudokuUseCase usecase.ISudokuGenerateAllUseCase
+		getDailyUseCase     sudoku.ISudokuGetDailyUseCase
+		createSudokuUseCase sudoku.ISudokuGenerateAllUseCase
 	}
 )
 
 func NewSudokuHandler(
-	getDailyUseCase usecase.ISudokuGetDailyUseCase,
-	createSudokuUseCase usecase.ISudokuGenerateAllUseCase,
+	getDailyUseCase sudoku.ISudokuGetDailyUseCase,
+	createSudokuUseCase sudoku.ISudokuGenerateAllUseCase,
 ) ISudokuHandler {
 	return &sudokuHandler{
 		getDailyUseCase:     getDailyUseCase,
@@ -41,12 +41,12 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	)
 
 	if sizeParam == "" {
-		return pkg.JsonError(c, pkg.QueryParamInvalid)
+		return pkg.JsonError(c, pkg.ErrQueryParamInvalid)
 	}
 
 	size, err = strconv.Atoi(sizeParam)
 	if err != nil {
-		return pkg.JsonError(c, pkg.QueryParamInvalid)
+		return pkg.JsonError(c, pkg.ErrQueryParamInvalid)
 	}
 
 	var dailySudoku *entities.Sudoku

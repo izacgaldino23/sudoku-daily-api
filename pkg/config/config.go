@@ -16,6 +16,15 @@ var (
 type Config struct {
 	ApiPort  string   `mapstructure:"API_PORT"`
 	Database Database `mapstructure:"DATABASE"`
+	Auth     Auth     `mapstructure:"AUTH"`
+}
+
+type Auth struct {
+	Iterations  uint32 `mapstructure:"ITERATIONS"`
+	Memory      uint32 `mapstructure:"MEMORY"`
+	Parallelism uint8  `mapstructure:"PARALLELISM"`
+	KeyLen      uint32 `mapstructure:"KEY_LEN"`
+	SaltLen     uint32 `mapstructure:"SALT_LEN"`
 }
 
 type Database struct {

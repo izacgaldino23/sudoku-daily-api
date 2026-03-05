@@ -5,9 +5,11 @@ import (
 	"log"
 	"sudoku-daily-api/pkg/config"
 	"sudoku-daily-api/pkg/database"
-	"sudoku-daily-api/src/application/usecase"
+	sudokuUsecase "sudoku-daily-api/src/application/usecase/sudoku"
+	userUsecase "sudoku-daily-api/src/application/usecase/user"
 	"sudoku-daily-api/src/domain/strategies"
 	"sudoku-daily-api/src/infrastructure/http"
+	"sudoku-daily-api/src/infrastructure/http/auth"
 	"sudoku-daily-api/src/infrastructure/http/sudoku"
 	"sudoku-daily-api/src/infrastructure/persistence"
 	"sudoku-daily-api/src/services"
@@ -45,25 +47,31 @@ func main() {
 func configApi(app fiber.Router) {
 	// others
 	databaseConnection := database.GetDB()
-	transactionManager := persistence.NewTransactionManager(databaseConnection.BunConnection)
 
 	// strategies
 	fillStrategy := strategies.NewFillStrategy()
 	hideStrategy := strategies.NewHideStrategy()
 
 	// repositories
-	sudokuRepository := persistence.NewSudokuRepository(databaseConnection.BunConnection, transactionManager)
+	sudokuRepository := persistence.NewSudokuRepository(databaseConnection.BunConnection)
+	userRepository := persistence.NewUserRepository(databaseConnection.BunConnection)
+
+	authConfig := config.GetConfig().Auth
 
 	// services
 	generatorService := services.NewGenerator(fillStrategy, hideStrategy)
+	passHasher := services.NewPasswordHasher(authConfig.Iterations, authConfig.Memory, authConfig.Parallelism, authConfig.KeyLen, authConfig.SaltLen)
 
 	// use cases
-	getDailySudoku := usecase.NewSudokuGetDailyUseCase(sudokuRepository)
-	generateAll := usecase.NewSudokuGenerateAllUseCase(sudokuRepository, generatorService)
+	getDailySudoku := sudokuUsecase.NewSudokuGetDailyUseCase(sudokuRepository)
+	generateAll := sudokuUsecase.NewSudokuGenerateAllUseCase(sudokuRepository, generatorService)
+
+	userRegister := userUsecase.NewUserRegisterUseCase(userRepository, passHasher)
 
 	// handlers
 	sudokuHandler := sudoku.NewSudokuHandler(getDailySudoku, generateAll)
+	authHandler := auth.NewAuthHandler(userRegister)
 
 	// routes
-	http.RegisterRoutes(app, sudokuHandler)
+	http.RegisterRoutes(app, sudokuHandler, authHandler)
 }
