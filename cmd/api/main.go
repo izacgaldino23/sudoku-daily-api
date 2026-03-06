@@ -10,8 +10,11 @@ import (
 	"sudoku-daily-api/src/domain/strategies"
 	"sudoku-daily-api/src/infrastructure/http"
 	"sudoku-daily-api/src/infrastructure/http/auth"
-	"sudoku-daily-api/src/infrastructure/http/sudoku"
-	"sudoku-daily-api/src/infrastructure/persistence"
+	httpSudoku "sudoku-daily-api/src/infrastructure/http/sudoku"
+	persistenceRefreshToken "sudoku-daily-api/src/infrastructure/persistence/refresh_token"
+	persistenceSudoku "sudoku-daily-api/src/infrastructure/persistence/sudoku"
+	persistenceTx "sudoku-daily-api/src/infrastructure/persistence/tx"
+	persistenceUser "sudoku-daily-api/src/infrastructure/persistence/user"
 	"sudoku-daily-api/src/services"
 
 	"github.com/gofiber/fiber/v3"
@@ -53,11 +56,11 @@ func configApi(app fiber.Router) {
 	hideStrategy := strategies.NewHideStrategy()
 
 	// repositories
-	sudokuRepository := persistence.NewSudokuRepository(databaseConnection.BunConnection)
-	userRepository := persistence.NewUserRepository(databaseConnection.BunConnection)
-	refreshTokenRepository := persistence.NewRefreshTokenRepository(databaseConnection.BunConnection)
+	sudokuRepository := persistenceSudoku.NewRepository(databaseConnection.BunConnection)
+	userRepository := persistenceUser.NewRepository(databaseConnection.BunConnection)
+	refreshTokenRepository := persistenceRefreshToken.NewRepository(databaseConnection.BunConnection)
 
-	txManager := persistence.NewTransactionManager(databaseConnection.BunConnection)
+	txManager := persistenceTx.NewTransactionManager(databaseConnection.BunConnection)
 
 	authConfig := config.GetConfig().Auth
 
@@ -74,7 +77,7 @@ func configApi(app fiber.Router) {
 	userLogin := userUsecase.NewUserLoginUseCase(txManager, userRepository, refreshTokenRepository, passHasher, tokenService)
 
 	// handlers
-	sudokuHandler := sudoku.NewSudokuHandler(getDailySudoku, generateAll)
+	sudokuHandler := httpSudoku.NewSudokuHandler(getDailySudoku, generateAll)
 	authHandler := auth.NewAuthHandler(userRegister, userLogin)
 
 	// routes
