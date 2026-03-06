@@ -19,8 +19,6 @@ type (
 		refreshTokenRepo repository.RefreshTokenRepository
 		passwordHasher   domain.PasswordHasher
 		tokenService     domain.TokenService
-
-		tokenDuration int
 	}
 )
 
@@ -53,12 +51,12 @@ func (u *userLoginUseCase) Execute(ctx context.Context, loginData *entities.User
 
 		user.Tokens = &entities.Tokens{}
 
-		user.Tokens.AccessToken, err = u.tokenService.GenerateAccessToken(user.ID.String())
+		user.Tokens.AccessToken, err = u.tokenService.GenerateAccessToken(user.ID)
 		if err != nil {
 			return err
 		}
 
-		refreshToken, err := u.tokenService.GenerateRefreshToken(user.ID.String())
+		refreshToken, err := u.tokenService.GenerateRefreshToken(user.ID)
 		if err != nil {
 			return err
 		}

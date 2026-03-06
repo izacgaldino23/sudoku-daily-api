@@ -34,8 +34,10 @@ type (
 	}
 
 	RefreshToken struct {
+		ID        vo.UUID
 		UserID    vo.UUID
 		Hash      string
+		Revoked   bool
 		ExpiresAt time.Time
 	}
 )

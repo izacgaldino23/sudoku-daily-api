@@ -24,4 +24,5 @@ func registerSudokuRoutes(api fiber.Router, sudokuHandler sudoku.ISudokuHandler)
 func registerAuthRoutes(app fiber.Router, authHandler auth.AuthHandler) {
 	app.Post("/auth/register", authHandler.Register)
 	app.Post("/auth/login", authHandler.Login)
+	app.Post("/auth/refresh", authHandler.Refresh)
 }

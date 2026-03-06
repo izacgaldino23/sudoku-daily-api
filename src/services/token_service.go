@@ -12,23 +12,28 @@ import (
 )
 
 type (
-	TokenService struct{
-		secret []byte
-		tokenDuration int
+	TokenService struct {
+		secret               []byte
+		accessTokenDuration  int
+		refreshTokenDuration int
 	}
 )
 
-func NewTokenService(secret string, tokenDuration int) domain.TokenService {
+func NewTokenService(
+	secret string,
+	accessTokenDuration int,
+	refreshTokenDuration int) domain.TokenService {
 	return TokenService{
-		secret: []byte(secret),
-		tokenDuration: tokenDuration,
+		secret:               []byte(secret),
+		accessTokenDuration:  accessTokenDuration,
+		refreshTokenDuration: refreshTokenDuration,
 	}
 }
 
-func (s TokenService) GenerateAccessToken(userID string) (string, error) {
+func (s TokenService) GenerateAccessToken(userID vo.UUID) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
-		"exp":     time.Now().Add(15 * time.Minute).Unix(),
+		"exp":     time.Now().Add(time.Duration(s.accessTokenDuration) * time.Second).Unix(),
 		"iat":     time.Now().Unix(),
 	}
 
@@ -40,7 +45,7 @@ func (s TokenService) GenerateAccessToken(userID string) (string, error) {
 	return token, nil
 }
 
-func (s TokenService) GenerateRefreshToken(userID string) (*entities.RefreshToken, error) {
+func (s TokenService) GenerateRefreshToken(userID vo.UUID) (*entities.RefreshToken, error) {
 	refreshToken := make([]byte, 32)
 	_, err := rand.Read(refreshToken)
 	if err != nil {
@@ -50,7 +55,7 @@ func (s TokenService) GenerateRefreshToken(userID string) (*entities.RefreshToke
 	return &entities.RefreshToken{
 		UserID:    vo.UUID(userID),
 		Hash:      base64.URLEncoding.EncodeToString(refreshToken),
-		ExpiresAt: time.Now().Add(time.Duration(s.tokenDuration) * time.Second),
+		ExpiresAt: time.Now().Add(time.Duration(s.refreshTokenDuration) * time.Second),
 	}, err
 }
 

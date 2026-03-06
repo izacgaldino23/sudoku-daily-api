@@ -26,8 +26,9 @@ type Auth struct {
 	KeyLen      uint32 `mapstructure:"KEY_LEN"`
 	SaltLen     uint32 `mapstructure:"SALT_LEN"`
 
-	SecretKey     string `mapstructure:"SECRET_KEY"`
-	TokenDuration int    `mapstructure:"TOKEN_DURATION"`
+	SecretKey            string `mapstructure:"SECRET_KEY"`
+	AccessTokenDuration  int    `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration int    `mapstructure:"REFRESH_TOKEN_DURATION"`
 }
 
 type Database struct {

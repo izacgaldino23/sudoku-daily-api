@@ -28,3 +28,13 @@ func NewModel(token *entities.RefreshToken) *RefreshToken {
 		Revoked:   false,
 	}
 }
+
+func (m *RefreshToken) ToDomain() *entities.RefreshToken {
+	return &entities.RefreshToken{
+		ID:        vo.UUID(m.ID),
+		UserID:    vo.UUID(m.UserID),
+		Hash:      m.TokenHash,
+		ExpiresAt: m.ExpiresAt,
+		Revoked:   m.Revoked,
+	}
+}

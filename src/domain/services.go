@@ -2,6 +2,7 @@ package domain
 
 import (
 	"sudoku-daily-api/src/domain/entities"
+	"sudoku-daily-api/src/domain/vo"
 )
 
 type (
@@ -15,8 +16,8 @@ type (
 	}
 
 	TokenService interface {
-		GenerateAccessToken(userID string) (string, error)
-		GenerateRefreshToken(userID string) (*entities.RefreshToken, error)
+		GenerateAccessToken(userID vo.UUID) (string, error)
+		GenerateRefreshToken(userID vo.UUID) (*entities.RefreshToken, error)
 		ValidateAccessToken(token string) (string, error)
 	}
 )

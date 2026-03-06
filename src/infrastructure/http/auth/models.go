@@ -25,6 +25,14 @@ type (
 		Email     string    `json:"email"`
 		CreatedAt time.Time `json:"created_at"`
 	}
+
+	RefreshTokenRequest struct {
+		RefreshToken string `json:"refresh_token" validate:"required"`
+	}
+
+	RefreshTokenResponse struct {
+		AccessToken string `json:"access_token"`
+	}
 )
 
 func (r *RegisterRequest) ToDomain() *entities.User {
@@ -51,4 +59,8 @@ func (r *LoginResponse) FromDomain(user *entities.User) {
 		r.AccessToken = user.Tokens.AccessToken
 		r.RefreshToken = user.Tokens.RefreshToken
 	}
+}
+
+func (r *RefreshTokenResponse) FromDomain(accessToken string) {
+	r.AccessToken = accessToken
 }
