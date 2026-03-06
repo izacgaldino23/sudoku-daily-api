@@ -16,17 +16,20 @@ type (
 	}
 
 	sudokuGenerateAllUseCase struct {
-		repository    repository.SudokuRepository
+		txManager     repository.TransactionManager
+		sudokuRepo    repository.SudokuRepository
 		sudokuService domain.SudokuGenerator
 	}
 )
 
 func NewSudokuGenerateAllUseCase(
-	repository repository.SudokuRepository,
+	txManager repository.TransactionManager,
+	sudokuRepo repository.SudokuRepository,
 	sudokuService domain.SudokuGenerator,
 ) ISudokuGenerateAllUseCase {
 	return &sudokuGenerateAllUseCase{
-		repository:    repository,
+		txManager:     txManager,
+		sudokuRepo:    sudokuRepo,
 		sudokuService: sudokuService,
 	}
 }
@@ -37,17 +40,17 @@ func (s *sudokuGenerateAllUseCase) Execute(ctx context.Context) ([]entities.Sudo
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
-	if err := s.repository.WithinTransaction(ctx, func(ctx context.Context) error {
+	if err := s.txManager.WithinTransaction(ctx, func(ctx context.Context) error {
 		for boardSize := range entities.BoardSizes {
 			sudoku, err := s.sudokuService.GenerateDaily(boardSize, today.UnixNano())
 			if err != nil {
-				return fmt.Errorf("Failed to generate sudoku for size %v: %w", boardSize,err)
+				return fmt.Errorf("Failed to generate sudoku for size %v: %w", boardSize, err)
 			}
 
 			sudoku.Date = today
 			sudoku.ID = string(vo.NewUUID())
 
-			err = s.repository.Create(ctx, sudoku)
+			err = s.sudokuRepo.Create(ctx, sudoku)
 			if err != nil {
 				return err
 			}

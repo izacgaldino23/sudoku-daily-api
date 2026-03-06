@@ -14,6 +14,7 @@ type (
 	}
 
 	userLoginUseCase struct {
+		txManager        repository.TransactionManager
 		userRepo         repository.UserRepository
 		refreshTokenRepo repository.RefreshTokenRepository
 		passwordHasher   domain.PasswordHasher
@@ -24,12 +25,14 @@ type (
 )
 
 func NewUserLoginUseCase(
+	txManager repository.TransactionManager,
 	userRepo repository.UserRepository,
 	refreshTokenRepo repository.RefreshTokenRepository,
 	passwordHasher domain.PasswordHasher,
 	tokenService domain.TokenService,
 ) UserLoginUseCase {
 	return &userLoginUseCase{
+		txManager:        txManager,
 		userRepo:         userRepo,
 		refreshTokenRepo: refreshTokenRepo,
 		passwordHasher:   passwordHasher,
@@ -38,7 +41,7 @@ func NewUserLoginUseCase(
 }
 
 func (u *userLoginUseCase) Execute(ctx context.Context, loginData *entities.User) (user *entities.User, err error) {
-	err = u.userRepo.WithinTransaction(ctx, func(txCtx context.Context) error {
+	err = u.txManager.WithinTransaction(ctx, func(txCtx context.Context) error {
 		user, err = u.userRepo.GetByEmail(txCtx, loginData.Email.String())
 		if err != nil {
 			return err

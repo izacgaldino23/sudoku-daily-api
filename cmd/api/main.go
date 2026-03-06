@@ -57,6 +57,8 @@ func configApi(app fiber.Router) {
 	userRepository := persistence.NewUserRepository(databaseConnection.BunConnection)
 	refreshTokenRepository := persistence.NewRefreshTokenRepository(databaseConnection.BunConnection)
 
+	txManager := persistence.NewTransactionManager(databaseConnection.BunConnection)
+
 	authConfig := config.GetConfig().Auth
 
 	// services
@@ -66,10 +68,10 @@ func configApi(app fiber.Router) {
 
 	// use cases
 	getDailySudoku := sudokuUsecase.NewSudokuGetDailyUseCase(sudokuRepository)
-	generateAll := sudokuUsecase.NewSudokuGenerateAllUseCase(sudokuRepository, generatorService)
+	generateAll := sudokuUsecase.NewSudokuGenerateAllUseCase(txManager, sudokuRepository, generatorService)
 
 	userRegister := userUsecase.NewUserRegisterUseCase(userRepository, passHasher)
-	userLogin := userUsecase.NewUserLoginUseCase(userRepository, refreshTokenRepository, passHasher, tokenService)
+	userLogin := userUsecase.NewUserLoginUseCase(txManager, userRepository, refreshTokenRepository, passHasher, tokenService)
 
 	// handlers
 	sudokuHandler := sudoku.NewSudokuHandler(getDailySudoku, generateAll)
