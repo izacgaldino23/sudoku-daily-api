@@ -4,6 +4,8 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"sudoku-daily-api/src/domain"
+	"sudoku-daily-api/src/domain/entities"
+	"sudoku-daily-api/src/domain/vo"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -12,12 +14,14 @@ import (
 type (
 	TokenService struct{
 		secret []byte
+		tokenDuration int
 	}
 )
 
-func NewTokenService(secret string) domain.TokenService {
+func NewTokenService(secret string, tokenDuration int) domain.TokenService {
 	return TokenService{
 		secret: []byte(secret),
+		tokenDuration: tokenDuration,
 	}
 }
 
@@ -36,14 +40,18 @@ func (s TokenService) GenerateAccessToken(userID string) (string, error) {
 	return token, nil
 }
 
-func (s TokenService) GenerateRefreshToken(userID string) (string, error) {
+func (s TokenService) GenerateRefreshToken(userID string) (*entities.RefreshToken, error) {
 	refreshToken := make([]byte, 32)
 	_, err := rand.Read(refreshToken)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return base64.URLEncoding.EncodeToString(refreshToken), err
+	return &entities.RefreshToken{
+		UserID:    vo.UUID(userID),
+		Hash:      base64.URLEncoding.EncodeToString(refreshToken),
+		ExpiresAt: time.Now().Add(time.Duration(s.tokenDuration) * time.Second),
+	}, err
 }
 
 func (s TokenService) ValidateAccessToken(token string) (string, error) {

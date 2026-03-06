@@ -2,6 +2,7 @@ package entities
 
 import (
 	"net/mail"
+	"sudoku-daily-api/src/domain/vo"
 	"time"
 )
 
@@ -12,12 +13,10 @@ const (
 type (
 	AuthProvider string
 
-	UserID string
-
 	Email string
 
 	User struct {
-		ID            UserID
+		ID            vo.UUID
 		Email         Email
 		Username      string
 		PasswordHash  *string
@@ -25,6 +24,19 @@ type (
 		ProviderID    *string
 		EmailVerified bool
 		CreatedAt     time.Time
+
+		Tokens *Tokens
+	}
+
+	Tokens struct {
+		AccessToken  string
+		RefreshToken string
+	}
+
+	RefreshToken struct {
+		UserID    vo.UUID
+		Hash      string
+		ExpiresAt time.Time
 	}
 )
 
@@ -41,8 +53,4 @@ func (e *Email) IsValid() bool {
 
 func (e *Email) String() string {
 	return string(*e)
-}
-
-func (u *UserID) String() string {
-	return string(*u)
 }

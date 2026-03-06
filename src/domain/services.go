@@ -16,7 +16,7 @@ type (
 
 	TokenService interface {
 		GenerateAccessToken(userID string) (string, error)
-		GenerateRefreshToken(userID string) (string, error)
+		GenerateRefreshToken(userID string) (*entities.RefreshToken, error)
 		ValidateAccessToken(token string) (string, error)
 	}
 )

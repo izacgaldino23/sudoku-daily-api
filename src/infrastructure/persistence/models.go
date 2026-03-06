@@ -3,6 +3,7 @@ package persistence
 import (
 	"math"
 	"sudoku-daily-api/src/domain/entities"
+	"sudoku-daily-api/src/domain/vo"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -32,6 +33,17 @@ type (
 		EmailVerified bool    `bun:",notnull"`
 		CreatedAt     time.Time
 		UpdatedAt     time.Time
+	}
+
+	RefreshToken struct {
+		bun.BaseModel
+
+		ID        string    `bun:"id,pk"`
+		UserID    string    `bun:"user_id,notnull"`
+		TokenHash string    `bun:",unique,notnull"`
+		ExpiresAt time.Time `bun:"type:timestamp,notnull"`
+		Revoked   bool      `bun:"notnull"`
+		CreatedAt time.Time `bun:"type:timestamp,notnull"`
 	}
 )
 
@@ -105,7 +117,7 @@ func (u *User) ToDomain() *entities.User {
 		passwordHash = &hashStr
 	}
 	return &entities.User{
-		ID:            entities.UserID(u.ID),
+		ID:            vo.UUID(u.ID),
 		Email:         entities.Email(u.Email),
 		Username:      u.Username,
 		PasswordHash:  passwordHash,

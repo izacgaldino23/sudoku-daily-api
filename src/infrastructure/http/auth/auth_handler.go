@@ -54,13 +54,13 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
 	}
 
-	userData, accessToken, refreshToken, err := a.userLoginUseCase.Execute(c.Context(), req.ToDomain())
+	userData, err := a.userLoginUseCase.Execute(c.Context(), req.ToDomain())
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
 
 	resp := LoginResponse{}
-	resp.FromDomain(userData, accessToken, refreshToken)
+	resp.FromDomain(userData)
 
 	return c.Status(http.StatusOK).JSON(resp)
 }

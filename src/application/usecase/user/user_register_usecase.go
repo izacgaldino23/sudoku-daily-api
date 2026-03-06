@@ -6,6 +6,7 @@ import (
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/repository"
+	"sudoku-daily-api/src/domain/vo"
 )
 
 type (
@@ -51,6 +52,8 @@ func (u *userRegisterUseCase) Execute(ctx context.Context, user *entities.User) 
 		return nil, err
 	}
 	user.PasswordHash = &passHash
+
+	user.ID = vo.NewUUID()
 
 	// Create user in database
 	err = u.userRepo.Create(ctx, user)

@@ -18,12 +18,12 @@ type (
 	}
 
 	LoginResponse struct {
-		AccessToken  string    `json:"access_token"`
-		RefreshToken string    `json:"refresh_token"`
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
 
-		UserName     string    `json:"username"`
-		Email        string    `json:"email"`
-		CreatedAt    time.Time `json:"created_at"`
+		UserName  string    `json:"username"`
+		Email     string    `json:"email"`
+		CreatedAt time.Time `json:"created_at"`
 	}
 )
 
@@ -42,10 +42,13 @@ func (r *LoginRequest) ToDomain() *entities.User {
 	}
 }
 
-func (r *LoginResponse) FromDomain(user *entities.User, accessToken, RefreshToken string) {
-	r.AccessToken = accessToken
-	r.RefreshToken = RefreshToken
+func (r *LoginResponse) FromDomain(user *entities.User) {
 	r.UserName = user.Username
 	r.Email = string(user.Email)
 	r.CreatedAt = user.CreatedAt
+
+	if user.Tokens != nil {
+		r.AccessToken = user.Tokens.AccessToken
+		r.RefreshToken = user.Tokens.RefreshToken
+	}
 }

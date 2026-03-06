@@ -18,4 +18,9 @@ type (
 		Create(ctx context.Context, user *entities.User) error
 		GetByEmail(ctx context.Context, email string) (*entities.User, error)
 	}
+
+	RefreshTokenRepository interface {
+		WithinTransaction(ctx context.Context, fn func(ctx context.Context) error) error
+		Create(ctx context.Context, token *entities.RefreshToken) error
+	}
 )

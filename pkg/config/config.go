@@ -25,6 +25,9 @@ type Auth struct {
 	Parallelism uint8  `mapstructure:"PARALLELISM"`
 	KeyLen      uint32 `mapstructure:"KEY_LEN"`
 	SaltLen     uint32 `mapstructure:"SALT_LEN"`
+
+	SecretKey     string `mapstructure:"SECRET_KEY"`
+	TokenDuration int    `mapstructure:"TOKEN_DURATION"`
 }
 
 type Database struct {
