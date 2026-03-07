@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/application/usecase/user"
+	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/vo"
 
 	"github.com/gofiber/fiber/v3"
@@ -80,7 +81,8 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
 	}
 
-	// TODO get user id from context
+	userID = app_context.GetUserIDFromContext(c.Context())
+
 	accessToken, err := a.userRefreshTokenUseCase.Execute(c.Context(), req.RefreshToken, userID)
 	if err != nil {
 		return pkg.JsonError(c, err)

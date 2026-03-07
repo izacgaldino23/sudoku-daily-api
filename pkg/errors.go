@@ -49,7 +49,7 @@ func MapErrorToStatus(err error) int {
 		return http.StatusNotFound
 	case ErrInvalidEmail, ErrEmailAlreadyRegistered, ErrQueryParamInvalid:
 		return http.StatusBadRequest
-	case ErrInvalidCredentials:
+	case ErrInvalidCredentials, ErrRefreshTokenExpired, ErrRefreshTokenRevoked:
 		return http.StatusUnauthorized
 	default:
 		return http.StatusInternalServerError

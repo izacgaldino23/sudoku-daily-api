@@ -45,9 +45,9 @@
 - [x] GET 	/api/sudoku/daily?size=9
 - [x] POST 	/api/sudoku/generate # Daily generation
 - [ ] POST 	/api/sudoku/submit
+  - [ ] Generate session token on GET /daily and validate on submit
+  - [ ] Validate solution on backend (compare with stored solution)
 
-- [ ] Generate session token on GET /daily and validate on submit
-- [ ] Validate solution on backend (compare with stored solution)
 
 ### Auth
 - [x] POST 	/api/auth/register

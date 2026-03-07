@@ -59,6 +59,14 @@ func (s TokenService) GenerateRefreshToken(userID vo.UUID) (*entities.RefreshTok
 	}, err
 }
 
-func (s TokenService) ValidateAccessToken(token string) (string, error) {
-	panic("not implemented")
+func (s TokenService) ValidateAccessToken(token string) (vo.UUID, error) {
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+		return s.secret, nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return claims["user_id"].(vo.UUID), nil
 }
