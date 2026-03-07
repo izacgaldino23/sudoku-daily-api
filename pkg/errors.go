@@ -13,6 +13,8 @@ var (
 	ErrInvalidEmail           = errors.New("invalid email")
 	ErrEmailAlreadyRegistered = errors.New("email already registered")
 	ErrInvalidCredentials     = errors.New("invalid credentials")
+	ErrRefreshTokenExpired    = errors.New("refresh token expired")
+	ErrRefreshTokenRevoked    = errors.New("refresh token revoked")
 )
 
 type (

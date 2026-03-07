@@ -2,9 +2,11 @@ package user
 
 import (
 	"context"
+	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/repository"
 	"sudoku-daily-api/src/domain/vo"
+	"time"
 )
 
 type (
@@ -29,9 +31,17 @@ func NewUserRefreshTokenUseCase(
 }
 
 func (u *userRefreshTokenUseCase) Execute(ctx context.Context, tokenHash string, userID vo.UUID) (string, error) {
-	_, err := u.refreshTokenRepo.GetByToken(ctx, userID, tokenHash)
+	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, userID, tokenHash)
 	if err != nil {
 		return "", err
+	}
+
+	if refreshToken.Revoked {
+		return "", pkg.ErrRefreshTokenRevoked
+	}
+
+	if refreshToken.ExpiresAt.Before(time.Now()) {
+		return "", pkg.ErrRefreshTokenExpired
 	}
 
 	return u.tokenService.GenerateAccessToken(userID)
