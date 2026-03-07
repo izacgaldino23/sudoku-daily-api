@@ -64,3 +64,14 @@ func (r *refreshTokenRepository) GetByToken(ctx context.Context, userID vo.UUID,
 
 	return refreshTokenModel.ToDomain(), nil
 }
+
+func (r *refreshTokenRepository) Revoke(ctx context.Context, userID vo.UUID, token string) error {
+	_, err := r.txManager.GetExecutor(ctx).
+		NewUpdate().
+		Model(&RefreshToken{}).
+		Where("token_hash = ? AND user_id = ?", token, userID).
+		Set("revoked = ?", true).
+		Exec(ctx)
+
+	return err
+}

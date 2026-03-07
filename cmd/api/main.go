@@ -10,6 +10,7 @@ import (
 	"sudoku-daily-api/src/domain/strategies"
 	"sudoku-daily-api/src/infrastructure/http"
 	"sudoku-daily-api/src/infrastructure/http/auth"
+	"sudoku-daily-api/src/infrastructure/http/middlewares"
 	httpSudoku "sudoku-daily-api/src/infrastructure/http/sudoku"
 	persistenceRefreshToken "sudoku-daily-api/src/infrastructure/persistence/refresh_token"
 	persistenceSudoku "sudoku-daily-api/src/infrastructure/persistence/sudoku"
@@ -76,11 +77,15 @@ func configApi(app fiber.Router) {
 	userRegister := userUsecase.NewUserRegisterUseCase(userRepository, passHasher)
 	userLogin := userUsecase.NewUserLoginUseCase(txManager, userRepository, refreshTokenRepository, passHasher, tokenService)
 	userRefreshToken := userUsecase.NewUserRefreshTokenUseCase(refreshTokenRepository, tokenService)
+	userLogoutUseCase := userUsecase.NewUserLogoutUseCase(refreshTokenRepository)
+
+	// middlewares
+	authMiddleware := middlewares.NewJWTMiddleware(tokenService)
 
 	// handlers
 	sudokuHandler := httpSudoku.NewSudokuHandler(getDailySudoku, generateAll)
-	authHandler := auth.NewAuthHandler(userRegister, userLogin, userRefreshToken)
+	authHandler := auth.NewAuthHandler(userRegister, userLogin, userRefreshToken, userLogoutUseCase)
 
 	// routes
-	http.RegisterRoutes(app, sudokuHandler, authHandler)
+	http.RegisterRoutes(app, authMiddleware, sudokuHandler, authHandler)
 }

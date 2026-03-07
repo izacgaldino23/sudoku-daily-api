@@ -2,6 +2,7 @@ package http
 
 import (
 	"sudoku-daily-api/src/infrastructure/http/auth"
+	"sudoku-daily-api/src/infrastructure/http/middlewares"
 	"sudoku-daily-api/src/infrastructure/http/sudoku"
 
 	"github.com/gofiber/fiber/v3"
@@ -9,11 +10,12 @@ import (
 
 func RegisterRoutes(
 	app fiber.Router,
+	authMiddleware middlewares.JWTMiddleware,
 	sudokuHandler sudoku.ISudokuHandler,
 	authHandler auth.AuthHandler,
 ) {
 	registerSudokuRoutes(app, sudokuHandler)
-	registerAuthRoutes(app, authHandler)
+	registerAuthRoutes(app, authHandler, authMiddleware)
 }
 
 func registerSudokuRoutes(api fiber.Router, sudokuHandler sudoku.ISudokuHandler) {
@@ -21,8 +23,12 @@ func registerSudokuRoutes(api fiber.Router, sudokuHandler sudoku.ISudokuHandler)
 	api.Post("/sudoku/generate", sudokuHandler.CreateSudoku)
 }
 
-func registerAuthRoutes(app fiber.Router, authHandler auth.AuthHandler) {
+func registerAuthRoutes(app fiber.Router, authHandler auth.AuthHandler, authMiddleware middlewares.JWTMiddleware) {
 	app.Post("/auth/register", authHandler.Register)
 	app.Post("/auth/login", authHandler.Login)
-	app.Post("/auth/refresh", authHandler.Refresh)
+
+	private := app.Group("/auth", authMiddleware.Execute())
+
+	private.Post("/auth/refresh", authHandler.Refresh)
+	private.Post("/auth/logout", authHandler.Logout)
 }

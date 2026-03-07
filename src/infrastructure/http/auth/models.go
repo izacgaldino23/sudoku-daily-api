@@ -33,6 +33,10 @@ type (
 	RefreshTokenResponse struct {
 		AccessToken string `json:"access_token"`
 	}
+
+	LogoutRequest struct {
+		RefreshToken string `json:"refresh_token" validate:"required"`
+	}
 )
 
 func (r *RegisterRequest) ToDomain() *entities.User {
