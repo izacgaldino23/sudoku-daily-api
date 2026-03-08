@@ -6,8 +6,8 @@ BEGIN
 	END IF;
 END$$;
 
--- Create user table
-CREATE TABLE IF NOT EXISTS "user" (
+-- Create users table
+CREATE TABLE IF NOT EXISTS users (
 	id SERIAL PRIMARY KEY,
 	username VARCHAR(255) UNIQUE NOT NULL,
 	email VARCHAR(255) UNIQUE NOT NULL,

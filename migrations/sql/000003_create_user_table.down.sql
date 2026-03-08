@@ -1,3 +1,3 @@
-DROP TABLE IF EXISTS "user";
+DROP TABLE IF EXISTS users;
 
 DROP TYPE IF EXISTS "auth_provider";

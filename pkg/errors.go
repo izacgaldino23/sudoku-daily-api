@@ -15,6 +15,7 @@ var (
 	ErrInvalidCredentials     = errors.New("invalid credentials")
 	ErrRefreshTokenExpired    = errors.New("refresh token expired")
 	ErrRefreshTokenRevoked    = errors.New("refresh token revoked")
+	ErrBodyInvalid            = errors.New("invalid body")
 )
 
 type (
@@ -47,7 +48,7 @@ func MapErrorToStatus(err error) int {
 	switch err {
 	case ErrNotFound:
 		return http.StatusNotFound
-	case ErrInvalidEmail, ErrEmailAlreadyRegistered, ErrQueryParamInvalid:
+	case ErrInvalidEmail, ErrEmailAlreadyRegistered, ErrQueryParamInvalid, ErrBodyInvalid:
 		return http.StatusBadRequest
 	case ErrInvalidCredentials, ErrRefreshTokenExpired, ErrRefreshTokenRevoked:
 		return http.StatusUnauthorized

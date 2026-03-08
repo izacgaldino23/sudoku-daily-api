@@ -19,7 +19,7 @@ func init() {
 }
 
 func main() {
-	if err := migrations.RunMigrations(); err != nil {
+	if err := migrations.RunMigrations(config.GetConfig().Database.MigrationsPath); err != nil {
 		log.Fatal(err)
 	}
 

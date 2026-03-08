@@ -32,15 +32,18 @@ type Auth struct {
 }
 
 type Database struct {
-	Host         string `mapstructure:"HOST"`
-	Port         string `mapstructure:"PORT"`
-	Username     string `mapstructure:"USERNAME"`
-	Password     string `mapstructure:"PASSWORD"`
-	Name         string `mapstructure:"NAME"`
-	SSLMode      string `mapstructure:"SSL_MODE"`
-	MaxOpenConns int    `mapstructure:"MAX_OPEN_CONNS"`
-	MaxIdleConns int    `mapstructure:"MAX_IDLE_CONNS"`
-	MaxLifetime  int    `mapstructure:"MAX_LIFETIME"`
+	MigrationsPath string `mapstructure:"MIGRATIONS_PATH"`
+
+	Host     string `mapstructure:"HOST"`
+	Port     string `mapstructure:"PORT"`
+	Username string `mapstructure:"USERNAME"`
+	Password string `mapstructure:"PASSWORD"`
+	Name     string `mapstructure:"NAME"`
+	SSLMode  string `mapstructure:"SSL_MODE"`
+
+	MaxOpenConns int `mapstructure:"MAX_OPEN_CONNS"`
+	MaxIdleConns int `mapstructure:"MAX_IDLE_CONNS"`
+	MaxLifetime  int `mapstructure:"MAX_LIFETIME"`
 }
 
 func (d *Database) DSNPostgres() string {
@@ -50,40 +53,45 @@ func (d *Database) DSNPostgres() string {
 func viperInit() error {
 	v := viper.New()
 
-	v.AutomaticEnv()
-	v.SetEnvKeyReplacer(strings.NewReplacer("_", "."))
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.SetConfigType("env")
 
 	name := os.Getenv("ENV")
 	if name == "" {
 		name = "local"
 	}
-	// evita que alguém passe "local.env" na ENV
 	name = strings.TrimSuffix(name, ".env")
 
-	v.SetConfigName(name) // sem a extensão
-	v.AddConfigPath(".")  // procura no cwd
-
-	if _, err := os.Stat(name + ".env"); err != nil {
-		return fmt.Errorf("File %s does not exist: %w", v.ConfigFileUsed(), err)
-	}
+	v.SetConfigName(name)
+	v.AddConfigPath(".")
 
 	v.SetDefault("DATABASE.SSL_MODE", "disable")
 
-	if err := v.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			return err
-		} else {
-			return err
+	if _, err := os.Stat(name + ".env"); err == nil {
+		if err := v.ReadInConfig(); err != nil {
+			return fmt.Errorf("failed to read config file: %w", err)
 		}
 	}
 
-	for _, key := range v.AllKeys() {
-		if strings.Contains(key, "_") {
-			newKey := strings.Replace(key, "_", ".", -1)
-			v.Set(newKey, v.Get(key))
-		}
-	}
+	v.AutomaticEnv()
+
+	_ = v.BindEnv("DATABASE.HOST", "DATABASE_HOST")
+	_ = v.BindEnv("DATABASE.PORT", "DATABASE_PORT")
+	_ = v.BindEnv("DATABASE.USERNAME", "DATABASE_USERNAME")
+	_ = v.BindEnv("DATABASE.PASSWORD", "DATABASE_PASSWORD")
+	_ = v.BindEnv("DATABASE.NAME", "DATABASE_NAME")
+	_ = v.BindEnv("DATABASE.SSL_MODE", "DATABASE_SSL_MODE")
+	_ = v.BindEnv("DATABASE.MIGRATIONS_PATH", "MIGRATIONS_PATH")
+
+	_ = v.BindEnv("API_PORT")
+	_ = v.BindEnv("AUTH_ITERATIONS")
+	_ = v.BindEnv("AUTH_MEMORY")
+	_ = v.BindEnv("AUTH_PARALLELISM")
+	_ = v.BindEnv("AUTH_KEY_LEN")
+	_ = v.BindEnv("AUTH_SALT_LEN")
+	_ = v.BindEnv("AUTH_SECRET_KEY")
+	_ = v.BindEnv("AUTH_ACCESS_TOKEN_DURATION")
+	_ = v.BindEnv("AUTH_REFRESH_TOKEN_DURATION")
 
 	configEnv = &Config{}
 

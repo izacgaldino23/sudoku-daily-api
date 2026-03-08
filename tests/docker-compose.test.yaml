@@ -1,0 +1,22 @@
+services:
+  db_test:
+    container_name: postgres_test
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: "12345"
+      PGDATA: "/data/postgres"
+    ports:
+      - "5333:5432"
+    restart: unless-stopped
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "postgres"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  postgres-test-data: {}

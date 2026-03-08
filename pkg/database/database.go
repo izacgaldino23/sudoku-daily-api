@@ -21,6 +21,7 @@ var (
 
 func ConnectDB(configEnv *config.Config) (err error) {
 	dsn := configEnv.Database.DSNPostgres()
+
 	sqlDB, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return fmt.Errorf("Error connecting to database: %w", err)

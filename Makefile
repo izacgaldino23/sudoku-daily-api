@@ -1,4 +1,4 @@
-.PHONY: new-migration run-migrations
+.PHONY: new-migration run-migrations test-integration
 
 MIGRATIONS_PATH = migrations/sql
 DATABASE_HOST = localhost
@@ -13,3 +13,8 @@ new-migration:
 
 run-migrations:
 	set ENV=local&& go run cmd/migrate/main.go
+
+test-integration:
+	docker-compose -f tests/docker-compose.test.yaml up -d
+	go test ./tests/integration/... -v
+	docker-compose -f tests/docker-compose.test.yaml down

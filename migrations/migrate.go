@@ -10,14 +10,14 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func RunMigrations() error {
+func RunMigrations(migrationsPath string) error {
 	driver, err := postgres.WithInstance(database.GetDB().SqlConnection, &postgres.Config{})
 	if err != nil {
 		return fmt.Errorf("Error creating driver: %w", err)
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://migrations/sql",
+		"file://"+migrationsPath,
 		"postgres",
 		driver,
 	)
