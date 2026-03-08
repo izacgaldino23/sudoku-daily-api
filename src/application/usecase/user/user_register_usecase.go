@@ -47,11 +47,11 @@ func (u *userRegisterUseCase) Execute(ctx context.Context, user *entities.User) 
 	}
 
 	// Hash
-	passHash, err := u.passwordHasher.Hash(*user.PasswordHash)
+	passHash, err := u.passwordHasher.Hash(user.PasswordHash)
 	if err != nil {
 		return nil, err
 	}
-	user.PasswordHash = &passHash
+	user.PasswordHash = passHash
 
 	user.ID = vo.NewUUID()
 

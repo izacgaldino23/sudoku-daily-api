@@ -34,7 +34,7 @@ func setupTestEnvironment() {
 	os.Setenv("DATABASE_SSL_MODE", "disable")
 	os.Setenv("API_PORT", "8081")
 
-	memory := 64 * 512
+	memory := 64
 
 	os.Setenv("AUTH_ITERATIONS", "3")
 	os.Setenv("AUTH_MEMORY", strconv.Itoa(memory))

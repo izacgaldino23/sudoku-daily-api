@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/infrastructure/http/auth"
 	"testing"
 
@@ -69,6 +70,14 @@ func TestAuthRegister(t *testing.T) {
 			resp, err := app.Test(req)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.wantStatus, resp.StatusCode)
+
+			// expected body response here is empty
+			if tt.wantStatus != resp.StatusCode {
+				result := map[string]interface{}{}
+				err = json.NewDecoder(resp.Body).Decode(&result)
+				assert.NoError(t, err)
+				assert.Empty(t, result)
+			}
 		})
 	}
 }
@@ -123,6 +132,7 @@ func TestAuthLogin(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			TruncateTables(t)
 
+			// Register
 			registerBody, _ := json.Marshal(map[string]string{
 				"email":    "test@example.com",
 				"username": "testuser",
@@ -132,6 +142,7 @@ func TestAuthLogin(t *testing.T) {
 			registerReq.Header.Set("Content-Type", "application/json")
 			_, _ = app.Test(registerReq)
 
+			// Login
 			body, _ := json.Marshal(tt.body)
 			req := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
@@ -140,7 +151,7 @@ func TestAuthLogin(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tt.wantStatus, resp.StatusCode)
 
-			if tt.wantStatus == http.StatusOK {
+			if resp.StatusCode == http.StatusOK {
 				var loginResp auth.LoginResponse
 				err := json.NewDecoder(resp.Body).Decode(&loginResp)
 				assert.NoError(t, err)
@@ -148,6 +159,16 @@ func TestAuthLogin(t *testing.T) {
 				assert.NotEmpty(t, loginResp.RefreshToken)
 				assert.Equal(t, "testuser", loginResp.UserName)
 				assert.Equal(t, "test@example.com", loginResp.Email)
+			} else {
+				result := pkg.Error{}
+				err = json.NewDecoder(resp.Body).Decode(&result)
+				assert.NoError(t, err)
+				
+				if tt.wantStatus != http.StatusOK {
+					assert.NotEmpty(t, result.Message)
+				} else {
+					assert.Empty(t, result.Message)
+				}
 			}
 		})
 	}

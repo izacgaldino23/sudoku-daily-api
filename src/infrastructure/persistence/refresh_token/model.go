@@ -9,13 +9,13 @@ import (
 )
 
 type RefreshToken struct {
-	bun.BaseModel
+	bun.BaseModel `bun:"table:refresh_tokens"`
 
 	ID        string    `bun:"id,pk"`
 	UserID    string    `bun:"user_id,notnull"`
 	TokenHash string    `bun:",unique,notnull"`
 	ExpiresAt time.Time `bun:"type:timestamp,notnull"`
-	Revoked   bool      `bun:"notnull"`
+	Revoked   bool      `bun:",notnull"`
 	CreatedAt time.Time `bun:"type:timestamp,notnull"`
 }
 

@@ -9,7 +9,7 @@ import (
 )
 
 type Sudoku struct {
-	bun.BaseModel `bun:"table:sudoku"`
+	bun.BaseModel `bun:"table:sudokus"`
 
 	ID         string    `bun:"id,pk"`
 	Size       int       `bun:",notnull"`

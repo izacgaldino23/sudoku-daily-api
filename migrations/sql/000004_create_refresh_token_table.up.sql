@@ -1,7 +1,7 @@
 -- Create refresh token table
 CREATE TABLE IF NOT EXISTS refresh_tokens (
-	id SERIAL PRIMARY KEY,
-	user_id INTEGER NOT NULL,
+	id UUID PRIMARY KEY,
+	user_id UUID NOT NULL,
 	token_hash VARCHAR(255) NOT NULL,
 	expires_at TIMESTAMP NOT NULL,
 	revoked BOOLEAN DEFAULT FALSE,

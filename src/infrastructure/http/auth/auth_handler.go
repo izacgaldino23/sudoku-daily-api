@@ -48,6 +48,10 @@ func (a *authHandler) Register(c fiber.Ctx) error {
 		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
 	}
 
+	if err := pkg.ValidateStruct(req); err != nil {
+		return pkg.JsonError(c, err)
+	}
+
 	_, err := a.userRegisterUseCase.Execute(c.Context(), req.ToDomain())
 	if err != nil {
 		return pkg.JsonError(c, err)
@@ -62,6 +66,10 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 	)
 	if err := c.Bind().Body(&req); err != nil {
 		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
+	}
+
+	if err := pkg.ValidateStruct(req); err != nil {
+		return pkg.JsonError(c, err)
 	}
 
 	userData, err := a.userLoginUseCase.Execute(c.Context(), req.ToDomain())
@@ -83,6 +91,10 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 
 	if err := c.Bind().Body(&req); err != nil {
 		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
+	}
+
+	if err := pkg.ValidateStruct(req); err != nil {
+		return pkg.JsonError(c, err)
 	}
 
 	userID = app_context.GetUserIDFromContext(c.Context())

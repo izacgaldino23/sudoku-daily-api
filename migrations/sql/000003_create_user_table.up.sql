@@ -8,13 +8,13 @@ END$$;
 
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
-	id SERIAL PRIMARY KEY,
+	id UUID PRIMARY KEY,
 	username VARCHAR(255) UNIQUE NOT NULL,
 	email VARCHAR(255) UNIQUE NOT NULL,
 	password_hash VARCHAR(255) NOT NULL,
-	provider auth_provider NOT NULL DEFAULT 'email',
+	provider auth_provider DEFAULT 'email',
 	provider_id VARCHAR(255),
-	email_verified BOOLEAN NOT NULL DEFAULT FALSE,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	email_verified BOOLEAN DEFAULT FALSE,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW()
 );

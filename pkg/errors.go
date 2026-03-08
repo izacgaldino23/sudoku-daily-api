@@ -20,7 +20,8 @@ var (
 
 type (
 	Error struct {
-		Message string `json:"message"`
+		Message       string            `json:"message"`
+		ValidationErr []ValidationError `json:"validation_errors,omitempty"`
 	}
 )
 
@@ -29,6 +30,12 @@ func (e *Error) Error() string {
 }
 
 func FromError(err error) *Error {
+	if validationErrs, ok := err.(ValidationErrors); ok {
+		return &Error{
+			Message:       validationErrs.Error(),
+			ValidationErr: validationErrs,
+		}
+	}
 	return &Error{Message: err.Error()}
 }
 
@@ -37,7 +44,10 @@ func NewError(message string) *Error {
 }
 
 func JsonError(c fiber.Ctx, err error) error {
-	return c.Status(MapErrorToStatus(err)).JSON(FromError(err))
+	status := MapErrorToStatus(err)
+	err = FromError(err)
+
+	return c.Status(status).JSON(err)
 }
 
 func JsonErrorWithStatus(c fiber.Ctx, err error, status int) error {
@@ -45,6 +55,10 @@ func JsonErrorWithStatus(c fiber.Ctx, err error, status int) error {
 }
 
 func MapErrorToStatus(err error) int {
+	if _, ok := err.(ValidationErrors); ok {
+		return http.StatusBadRequest
+	}
+
 	switch err {
 	case ErrNotFound:
 		return http.StatusNotFound

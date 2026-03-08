@@ -45,7 +45,7 @@ func (p *passwordHasher) Compare(password, encodedHash string) error {
 
 	var memory, iterations uint32
 	var parallelism uint8
-	_, err := fmt.Scanf(parts[3], "m=%d,t=%d,p=%d", &memory, &iterations, &parallelism)
+	_, err := fmt.Sscanf(parts[3], "m=%d,t=%d,p=%d", &memory, &iterations, &parallelism)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func (p *passwordHasher) Compare(password, encodedHash string) error {
 
 	comparisonHash := argon2.IDKey([]byte(password), salt, iterations, memory, parallelism, uint32(len(hash)))
 
-	if subtle.ConstantTimeCompare([]byte(encodedHash), comparisonHash) == 0 {
+	if subtle.ConstantTimeCompare(hash, comparisonHash) == 0 {
 		return fmt.Errorf("invalid password")
 	}
 

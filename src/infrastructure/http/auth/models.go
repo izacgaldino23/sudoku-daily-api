@@ -43,14 +43,15 @@ func (r *RegisterRequest) ToDomain() *entities.User {
 	return &entities.User{
 		Email:        entities.Email(r.Email),
 		Username:     r.Username,
-		PasswordHash: &r.Password,
+		PasswordHash: r.Password,
+		Provider:     entities.EmailAuthProvider,
 	}
 }
 
 func (r *LoginRequest) ToDomain() *entities.User {
 	return &entities.User{
 		Email:        entities.Email(r.Email),
-		PasswordHash: &r.Password,
+		PasswordHash: r.Password,
 	}
 }
 

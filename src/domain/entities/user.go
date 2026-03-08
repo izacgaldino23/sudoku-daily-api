@@ -19,7 +19,7 @@ type (
 		ID            vo.UUID
 		Email         Email
 		Username      string
-		PasswordHash  *string
+		PasswordHash  string
 		Provider      AuthProvider
 		ProviderID    *string
 		EmailVerified bool
@@ -48,6 +48,10 @@ func (u *User) IsEmailAuth() bool {
 
 func (e *Email) IsValid() bool {
 	email, _ := mail.ParseAddress(string(*e))
+	if email == nil {
+		return false
+	}
+
 	*e = Email(email.Address)
 
 	return email != nil

@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
@@ -42,10 +43,13 @@ func (u *userLoginUseCase) Execute(ctx context.Context, loginData *entities.User
 	err = u.txManager.WithinTransaction(ctx, func(txCtx context.Context) error {
 		user, err = u.userRepo.GetByEmail(txCtx, loginData.Email.String())
 		if err != nil {
+			if errors.Is(err, pkg.ErrNotFound) {
+				return pkg.ErrInvalidCredentials
+			}
 			return err
 		}
 
-		if err := u.passwordHasher.Compare(*user.PasswordHash, *loginData.PasswordHash); err != nil {
+		if err := u.passwordHasher.Compare(loginData.PasswordHash, user.PasswordHash); err != nil {
 			return pkg.ErrInvalidCredentials
 		}
 
