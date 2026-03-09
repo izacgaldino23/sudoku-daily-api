@@ -3,6 +3,7 @@ package services
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
@@ -53,7 +54,7 @@ func (s TokenService) GenerateRefreshToken(userID vo.UUID) (*entities.RefreshTok
 	}
 
 	return &entities.RefreshToken{
-		UserID:    vo.UUID(userID),
+		UserID:    userID,
 		Hash:      base64.URLEncoding.EncodeToString(refreshToken),
 		ExpiresAt: time.Now().Add(time.Duration(s.refreshTokenDuration) * time.Second),
 	}, err
@@ -68,5 +69,22 @@ func (s TokenService) ValidateAccessToken(token string) (vo.UUID, error) {
 		return "", err
 	}
 
-	return claims["user_id"].(vo.UUID), nil
+	if claims["exp"].(float64) < float64(time.Now().Unix()) {
+		return "", pkg.ErrInvalidToken
+	}
+
+	if claims["iat"].(float64) > float64(time.Now().Unix()) {
+		return "", pkg.ErrInvalidToken
+	}
+
+	if claims["user_id"] == nil {
+		return "", pkg.ErrInvalidToken
+	}
+
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return "", pkg.ErrInvalidToken
+	}
+
+	return vo.UUID(userID), nil
 }

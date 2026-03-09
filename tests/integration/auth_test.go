@@ -242,6 +242,7 @@ func TestAuthRefresh(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			TruncateTables(t)
 
+			// Register
 			registerBody, _ := json.Marshal(map[string]string{
 				"email":    "test@example.com",
 				"username": "testuser",
@@ -251,6 +252,7 @@ func TestAuthRefresh(t *testing.T) {
 			registerReq.Header.Set("Content-Type", "application/json")
 			_, _ = app.Test(registerReq)
 
+			// Login
 			loginBody, _ := json.Marshal(map[string]string{
 				"email":    "test@example.com",
 				"password": "password123",
@@ -263,6 +265,7 @@ func TestAuthRefresh(t *testing.T) {
 			err := json.NewDecoder(loginResp.Body).Decode(&loginResult)
 			assert.NoError(t, err)
 
+			// Refresh
 			body, _ := json.Marshal(tt.body)
 			req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
@@ -275,11 +278,21 @@ func TestAuthRefresh(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tt.wantStatus, resp.StatusCode)
 
-			if tt.wantStatus == http.StatusOK {
+			if resp.StatusCode == http.StatusOK {
 				var refreshResp auth.RefreshTokenResponse
 				err := json.NewDecoder(resp.Body).Decode(&refreshResp)
 				assert.NoError(t, err)
 				assert.NotEmpty(t, refreshResp.AccessToken)
+			} else {
+				result := pkg.Error{}
+				err = json.NewDecoder(resp.Body).Decode(&result)
+				assert.NoError(t, err)
+				
+				if tt.wantStatus != http.StatusOK {
+					assert.NotEmpty(t, result.Message)
+				} else {
+					assert.Empty(t, result.Message)
+				}
 			}
 		})
 	}

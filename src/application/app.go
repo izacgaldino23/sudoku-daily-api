@@ -18,6 +18,7 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/recover"
+	"github.com/rs/zerolog/log"
 )
 
 func InitApp(app fiber.Router) error {
@@ -57,10 +58,13 @@ func InitApp(app fiber.Router) error {
 
 	// middlewares
 	authMiddleware := middlewares.NewJWTMiddleware(tokenService)
+	logMiddleware := middlewares.NewLogMiddleware()
 
 	// handlers
 	sudokuHandler := httpSudoku.NewSudokuHandler(getDailySudoku, generateAll)
 	authHandler := auth.NewAuthHandler(userRegister, userLogin, userRefreshToken, userLogoutUseCase)
+
+	app.Use(logMiddleware.Execute(log.Logger))
 
 	// routes
 	http.RegisterRoutes(app, authMiddleware, sudokuHandler, authHandler)

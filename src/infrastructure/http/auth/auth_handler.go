@@ -97,9 +97,9 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	userID = app_context.GetUserIDFromContext(c.Context())
+	userID = app_context.GetUserIDFromContext(c)
 
-	accessToken, err := a.userRefreshTokenUseCase.Execute(c.Context(), req.RefreshToken, userID)
+	accessToken, err := a.userRefreshTokenUseCase.Execute(c, req.RefreshToken, userID)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}

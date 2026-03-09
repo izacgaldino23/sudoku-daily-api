@@ -29,6 +29,6 @@ func registerAuthRoutes(app fiber.Router, authHandler auth.AuthHandler, authMidd
 
 	private := app.Group("/auth", authMiddleware.Execute())
 
-	private.Post("/auth/refresh", authHandler.Refresh)
-	private.Post("/auth/logout", authHandler.Logout)
+	private.Post("/refresh", authHandler.Refresh)
+	private.Post("/logout", authHandler.Logout)
 }

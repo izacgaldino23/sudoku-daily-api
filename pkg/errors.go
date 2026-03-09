@@ -11,8 +11,10 @@ var (
 	ErrNotFound               = errors.New("not found")
 	ErrQueryParamInvalid      = errors.New("invalid query param")
 	ErrInvalidEmail           = errors.New("invalid email")
-	ErrEmailAlreadyRegistered = errors.New("email already registered")
+	ErrInvalidToken           = errors.New("invalid token")
+	ErrTokenExpired           = errors.New("token expired")
 	ErrInvalidCredentials     = errors.New("invalid credentials")
+	ErrEmailAlreadyRegistered = errors.New("email already registered")
 	ErrRefreshTokenExpired    = errors.New("refresh token expired")
 	ErrRefreshTokenRevoked    = errors.New("refresh token revoked")
 	ErrBodyInvalid            = errors.New("invalid body")
@@ -62,9 +64,9 @@ func MapErrorToStatus(err error) int {
 	switch err {
 	case ErrNotFound:
 		return http.StatusNotFound
-	case ErrInvalidEmail, ErrEmailAlreadyRegistered, ErrQueryParamInvalid, ErrBodyInvalid:
+	case ErrEmailAlreadyRegistered, ErrQueryParamInvalid, ErrBodyInvalid:
 		return http.StatusBadRequest
-	case ErrInvalidCredentials, ErrRefreshTokenExpired, ErrRefreshTokenRevoked:
+	case ErrInvalidCredentials, ErrRefreshTokenExpired, ErrRefreshTokenRevoked, ErrInvalidToken, ErrInvalidEmail, ErrTokenExpired:
 		return http.StatusUnauthorized
 	default:
 		return http.StatusInternalServerError

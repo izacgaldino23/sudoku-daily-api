@@ -1,6 +1,8 @@
 package middlewares
 
 import (
+	"net/http"
+	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	appContext "sudoku-daily-api/src/domain/app_context"
 
@@ -30,15 +32,15 @@ func NewJWTMiddleware(tokenService domain.TokenService) JWTMiddleware {
 func (m *jwtMiddlewareImpl) Execute() func(c fiber.Ctx) error {
 	return func(c fiber.Ctx) error {
 		// Verify if token is present
-		header := c.Request().Header.Peek(authHeader)
+		header := c.Get(authHeader)
 
 		// Validate token and get userID
 		if len(header) == 0 {
-			return fiber.ErrUnauthorized
+			return pkg.JsonError(c, pkg.ErrInvalidToken)
 		}
 		userID, err := m.tokenService.ValidateAccessToken(string(header))
 		if err != nil {
-			return fiber.ErrUnauthorized
+			return pkg.JsonErrorWithStatus(c, err, http.StatusUnauthorized)
 		}
 
 		// Set userID on context

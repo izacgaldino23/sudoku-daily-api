@@ -116,7 +116,12 @@ func TruncateTables(t *testing.T) {
 }
 
 func SetupTestApp() *fiber.App {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		ReadTimeout:  time.Second * 60,
+		WriteTimeout: time.Second * 60,
+		IdleTimeout:  time.Second * 60,
+	})
+
 	api := app.Group("/api")
 
 	_ = application.InitApp(api)

@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/repository"
@@ -33,6 +34,9 @@ func NewUserRefreshTokenUseCase(
 func (u *userRefreshTokenUseCase) Execute(ctx context.Context, tokenHash string, userID vo.UUID) (string, error) {
 	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, userID, tokenHash)
 	if err != nil {
+		if errors.Is(err, pkg.ErrNotFound) {
+			return "", pkg.ErrInvalidToken
+		}
 		return "", err
 	}
 

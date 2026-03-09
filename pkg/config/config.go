@@ -89,9 +89,9 @@ func viperInit() error {
 	_ = v.BindEnv("AUTH.PARALLELISM", "AUTH_PARALLELISM")
 	_ = v.BindEnv("AUTH.KEY_LEN", "AUTH_KEY_LEN")
 	_ = v.BindEnv("AUTH.SALT_LEN", "AUTH_SALT_LEN")
-	_ = v.BindEnv("AUTH_SECRET_KEY")
-	_ = v.BindEnv("AUTH_ACCESS_TOKEN_DURATION")
-	_ = v.BindEnv("AUTH_REFRESH_TOKEN_DURATION")
+	_ = v.BindEnv("AUTH.SECRET_KEY", "AUTH_SECRET_KEY")
+	_ = v.BindEnv("AUTH.ACCESS_TOKEN_DURATION", "AUTH_ACCESS_TOKEN_DURATION")
+	_ = v.BindEnv("AUTH.REFRESH_TOKEN_DURATION", "AUTH_REFRESH_TOKEN_DURATION")
 
 	configEnv = &Config{}
 
