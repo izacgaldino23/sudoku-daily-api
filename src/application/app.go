@@ -57,17 +57,18 @@ func InitApp(app fiber.Router) error {
 	userLogoutUseCase := userUsecase.NewUserLogoutUseCase(refreshTokenRepository)
 
 	// middlewares
-	authMiddleware := middlewares.NewJWTMiddleware(tokenService)
-	logMiddleware := middlewares.NewLogMiddleware()
+	tokenMiddleware := middlewares.JWTMiddleware(tokenService)
+	authMiddleware := middlewares.AuthMiddleware(tokenService)
+	logMiddleware := middlewares.LogMiddleware(log.Logger)
 
 	// handlers
 	sudokuHandler := httpSudoku.NewSudokuHandler(getDailySudoku, generateAll)
 	authHandler := auth.NewAuthHandler(userRegister, userLogin, userRefreshToken, userLogoutUseCase)
 
-	app.Use(logMiddleware.Execute(log.Logger))
+	app.Use(logMiddleware)
 
 	// routes
-	http.RegisterRoutes(app, authMiddleware, sudokuHandler, authHandler)
+	http.RegisterRoutes(app, sudokuHandler, authHandler, tokenMiddleware, authMiddleware)
 
 	return nil
 }

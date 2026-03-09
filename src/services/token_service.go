@@ -24,14 +24,14 @@ func NewTokenService(
 	secret string,
 	accessTokenDuration int,
 	refreshTokenDuration int) domain.TokenService {
-	return TokenService{
+	return &TokenService{
 		secret:               []byte(secret),
 		accessTokenDuration:  accessTokenDuration,
 		refreshTokenDuration: refreshTokenDuration,
 	}
 }
 
-func (s TokenService) GenerateAccessToken(userID vo.UUID) (string, error) {
+func (s *TokenService) GenerateAccessToken(userID vo.UUID) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"exp":     time.Now().Add(time.Duration(s.accessTokenDuration) * time.Second).Unix(),
@@ -46,7 +46,7 @@ func (s TokenService) GenerateAccessToken(userID vo.UUID) (string, error) {
 	return token, nil
 }
 
-func (s TokenService) GenerateRefreshToken(userID vo.UUID) (*entities.RefreshToken, error) {
+func (s *TokenService) GenerateRefreshToken(userID vo.UUID) (*entities.RefreshToken, error) {
 	refreshToken := make([]byte, 32)
 	_, err := rand.Read(refreshToken)
 	if err != nil {
@@ -60,11 +60,8 @@ func (s TokenService) GenerateRefreshToken(userID vo.UUID) (*entities.RefreshTok
 	}, err
 }
 
-func (s TokenService) ValidateAccessToken(token string) (vo.UUID, error) {
-	claims := jwt.MapClaims{}
-	_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
-		return s.secret, nil
-	})
+func (s *TokenService) ValidateAccessToken(token string) (vo.UUID, error) {
+	claims, err := s.ParseToken(token)
 	if err != nil {
 		return "", err
 	}
@@ -87,4 +84,16 @@ func (s TokenService) ValidateAccessToken(token string) (vo.UUID, error) {
 	}
 
 	return vo.UUID(userID), nil
+}
+
+func (s *TokenService) ParseToken(token string) (map[string]any, error) {
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+		return s.secret, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return claims, nil
 }

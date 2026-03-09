@@ -53,7 +53,7 @@
 - [x] POST 	/api/auth/register
 - [x] POST 	/api/auth/login
 - [x] POST 	/api/auth/refresh
-- [ ] POST 	/api/auth/logout
+- [x] POST 	/api/auth/logout
 - [ ] GET 	/api/auth/me
 
 ### Improvements

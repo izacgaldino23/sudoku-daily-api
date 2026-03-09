@@ -8,19 +8,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type (
-	LogMiddleware interface {
-		Execute(base zerolog.Logger) fiber.Handler
-	}
-
-	logMiddlewareImpl struct{}
-)
-
-func NewLogMiddleware() LogMiddleware {
-	return &logMiddlewareImpl{}
-}
-
-func (m *logMiddlewareImpl) Execute(base zerolog.Logger) fiber.Handler {
+func LogMiddleware(base zerolog.Logger) fiber.Handler {
 	return func(c fiber.Ctx) error {
 
 		log := base.With().

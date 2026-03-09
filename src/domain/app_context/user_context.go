@@ -16,5 +16,10 @@ func SetUserOnContext(ctx context.Context, userID vo.UUID) context.Context {
 }
 
 func GetUserIDFromContext(ctx context.Context) vo.UUID {
-	return ctx.Value(UserContextKey()).(vo.UUID)
+	userID, ok := ctx.Value(UserContextKey()).(vo.UUID)
+	if !ok {
+		return ""
+	}
+
+	return userID
 }

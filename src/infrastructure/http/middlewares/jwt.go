@@ -1,10 +1,9 @@
 package middlewares
 
 import (
-	"net/http"
-	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	appContext "sudoku-daily-api/src/domain/app_context"
+	"sudoku-daily-api/src/domain/vo"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -13,34 +12,21 @@ const (
 	authHeader = "Authorization"
 )
 
-type (
-	JWTMiddleware interface {
-		Execute() func(c fiber.Ctx) error
-	}
-
-	jwtMiddlewareImpl struct {
-		tokenService domain.TokenService
-	}
-)
-
-func NewJWTMiddleware(tokenService domain.TokenService) JWTMiddleware {
-	return &jwtMiddlewareImpl{
-		tokenService: tokenService,
-	}
-}
-
-func (m *jwtMiddlewareImpl) Execute() func(c fiber.Ctx) error {
+func JWTMiddleware(tokenService domain.TokenService) func(c fiber.Ctx) error {
 	return func(c fiber.Ctx) error {
-		// Verify if token is present
 		header := c.Get(authHeader)
 
-		// Validate token and get userID
 		if len(header) == 0 {
-			return pkg.JsonError(c, pkg.ErrInvalidToken)
+			return c.Next()
 		}
-		userID, err := m.tokenService.ValidateAccessToken(string(header))
+		claims, err := tokenService.ParseToken(string(header))
 		if err != nil {
-			return pkg.JsonErrorWithStatus(c, err, http.StatusUnauthorized)
+			return c.Next()
+		}
+
+		userID, ok := claims["user_id"].(vo.UUID)
+		if !ok {
+			return c.Next()
 		}
 
 		// Set userID on context
