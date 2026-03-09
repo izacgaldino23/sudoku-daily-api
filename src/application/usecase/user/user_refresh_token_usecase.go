@@ -48,5 +48,5 @@ func (u *userRefreshTokenUseCase) Execute(ctx context.Context, tokenHash string,
 		return "", pkg.ErrRefreshTokenExpired
 	}
 
-	return u.tokenService.GenerateAccessToken(userID)
+	return u.tokenService.GenerateJWTToken(map[string]any{"user_id": userID})
 }

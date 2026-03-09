@@ -6,11 +6,16 @@ import (
 )
 
 type (
+	GetDailySudokuRequest struct {
+		Size string `query:"size" validate:"required,oneof=four six nine"`
+	}
+
 	SudokuResponse struct {
-		ID    string `json:"id"`
-		Size  int    `json:"size"`
-		Board []Cell `json:"board"`
-		Date  string `json:"date"`
+		ID           string `json:"id"`
+		Size         int    `json:"size"`
+		Board        []Cell `json:"board"`
+		Date         string `json:"date"`
+		SessionToken string `json:"session_token"`
 	}
 
 	Cell struct {
@@ -20,11 +25,25 @@ type (
 	}
 )
 
-func (g *SudokuResponse) FromDomain(s *entities.Sudoku) {
+func (g *GetDailySudokuRequest) GetSize() int {
+	switch g.Size {
+	case "four":
+		return 4
+	case "six":
+		return 6
+	case "nine":
+		return 9
+	default:
+		return 0
+	}
+}
+
+func (g *SudokuResponse) FromDomain(s *entities.Sudoku, sessionToken string) {
 	g.ID = s.ID
 	g.Size = s.GetSize()
 	g.Board = BoardFromDomain(s.Board)
 	g.Date = s.Date.Format(time.DateOnly)
+	g.SessionToken = sessionToken
 }
 
 func BoardFromDomain(board entities.Board) []Cell {

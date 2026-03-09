@@ -2,12 +2,14 @@ package sudoku
 
 import (
 	"net/http"
-	"strconv"
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/application/usecase/sudoku"
+	appContext "sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
+	"sudoku-daily-api/src/domain/vo"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/rs/zerolog/log"
 )
 
 type (
@@ -34,29 +36,33 @@ func NewSudokuHandler(
 
 func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	var (
-		sizeParam = c.Query("size", "4")
 		ctxReq    = c.Context()
+		request   GetDailySudokuRequest
+		sessionID vo.UUID
 		size      int
-		err       error
 	)
 
-	if sizeParam == "" {
-		return pkg.JsonError(c, pkg.ErrQueryParamInvalid)
+	if err := c.Bind().Query(&request); err != nil {
+		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
 	}
 
-	size, err = strconv.Atoi(sizeParam)
-	if err != nil {
-		return pkg.JsonError(c, pkg.ErrQueryParamInvalid)
+	if err := pkg.ValidateStruct(request); err != nil {
+		return pkg.JsonError(c, err)
 	}
 
-	var dailySudoku *entities.Sudoku
-	dailySudoku, err = sh.getDailyUseCase.Execute(ctxReq, size)
+	sessionID = appContext.GetSessionIDFromContext(ctxReq)
+	if sessionID == "" {
+		log.Ctx(ctxReq).Error().Msg("sessionID was not informed")
+		return pkg.JsonError(c, pkg.ErrInvalidCredentials)
+	}
+
+	dailySudoku, sessionToken, err := sh.getDailyUseCase.Execute(ctxReq, size, sessionID)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
 
 	var response SudokuResponse
-	response.FromDomain(dailySudoku)
+	response.FromDomain(dailySudoku, sessionToken)
 
 	return c.Status(http.StatusOK).JSON(response)
 }
@@ -76,7 +82,7 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	var response []SudokuResponse
 	for _, sudoku := range dailySudoku {
 		s := SudokuResponse{}
-		s.FromDomain(&sudoku)
+		s.FromDomain(&sudoku, "")
 		response = append(response, s)
 	}
 

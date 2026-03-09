@@ -16,7 +16,7 @@ type (
 	}
 
 	TokenService interface {
-		GenerateAccessToken(userID vo.UUID) (string, error)
+		GenerateJWTToken(map[string]any) (string, error)
 		GenerateRefreshToken(userID vo.UUID) (*entities.RefreshToken, error)
 		ValidateAccessToken(token string) (vo.UUID, error)
 		ParseToken(token string) (result map[string]any, err error)

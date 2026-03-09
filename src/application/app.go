@@ -54,7 +54,7 @@ func InitApp(app fiber.Router) error {
 	tokenService := services.NewTokenService(authConfig.SecretKey, authConfig.AccessTokenDuration, authConfig.RefreshTokenDuration)
 
 	// use cases
-	getDailySudoku := sudokuUsecase.NewSudokuGetDailyUseCase(sudokuRepository, localCache)
+	getDailySudoku := sudokuUsecase.NewSudokuGetDailyUseCase(sudokuRepository, tokenService, localCache)
 	generateAll := sudokuUsecase.NewSudokuGenerateAllUseCase(txManager, sudokuRepository, generatorService)
 
 	userRegister := userUsecase.NewUserRegisterUseCase(userRepository, passHasher)
@@ -65,6 +65,7 @@ func InitApp(app fiber.Router) error {
 	// middlewares
 	tokenMiddleware := middlewares.JWTMiddleware(tokenService)
 	authMiddleware := middlewares.AuthMiddleware(tokenService)
+	sessionMiddleware := middlewares.SessionMiddleware(tokenService)
 	logMiddleware := middlewares.LogMiddleware(log.Logger)
 
 	// handlers
@@ -74,7 +75,7 @@ func InitApp(app fiber.Router) error {
 	app.Use(logMiddleware)
 
 	// routes
-	http.RegisterRoutes(app, sudokuHandler, authHandler, tokenMiddleware, authMiddleware)
+	http.RegisterRoutes(app, sudokuHandler, authHandler, tokenMiddleware, authMiddleware, sessionMiddleware)
 
 	return nil
 }

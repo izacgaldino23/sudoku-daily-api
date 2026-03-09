@@ -31,11 +31,14 @@ func NewTokenService(
 	}
 }
 
-func (s *TokenService) GenerateAccessToken(userID vo.UUID) (string, error) {
+func (s *TokenService) GenerateJWTToken(fields map[string]any) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     time.Now().Add(time.Duration(s.accessTokenDuration) * time.Second).Unix(),
-		"iat":     time.Now().Unix(),
+		"exp": time.Now().Add(time.Duration(s.accessTokenDuration) * time.Second).Unix(),
+		"iat": time.Now().Unix(),
+	}
+
+	for key, value := range fields {
+		claims[key] = value
 	}
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(s.secret)
