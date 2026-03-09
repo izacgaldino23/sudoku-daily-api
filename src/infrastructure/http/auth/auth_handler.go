@@ -42,17 +42,17 @@ func NewAuthHandler(
 
 func (a *authHandler) Register(c fiber.Ctx) error {
 	var (
-		req RegisterRequest
+		request RegisterRequest
 	)
-	if err := c.Bind().Body(&req); err != nil {
+	if err := c.Bind().Body(&request); err != nil {
 		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
 	}
 
-	if err := pkg.ValidateStruct(req); err != nil {
+	if err := pkg.ValidateStruct(request); err != nil {
 		return pkg.JsonError(c, err)
 	}
 
-	_, err := a.userRegisterUseCase.Execute(c.Context(), req.ToDomain())
+	_, err := a.userRegisterUseCase.Execute(c.Context(), request.ToDomain())
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
@@ -62,17 +62,17 @@ func (a *authHandler) Register(c fiber.Ctx) error {
 
 func (a *authHandler) Login(c fiber.Ctx) error {
 	var (
-		req LoginRequest
+		request LoginRequest
 	)
-	if err := c.Bind().Body(&req); err != nil {
+	if err := c.Bind().Body(&request); err != nil {
 		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
 	}
 
-	if err := pkg.ValidateStruct(req); err != nil {
+	if err := pkg.ValidateStruct(request); err != nil {
 		return pkg.JsonError(c, err)
 	}
 
-	userData, err := a.userLoginUseCase.Execute(c.Context(), req.ToDomain())
+	userData, err := a.userLoginUseCase.Execute(c.Context(), request.ToDomain())
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
@@ -85,21 +85,21 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 
 func (a *authHandler) Refresh(c fiber.Ctx) error {
 	var (
-		req    RefreshTokenRequest
-		userID vo.UUID
+		request RefreshTokenRequest
+		userID  vo.UUID
 	)
 
-	if err := c.Bind().Body(&req); err != nil {
+	if err := c.Bind().Body(&request); err != nil {
 		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
 	}
 
-	if err := pkg.ValidateStruct(req); err != nil {
+	if err := pkg.ValidateStruct(request); err != nil {
 		return pkg.JsonError(c, err)
 	}
 
-	userID = app_context.GetUserIDFromContext(c)
+	userID = app_context.GetUserIDFromContext(c.Context())
 
-	accessToken, err := a.userRefreshTokenUseCase.Execute(c, req.RefreshToken, userID)
+	accessToken, err := a.userRefreshTokenUseCase.Execute(c, request.RefreshToken, userID)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
@@ -118,6 +118,10 @@ func (a *authHandler) Logout(c fiber.Ctx) error {
 
 	if err := c.Bind().Body(&request); err != nil {
 		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
+	}
+
+	if err := pkg.ValidateStruct(request); err != nil {
+		return pkg.JsonError(c, err)
 	}
 
 	userID = app_context.GetUserIDFromContext(c.Context())

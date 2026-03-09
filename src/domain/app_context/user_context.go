@@ -7,11 +7,14 @@ import (
 
 type contextUserIDKey struct{}
 
+func UserContextKey() interface{} {
+	return contextUserIDKey{}
+}
+
 func SetUserOnContext(ctx context.Context, userID vo.UUID) context.Context {
-	newCtx := context.WithValue(ctx, contextUserIDKey{}, userID)
-	return newCtx
+	return context.WithValue(ctx, UserContextKey(), userID)
 }
 
 func GetUserIDFromContext(ctx context.Context) vo.UUID {
-	return ctx.Value(contextUserIDKey{}).(vo.UUID)
+	return ctx.Value(UserContextKey()).(vo.UUID)
 }

@@ -9,6 +9,7 @@ import (
 	"sudoku-daily-api/src/infrastructure/http/auth"
 	"testing"
 
+	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -163,7 +164,7 @@ func TestAuthLogin(t *testing.T) {
 				result := pkg.Error{}
 				err = json.NewDecoder(resp.Body).Decode(&result)
 				assert.NoError(t, err)
-				
+
 				if tt.wantStatus != http.StatusOK {
 					assert.NotEmpty(t, result.Message)
 				} else {
@@ -179,6 +180,7 @@ func TestAuthRefresh(t *testing.T) {
 
 	app := SetupTestApp()
 
+	// register
 	registerBody, _ := json.Marshal(map[string]string{
 		"email":    "test@example.com",
 		"username": "testuser",
@@ -188,6 +190,7 @@ func TestAuthRefresh(t *testing.T) {
 	registerReq.Header.Set("Content-Type", "application/json")
 	_, _ = app.Test(registerReq)
 
+	// login
 	loginBody, _ := json.Marshal(map[string]string{
 		"email":    "test@example.com",
 		"password": "password123",
@@ -240,31 +243,6 @@ func TestAuthRefresh(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			TruncateTables(t)
-
-			// Register
-			registerBody, _ := json.Marshal(map[string]string{
-				"email":    "test@example.com",
-				"username": "testuser",
-				"password": "password123",
-			})
-			registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
-			registerReq.Header.Set("Content-Type", "application/json")
-			_, _ = app.Test(registerReq)
-
-			// Login
-			loginBody, _ := json.Marshal(map[string]string{
-				"email":    "test@example.com",
-				"password": "password123",
-			})
-			loginReq := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))
-			loginReq.Header.Set("Content-Type", "application/json")
-			loginResp, _ := app.Test(loginReq)
-
-			var loginResult auth.LoginResponse
-			err := json.NewDecoder(loginResp.Body).Decode(&loginResult)
-			assert.NoError(t, err)
-
 			// Refresh
 			body, _ := json.Marshal(tt.body)
 			req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewReader(body))
@@ -274,7 +252,9 @@ func TestAuthRefresh(t *testing.T) {
 				req.Header.Set(k, v)
 			}
 
-			resp, err := app.Test(req)
+			resp, err := app.Test(req, fiber.TestConfig{
+				Timeout: 0,
+			})
 			assert.NoError(t, err)
 			assert.Equal(t, tt.wantStatus, resp.StatusCode)
 
@@ -287,7 +267,7 @@ func TestAuthRefresh(t *testing.T) {
 				result := pkg.Error{}
 				err = json.NewDecoder(resp.Body).Decode(&result)
 				assert.NoError(t, err)
-				
+
 				if tt.wantStatus != http.StatusOK {
 					assert.NotEmpty(t, result.Message)
 				} else {

@@ -55,6 +55,9 @@ func setupTestEnvironment() {
 		panic(fmt.Sprintf("failed to wait for database: %v", err))
 	}
 
+	database.GetDB().SqlConnection.SetConnMaxLifetime(5 * time.Minute)
+	database.GetDB().SqlConnection.SetConnMaxIdleTime(2 * time.Minute)
+
 	err = migrations.RunMigrations(config.GetConfig().Database.MigrationsPath)
 	if err != nil {
 		panic(fmt.Sprintf("failed to run migrations: %v", err))

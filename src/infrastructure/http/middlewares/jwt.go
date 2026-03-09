@@ -45,10 +45,9 @@ func (m *jwtMiddlewareImpl) Execute() func(c fiber.Ctx) error {
 
 		// Set userID on context
 		reqContext := c.Context()
-		appContext.SetUserOnContext(reqContext, userID)
+		newCtx := appContext.SetUserOnContext(reqContext, userID)
 
-		// Update context
-		c.SetContext(reqContext)
+		c.SetContext(newCtx)
 
 		return c.Next()
 	}
