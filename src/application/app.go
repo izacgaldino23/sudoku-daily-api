@@ -10,10 +10,11 @@ import (
 	"sudoku-daily-api/src/infrastructure/http/auth"
 	"sudoku-daily-api/src/infrastructure/http/middlewares"
 	httpSudoku "sudoku-daily-api/src/infrastructure/http/sudoku"
-	persistenceRefreshToken "sudoku-daily-api/src/infrastructure/persistence/refresh_token"
-	persistenceSudoku "sudoku-daily-api/src/infrastructure/persistence/sudoku"
-	persistenceTx "sudoku-daily-api/src/infrastructure/persistence/tx"
-	persistenceUser "sudoku-daily-api/src/infrastructure/persistence/user"
+	"sudoku-daily-api/src/infrastructure/persistence/cache"
+	persistenceRefreshToken "sudoku-daily-api/src/infrastructure/persistence/database/refresh_token"
+	persistenceSudoku "sudoku-daily-api/src/infrastructure/persistence/database/sudoku"
+	persistenceTx "sudoku-daily-api/src/infrastructure/persistence/database/tx"
+	persistenceUser "sudoku-daily-api/src/infrastructure/persistence/database/user"
 	"sudoku-daily-api/src/services"
 
 	"github.com/gofiber/fiber/v3"
@@ -21,13 +22,18 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	maxCacheSize = 5
+)
+
 func InitApp(app fiber.Router) error {
 	app.Use(recover.New(recover.Config{
 		EnableStackTrace: true,
 	}))
 
-	// others
+	// storages
 	databaseConnection := database.GetDB()
+	localCache := cache.NewLocalCache(maxCacheSize)
 
 	// strategies
 	fillStrategy := strategies.NewFillStrategy()
@@ -48,7 +54,7 @@ func InitApp(app fiber.Router) error {
 	tokenService := services.NewTokenService(authConfig.SecretKey, authConfig.AccessTokenDuration, authConfig.RefreshTokenDuration)
 
 	// use cases
-	getDailySudoku := sudokuUsecase.NewSudokuGetDailyUseCase(sudokuRepository)
+	getDailySudoku := sudokuUsecase.NewSudokuGetDailyUseCase(sudokuRepository, localCache)
 	generateAll := sudokuUsecase.NewSudokuGenerateAllUseCase(txManager, sudokuRepository, generatorService)
 
 	userRegister := userUsecase.NewUserRegisterUseCase(userRepository, passHasher)

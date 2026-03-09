@@ -4,7 +4,7 @@ import (
 	"context"
 	"sudoku-daily-api/src/domain/entities"
 	repository "sudoku-daily-api/src/domain/repository"
-	"sudoku-daily-api/src/infrastructure/persistence/tx"
+	"sudoku-daily-api/src/infrastructure/persistence/database/tx"
 	"time"
 
 	"github.com/uptrace/bun"
