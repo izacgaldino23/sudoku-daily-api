@@ -29,6 +29,7 @@ func init() {
 
 func main() {
 	app := fiber.New()
+	healthCheck(app)
 
 	apiRouter := app.Group("/api")
 	_ = application.InitApp(apiRouter)
@@ -47,4 +48,10 @@ func initLogger() {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	log.Logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
+}
+
+func healthCheck(app *fiber.App) {
+	app.Get("/health", func(c fiber.Ctx) error {
+		return c.SendString("OK")
+	})
 }
