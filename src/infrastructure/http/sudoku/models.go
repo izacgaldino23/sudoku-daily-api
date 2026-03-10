@@ -23,6 +23,17 @@ type (
 		Col   int `json:"col"`
 		Value int `json:"value"`
 	}
+
+	VerifySolutionRequest struct {
+		Solution     [][]int `json:"solution" validate:"required"`
+		SessionToken string  `json:"session_token" validate:"required"`
+	}
+
+	VerifySolutionResponse struct {
+		Valid      bool `json:"valid"`
+		StartedAt  int  `json:"started_at"`
+		FinishedAt int  `json:"finished_at"`
+	}
 )
 
 func (g *GetDailySudokuRequest) GetSize() int {
@@ -39,7 +50,7 @@ func (g *GetDailySudokuRequest) GetSize() int {
 }
 
 func (g *SudokuResponse) FromDomain(s *entities.Sudoku, sessionToken string) {
-	g.ID = s.ID
+	g.ID = s.ID.String()
 	g.Size = s.GetSize()
 	g.Board = BoardFromDomain(s.Board)
 	g.Date = s.Date.Format(time.DateOnly)
@@ -64,4 +75,10 @@ func BoardFromDomain(board entities.Board) []Cell {
 	}
 
 	return cells
+}
+
+func (s *VerifySolutionRequest) ToDomain() *entities.Solve {
+	return &entities.Solve{
+		Solution: s.Solution,
+	}
 }

@@ -50,3 +50,19 @@ func (r *sudokuRepository) Create(ctx context.Context, sudoku *entities.Sudoku) 
 	_, err = result.RowsAffected()
 	return err
 }
+
+func (r *sudokuRepository) AddSolve(ctx context.Context, solve *entities.Solve) error {
+	var solveModel = &Solve{}
+	solveModel.FromDomain(solve)
+
+	result, err := r.txManager.GetExecutor(ctx).
+		NewInsert().
+		Model(solveModel).
+		Exec(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = result.RowsAffected()
+	return err
+}

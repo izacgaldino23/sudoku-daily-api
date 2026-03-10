@@ -18,6 +18,7 @@ var (
 	ErrRefreshTokenExpired    = errors.New("refresh token expired")
 	ErrRefreshTokenRevoked    = errors.New("refresh token revoked")
 	ErrBodyInvalid            = errors.New("invalid body")
+	ErrInvalidSolution        = errors.New("invalid solution")
 )
 
 type (

@@ -52,10 +52,12 @@ func InitApp(app fiber.Router) error {
 	generatorService := services.NewGenerator(fillStrategy, hideStrategy)
 	passHasher := services.NewPasswordHasher(authConfig.Iterations, authConfig.Memory, authConfig.Parallelism, authConfig.KeyLen, authConfig.SaltLen)
 	tokenService := services.NewTokenService(authConfig.SecretKey, authConfig.AccessTokenDuration, authConfig.RefreshTokenDuration)
+	sudokuFetcher := services.NewSudokuDailyFetcher(localCache, sudokuRepository)
 
 	// use cases
-	getDailySudoku := sudokuUsecase.NewSudokuGetDailyUseCase(sudokuRepository, tokenService, localCache)
+	getDailySudoku := sudokuUsecase.NewSudokuGetDailyUseCase(tokenService, sudokuFetcher)
 	generateAll := sudokuUsecase.NewSudokuGenerateAllUseCase(txManager, sudokuRepository, generatorService)
+	verifySolutionUsecase := sudokuUsecase.NewSudokuVerifySolutionUseCase(userRepository, sudokuRepository, tokenService, sudokuFetcher)
 
 	userRegister := userUsecase.NewUserRegisterUseCase(userRepository, passHasher)
 	userLogin := userUsecase.NewUserLoginUseCase(txManager, userRepository, refreshTokenRepository, passHasher, tokenService)
@@ -69,7 +71,7 @@ func InitApp(app fiber.Router) error {
 	logMiddleware := middlewares.LogMiddleware(log.Logger)
 
 	// handlers
-	sudokuHandler := httpSudoku.NewSudokuHandler(getDailySudoku, generateAll)
+	sudokuHandler := httpSudoku.NewSudokuHandler(getDailySudoku, generateAll, verifySolutionUsecase)
 	authHandler := auth.NewAuthHandler(userRegister, userLogin, userRefreshToken, userLogoutUseCase)
 
 	app.Use(logMiddleware)

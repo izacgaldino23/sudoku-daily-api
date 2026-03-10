@@ -16,21 +16,25 @@ type (
 	ISudokuHandler interface {
 		GetDailySudoku(c fiber.Ctx) error
 		CreateSudoku(c fiber.Ctx) error
+		VerifySolution(c fiber.Ctx) error
 	}
 
 	sudokuHandler struct {
-		getDailyUseCase     sudoku.ISudokuGetDailyUseCase
-		createSudokuUseCase sudoku.ISudokuGenerateAllUseCase
+		getDailyUseCase       sudoku.ISudokuGetDailyUseCase
+		createSudokuUseCase   sudoku.SudokuGenerateAllUseCase
+		verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase
 	}
 )
 
 func NewSudokuHandler(
 	getDailyUseCase sudoku.ISudokuGetDailyUseCase,
-	createSudokuUseCase sudoku.ISudokuGenerateAllUseCase,
+	createSudokuUseCase sudoku.SudokuGenerateAllUseCase,
+	verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase,
 ) ISudokuHandler {
 	return &sudokuHandler{
-		getDailyUseCase:     getDailyUseCase,
-		createSudokuUseCase: createSudokuUseCase,
+		getDailyUseCase:       getDailyUseCase,
+		createSudokuUseCase:   createSudokuUseCase,
+		verifySolutionUseCase: verifySolutionUseCase,
 	}
 }
 
@@ -87,4 +91,30 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusOK).JSON(response)
+}
+
+func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
+	var (
+		ctxReq  = c.Context()
+		err     error
+		request VerifySolutionRequest
+	)
+
+	if err := c.Bind().Body(&request); err != nil {
+		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
+	}
+
+	if err := pkg.ValidateStruct(request); err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	solve := request.ToDomain()
+	solve.UserID = appContext.GetUserIDFromContext(ctxReq)
+
+	_, err = sh.verifySolutionUseCase.Execute(ctxReq, solve, request.SessionToken)
+	if err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	return c.SendStatus(http.StatusOK)
 }

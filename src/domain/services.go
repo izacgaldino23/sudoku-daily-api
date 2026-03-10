@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
 )
@@ -20,5 +21,9 @@ type (
 		GenerateRefreshToken(userID vo.UUID) (*entities.RefreshToken, error)
 		ValidateAccessToken(token string) (vo.UUID, error)
 		ParseToken(token string) (result map[string]any, err error)
+	}
+
+	SudokuDailyFetcher interface {
+		GetDaily(ctx context.Context, size int) (*entities.Sudoku, error)
 	}
 )

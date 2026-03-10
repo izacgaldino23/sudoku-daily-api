@@ -15,8 +15,8 @@ func RegisterRoutes(
 	authMiddleware fiber.Handler,
 	sessionMiddleware fiber.Handler,
 ) {
-	registerSudokuRoutes(app, sudokuHandler, tokenMiddleware, sessionMiddleware)
-	registerAuthRoutes(app, authHandler, tokenMiddleware, authMiddleware)
+	registerSudokuRoutes(app.Group("/sudoku"), sudokuHandler, tokenMiddleware, sessionMiddleware)
+	registerAuthRoutes(app.Group("/auth"), authHandler, tokenMiddleware, authMiddleware)
 }
 
 func registerSudokuRoutes(
@@ -25,9 +25,9 @@ func registerSudokuRoutes(
 	tokenMiddleware fiber.Handler,
 	sessionMiddleware fiber.Handler,
 ) {
-	api.Get("/sudoku", sessionMiddleware, tokenMiddleware, sudokuHandler.GetDailySudoku)
-
-	api.Post("/sudoku/generate", sudokuHandler.CreateSudoku)
+	api.Get("/", sessionMiddleware, tokenMiddleware, sudokuHandler.GetDailySudoku)
+	api.Post("/generate", sudokuHandler.CreateSudoku)
+	api.Post("/submit", sudokuHandler.VerifySolution)
 }
 
 func registerAuthRoutes(
@@ -36,10 +36,10 @@ func registerAuthRoutes(
 	tokenMiddleware fiber.Handler,
 	authMiddleware fiber.Handler,
 ) {
-	app.Post("/auth/register", authHandler.Register)
-	app.Post("/auth/login", authHandler.Login)
+	app.Post("/register", authHandler.Register)
+	app.Post("/login", authHandler.Login)
 
-	private := app.Group("/auth", tokenMiddleware, authMiddleware)
+	private := app.Group("/", tokenMiddleware, authMiddleware)
 
 	private.Post("/refresh", authHandler.Refresh)
 	private.Post("/logout", authHandler.Logout)

@@ -53,7 +53,7 @@ type (
 	}
 
 	Sudoku struct {
-		ID         string
+		ID         vo.UUID
 		Size       BoardSize
 		Board      Board
 		Solution   Board
