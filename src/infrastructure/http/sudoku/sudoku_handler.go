@@ -11,7 +11,7 @@ import (
 )
 
 type (
-	ISudokuHandler interface {
+	SudokuHandler interface {
 		GetDailySudoku(c fiber.Ctx) error
 		CreateSudoku(c fiber.Ctx) error
 		VerifySolution(c fiber.Ctx) error
@@ -28,7 +28,7 @@ func NewSudokuHandler(
 	getDailyUseCase sudoku.ISudokuGetDailyUseCase,
 	createSudokuUseCase sudoku.SudokuGenerateAllUseCase,
 	verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase,
-) ISudokuHandler {
+) SudokuHandler {
 	return &sudokuHandler{
 		getDailyUseCase:       getDailyUseCase,
 		createSudokuUseCase:   createSudokuUseCase,

@@ -9,7 +9,7 @@ import (
 
 func RegisterRoutes(
 	app fiber.Router,
-	sudokuHandler sudoku.ISudokuHandler,
+	sudokuHandler sudoku.SudokuHandler,
 	authHandler auth.AuthHandler,
 	optionalJWTMiddleware fiber.Handler,
 	requireJWTMiddleware fiber.Handler,
@@ -22,7 +22,7 @@ func RegisterRoutes(
 
 func registerSudokuRoutes(
 	api fiber.Router,
-	sudokuHandler sudoku.ISudokuHandler,
+	sudokuHandler sudoku.SudokuHandler,
 	optionalJWTMiddleware fiber.Handler,
 	sessionMiddleware fiber.Handler,
 	authMinimumMiddleware fiber.Handler,
