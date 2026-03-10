@@ -11,37 +11,37 @@ func RegisterRoutes(
 	app fiber.Router,
 	sudokuHandler sudoku.ISudokuHandler,
 	authHandler auth.AuthHandler,
-	tokenMiddleware fiber.Handler,
-	authMiddleware fiber.Handler,
+	optionalJWTMiddleware fiber.Handler,
+	requireJWTMiddleware fiber.Handler,
 	sessionMiddleware fiber.Handler,
 	authMinimumMiddleware fiber.Handler,
 ) {
-	registerSudokuRoutes(app.Group("/sudoku"), sudokuHandler, tokenMiddleware, sessionMiddleware, authMinimumMiddleware)
-	registerAuthRoutes(app.Group("/auth"), authHandler, tokenMiddleware, authMiddleware)
+	registerSudokuRoutes(app.Group("/sudoku"), sudokuHandler, optionalJWTMiddleware, sessionMiddleware, authMinimumMiddleware)
+	registerAuthRoutes(app.Group("/auth"), authHandler, optionalJWTMiddleware, requireJWTMiddleware)
 }
 
 func registerSudokuRoutes(
 	api fiber.Router,
 	sudokuHandler sudoku.ISudokuHandler,
-	tokenMiddleware fiber.Handler,
+	optionalJWTMiddleware fiber.Handler,
 	sessionMiddleware fiber.Handler,
 	authMinimumMiddleware fiber.Handler,
 ) {
-	api.Get("/", sessionMiddleware, tokenMiddleware, sudokuHandler.GetDailySudoku)
+	api.Get("/", sessionMiddleware, optionalJWTMiddleware, sudokuHandler.GetDailySudoku)
 	api.Post("/generate", sudokuHandler.CreateSudoku)
-	api.Post("/submit", sessionMiddleware, tokenMiddleware, authMinimumMiddleware, sudokuHandler.VerifySolution)
+	api.Post("/submit", sessionMiddleware, optionalJWTMiddleware, authMinimumMiddleware, sudokuHandler.VerifySolution)
 }
 
 func registerAuthRoutes(
 	app fiber.Router,
 	authHandler auth.AuthHandler,
-	tokenMiddleware fiber.Handler,
-	authMiddleware fiber.Handler,
+	optionalJWTMiddleware fiber.Handler,
+	requireJWTMiddleware fiber.Handler,
 ) {
 	app.Post("/register", authHandler.Register)
 	app.Post("/login", authHandler.Login)
 
-	private := app.Group("/", tokenMiddleware, authMiddleware)
+	private := app.Group("/", optionalJWTMiddleware, requireJWTMiddleware)
 
 	private.Post("/refresh", authHandler.Refresh)
 	private.Post("/logout", authHandler.Logout)

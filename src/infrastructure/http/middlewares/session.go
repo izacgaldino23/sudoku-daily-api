@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	sessionHeader = "session"
+	xSessionIdHeader = "X-Session-Id"
 )
 
 func SessionMiddleware(tokenService domain.TokenService) func(c fiber.Ctx) error {
 	return func(c fiber.Ctx) error {
-		header := c.Get(sessionHeader)
+		header := c.Get(xSessionIdHeader)
 
 		if len(header) == 0 {
 			return c.Next()

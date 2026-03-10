@@ -9,14 +9,14 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-func AuthMiddleware(tokenService domain.TokenService) fiber.Handler {
+func RequireJWTMiddleware(tokenService domain.TokenService) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		if appContext.GetUserIDFromContext(c.Context()) != "" {
 			return c.Next()
 		}
 
 		// Verify if token is present
-		header := c.Get(authHeader)
+		header := c.Get(authorizationHeader)
 
 		// Validate token and get userID
 		if len(header) == 0 {

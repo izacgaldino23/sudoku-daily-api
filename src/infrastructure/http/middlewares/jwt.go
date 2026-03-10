@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	authHeader = "Authorization"
+	authorizationHeader = "Authorization"
 )
 
-func JWTMiddleware(tokenService domain.TokenService) func(c fiber.Ctx) error {
+func OptionalJWTMiddleware(tokenService domain.TokenService) fiber.Handler {
 	return func(c fiber.Ctx) error {
-		header := c.Get(authHeader)
+		header := c.Get(authorizationHeader)
 
 		if len(header) == 0 {
 			return c.Next()

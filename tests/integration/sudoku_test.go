@@ -140,7 +140,7 @@ func TestSudokuGetDaily(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			if tt.session != "" {
-				req.Header.Set("session", tt.session)
+				req.Header.Set("X-Session-Id", tt.session)
 			}
 			if tt.auth != "" {
 				req.Header.Set("Authorization", tt.auth)
@@ -208,7 +208,7 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 		{
 			name: "submit valid solution",
 			body: map[string]interface{}{
-				"solution":      solution,
+				"solution":   solution,
 				"play_token": sudokuResp.PlayToken,
 			},
 			header:     sudokuResp.SessionID.String(),
@@ -217,7 +217,7 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 		{
 			name: "submit with invalid session token",
 			body: map[string]interface{}{
-				"solution":      solution,
+				"solution":   solution,
 				"play_token": "invalid-token",
 			},
 			header:     "invalid-token",
@@ -250,7 +250,7 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			if tt.header != "" {
-				req.Header.Set("session", tt.header)
+				req.Header.Set("X-Session-Id", tt.header)
 			}
 
 			resp, err := app.Test(req, fiber.TestConfig{

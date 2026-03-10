@@ -65,8 +65,8 @@ func InitApp(app fiber.Router) error {
 	userLogoutUseCase := userUsecase.NewUserLogoutUseCase(refreshTokenRepository)
 
 	// middlewares
-	tokenMiddleware := middlewares.JWTMiddleware(tokenService)
-	authMiddleware := middlewares.AuthMiddleware(tokenService)
+	optionalJWTMiddleware := middlewares.OptionalJWTMiddleware(tokenService)
+	requireJWTMiddleware := middlewares.RequireJWTMiddleware(tokenService)
 	authMinimumMiddleware := middlewares.AuthMinimumMiddleware(tokenService)
 	sessionMiddleware := middlewares.SessionMiddleware(tokenService)
 	logMiddleware := middlewares.LogMiddleware(log.Logger)
@@ -78,7 +78,7 @@ func InitApp(app fiber.Router) error {
 	app.Use(logMiddleware)
 
 	// routes
-	http.RegisterRoutes(app, sudokuHandler, authHandler, tokenMiddleware, authMiddleware, sessionMiddleware, authMinimumMiddleware)
+	http.RegisterRoutes(app, sudokuHandler, authHandler, optionalJWTMiddleware, requireJWTMiddleware, sessionMiddleware, authMinimumMiddleware)
 
 	return nil
 }
