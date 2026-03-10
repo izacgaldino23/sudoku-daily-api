@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	SessionToken struct {
+	PlayToken struct {
 		Date      string    `json:"date"`
 		Size      int       `json:"size"`
 		StartedAt time.Time `json:"started_at"`
@@ -26,7 +26,7 @@ type (
 	}
 )
 
-func (s *SessionToken) ToMap() map[string]any {
+func (s *PlayToken) ToMap() map[string]any {
 	return map[string]any{
 		"date":       s.Date,
 		"size":       s.Size,
@@ -36,12 +36,39 @@ func (s *SessionToken) ToMap() map[string]any {
 	}
 }
 
-func SessionTokenFromMap(m map[string]any) (*SessionToken, error) {
-	token := &SessionToken{}
+func PlayTokenFromMap(m map[string]any) (*PlayToken, error) {
+	token := &PlayToken{}
 
-	err := json.Unmarshal([]byte(m["token"].(string)), token)
-	if err != nil {
-		return nil, err
+	if tokenStr, ok := m["token"].(string); ok {
+		err := json.Unmarshal([]byte(tokenStr), token)
+		if err != nil {
+			return nil, err
+		}
+		return token, nil
+	}
+
+	if date, ok := m["date"].(string); ok {
+		token.Date = date
+	}
+	if size, ok := m["size"].(float64); ok {
+		token.Size = int(size)
+	}
+	if sessionID, ok := m["session_id"].(string); ok {
+		token.SessionID = vo.UUID(sessionID)
+	}
+	if expiresAt, ok := m["expires_at"].(string); ok {
+		t, err := time.Parse(time.RFC3339, expiresAt)
+		if err != nil {
+			return nil, err
+		}
+		token.ExpiresAt = t
+	}
+	if startedAt, ok := m["started_at"].(string); ok {
+		t, err := time.Parse(time.RFC3339, startedAt)
+		if err != nil {
+			return nil, err
+		}
+		token.StartedAt = t
 	}
 
 	return token, nil

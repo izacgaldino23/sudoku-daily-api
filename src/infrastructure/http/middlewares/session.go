@@ -19,18 +19,15 @@ func SessionMiddleware(tokenService domain.TokenService) func(c fiber.Ctx) error
 		if len(header) == 0 {
 			return c.Next()
 		}
-		claims, err := tokenService.ParseToken(string(header))
-		if err != nil {
-			return c.Next()
-		}
 
-		sessionID, ok := claims["session_id"].(vo.UUID)
-		if !ok {
+		sessionID := vo.UUID(header)
+
+		if !sessionID.IsValid() {
 			return c.Next()
 		}
 
 		reqContext := c.Context()
-		newCtx := appContext.SetSessionIDOnContext(reqContext, sessionID)
+		newCtx := appContext.SetSessionIDOnContext(reqContext, vo.UUID(sessionID))
 
 		c.SetContext(newCtx)
 

@@ -11,3 +11,8 @@ func NewUUID() UUID {
 func (u UUID) String() string {
 	return string(u)
 }
+
+func (u UUID) IsValid() bool {
+	_, err := uuid.Parse(string(u))
+	return err == nil
+}

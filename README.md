@@ -44,9 +44,9 @@
 ### Sudoku
 - [x] GET 	/api/sudoku/daily?size=9
 - [x] POST 	/api/sudoku/generate # Daily generation
-- [ ] POST 	/api/sudoku/submit
+- [x] POST 	/api/sudoku/submit
   - [x] Generate session token on GET /daily and validate on submit
-  - [ ] Validate solution on backend (compare with stored solution)
+  - [x] Validate solution on backend (compare with stored solution)
 
 
 ### Auth

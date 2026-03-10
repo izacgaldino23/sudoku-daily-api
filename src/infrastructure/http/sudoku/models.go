@@ -2,6 +2,7 @@ package sudoku
 
 import (
 	"sudoku-daily-api/src/domain/entities"
+	"sudoku-daily-api/src/domain/vo"
 	"time"
 )
 
@@ -11,11 +12,12 @@ type (
 	}
 
 	SudokuResponse struct {
-		ID           string `json:"id"`
-		Size         int    `json:"size"`
-		Board        []Cell `json:"board"`
-		Date         string `json:"date"`
-		SessionToken string `json:"session_token"`
+		ID        string  `json:"id"`
+		Size      int     `json:"size"`
+		Board     []Cell  `json:"board"`
+		Date      string  `json:"date"`
+		PlayToken string  `json:"session_token,omitempty"`
+		SessionID vo.UUID `json:"session_id,omitempty"`
 	}
 
 	Cell struct {
@@ -25,8 +27,8 @@ type (
 	}
 
 	VerifySolutionRequest struct {
-		Solution     [][]int `json:"solution" validate:"required"`
-		SessionToken string  `json:"session_token" validate:"required"`
+		Solution  [][]int `json:"solution" validate:"required"`
+		PlayToken string  `json:"play_token" validate:"required"`
 	}
 
 	VerifySolutionResponse struct {
@@ -49,12 +51,13 @@ func (g *GetDailySudokuRequest) GetSize() int {
 	}
 }
 
-func (g *SudokuResponse) FromDomain(s *entities.Sudoku, sessionToken string) {
+func (g *SudokuResponse) FromDomain(s *entities.Sudoku, playToken string, sessionID vo.UUID) {
 	g.ID = s.ID.String()
 	g.Size = s.GetSize()
 	g.Board = BoardFromDomain(s.Board)
 	g.Date = s.Date.Format(time.DateOnly)
-	g.SessionToken = sessionToken
+	g.PlayToken = playToken
+	g.SessionID = sessionID
 }
 
 func BoardFromDomain(board entities.Board) []Cell {
@@ -77,8 +80,10 @@ func BoardFromDomain(board entities.Board) []Cell {
 	return cells
 }
 
-func (s *VerifySolutionRequest) ToDomain() *entities.Solve {
+func (s *VerifySolutionRequest) ToDomain(userID vo.UUID) *entities.Solve {
 	return &entities.Solve{
-		Solution: s.Solution,
+		Solution:    s.Solution,
+		UserID:      userID,
+		CompletedAt: time.Now(),
 	}
 }

@@ -14,8 +14,9 @@ func RegisterRoutes(
 	tokenMiddleware fiber.Handler,
 	authMiddleware fiber.Handler,
 	sessionMiddleware fiber.Handler,
+	authMinimumMiddleware fiber.Handler,
 ) {
-	registerSudokuRoutes(app.Group("/sudoku"), sudokuHandler, tokenMiddleware, sessionMiddleware)
+	registerSudokuRoutes(app.Group("/sudoku"), sudokuHandler, tokenMiddleware, sessionMiddleware, authMinimumMiddleware)
 	registerAuthRoutes(app.Group("/auth"), authHandler, tokenMiddleware, authMiddleware)
 }
 
@@ -24,10 +25,11 @@ func registerSudokuRoutes(
 	sudokuHandler sudoku.ISudokuHandler,
 	tokenMiddleware fiber.Handler,
 	sessionMiddleware fiber.Handler,
+	authMinimumMiddleware fiber.Handler,
 ) {
 	api.Get("/", sessionMiddleware, tokenMiddleware, sudokuHandler.GetDailySudoku)
 	api.Post("/generate", sudokuHandler.CreateSudoku)
-	api.Post("/submit", sudokuHandler.VerifySolution)
+	api.Post("/submit", sessionMiddleware, tokenMiddleware, authMinimumMiddleware, sudokuHandler.VerifySolution)
 }
 
 func registerAuthRoutes(

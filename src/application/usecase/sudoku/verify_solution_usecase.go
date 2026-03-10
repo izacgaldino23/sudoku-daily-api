@@ -45,13 +45,13 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 		return false, pkg.ErrInvalidToken
 	}
 
-	sessionToken, err := entities.SessionTokenFromMap(claims)
+	playToken, err := entities.PlayTokenFromMap(claims)
 	if err != nil {
 		return false, pkg.ErrInvalidToken
 	}
 
 	// validate token
-	sessionIdToken := sessionToken.SessionID
+	sessionIdToken := playToken.SessionID
 	sessionID := app_context.GetSessionIDFromContext(ctx)
 
 	if sessionIdToken != sessionID {
@@ -59,7 +59,7 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 	}
 
 	// validate solution
-	sudoku, err := s.sudokuFetcher.GetDaily(ctx, sessionToken.Size)
+	sudoku, err := s.sudokuFetcher.GetDaily(ctx, playToken.Size)
 	if err != nil {
 		return false, err
 	}
@@ -72,7 +72,7 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 	if solve.UserID != "" {
 		solve.ID = vo.NewUUID()
 		solve.SudokuID = sudoku.ID
-		solve.StartedAt = sessionToken.StartedAt
+		solve.StartedAt = playToken.StartedAt
 		solve.CompletedAt = time.Now()
 
 		err = s.sudokuRepo.AddSolve(ctx, solve)
@@ -85,7 +85,7 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 }
 
 func compareSolution(sudoku *entities.Sudoku, solution *entities.Solve) bool {
-	board := sudoku.Board.GetBoard()
+	board := sudoku.Solution.GetBoard()
 	for i := 0; i < int(sudoku.Size); i++ {
 		for j := 0; j < int(sudoku.Size); j++ {
 			if board[i][j] != solution.Solution[i][j] {

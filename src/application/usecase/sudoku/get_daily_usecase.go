@@ -6,6 +6,7 @@ import (
 	"errors"
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
+	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
 	"time"
@@ -15,7 +16,7 @@ import (
 
 type (
 	ISudokuGetDailyUseCase interface {
-		Execute(ctx context.Context, size int, sessionID vo.UUID) (sudoku *entities.Sudoku, token string, err error)
+		Execute(ctx context.Context, size int) (sudoku *entities.Sudoku, playToken string, sessionID vo.UUID,err error)
 	}
 
 	sudokuGetDailyUseCase struct {
@@ -34,37 +35,39 @@ func NewSudokuGetDailyUseCase(
 	}
 }
 
-func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size int, sessionID vo.UUID) (*entities.Sudoku, string, error) {
+func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size int) (*entities.Sudoku, string, vo.UUID, error) {
 	_, ok := entities.BoardSizes[entities.BoardSize(size)]
 	if !ok {
 		log.Ctx(ctx).Error().Msgf("Invalid size: %d", size)
-		return nil, "", pkg.ErrQueryParamInvalid
+		return nil, "","", pkg.ErrQueryParamInvalid
 	}
 
 	sudoku, err := s.sudokuFetcher.GetDaily(ctx, size)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, "", pkg.ErrNotFound
+			return nil, "", "", pkg.ErrNotFound
 		}
-		return nil, "", err
+		return nil, "", "", err
 	}
 
-	token, err := s.generateToken(sessionID, sudoku)
+	sessionID := app_context.GetSessionIDFromContext(ctx)
+
+	token, sessionID, err := s.generateToken(sessionID, sudoku)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
-	return sudoku, token, nil
+	return sudoku, token, sessionID, nil
 }
 
-func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entities.Sudoku) (string, error) {
+func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entities.Sudoku) (string, vo.UUID, error) {
 	tomorrow := sudoku.Date.AddDate(0, 0, 1)
 
 	if sessionID == "" {
 		sessionID = vo.NewUUID()
 	}
 
-	sessionToken := &entities.SessionToken{
+	playToken := &entities.PlayToken{
 		Date:       sudoku.Date.Format(time.DateOnly),
 		Size:       int(sudoku.Size),
 		SessionID:  sessionID,
@@ -73,11 +76,11 @@ func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entitie
 		
 	}
 
-	token, err := s.tokenService.GenerateJWTToken(sessionToken.ToMap())
+	token, err := s.tokenService.GenerateJWTToken(playToken.ToMap())
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to generate session token")
-		return "", err
+		return "", "", err
 	}
 
-	return token, nil
+	return token, sessionID, nil
 }

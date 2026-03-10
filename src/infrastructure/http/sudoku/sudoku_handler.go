@@ -6,7 +6,6 @@ import (
 	"sudoku-daily-api/src/application/usecase/sudoku"
 	appContext "sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
-	"sudoku-daily-api/src/domain/vo"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -39,9 +38,8 @@ func NewSudokuHandler(
 
 func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	var (
-		ctxReq    = c.Context()
-		request   GetDailySudokuRequest
-		sessionID vo.UUID
+		ctxReq  = c.Context()
+		request GetDailySudokuRequest
 	)
 
 	if err := c.Bind().Query(&request); err != nil {
@@ -53,15 +51,14 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	}
 
 	size := request.GetSize()
-	sessionID = appContext.GetSessionIDFromContext(ctxReq)
 
-	dailySudoku, sessionToken, err := sh.getDailyUseCase.Execute(ctxReq, size, sessionID)
+	dailySudoku, playToken, sessionID, err := sh.getDailyUseCase.Execute(ctxReq, size)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
 
 	var response SudokuResponse
-	response.FromDomain(dailySudoku, sessionToken)
+	response.FromDomain(dailySudoku, playToken, sessionID)
 
 	return c.Status(http.StatusOK).JSON(response)
 }
@@ -81,7 +78,7 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	var response []SudokuResponse
 	for _, sudoku := range dailySudoku {
 		s := SudokuResponse{}
-		s.FromDomain(&sudoku, "")
+		s.FromDomain(&sudoku, "", "")
 		response = append(response, s)
 	}
 
@@ -103,10 +100,10 @@ func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	solve := request.ToDomain()
-	solve.UserID = appContext.GetUserIDFromContext(ctxReq)
+	userID := appContext.GetUserIDFromContext(ctxReq)
+	solve := request.ToDomain(userID)
 
-	_, err = sh.verifySolutionUseCase.Execute(ctxReq, solve, request.SessionToken)
+	_, err = sh.verifySolutionUseCase.Execute(ctxReq, solve, request.PlayToken)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
