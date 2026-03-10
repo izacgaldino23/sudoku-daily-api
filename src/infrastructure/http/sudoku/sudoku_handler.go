@@ -9,7 +9,6 @@ import (
 	"sudoku-daily-api/src/domain/vo"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/rs/zerolog/log"
 )
 
 type (
@@ -43,7 +42,6 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 		ctxReq    = c.Context()
 		request   GetDailySudokuRequest
 		sessionID vo.UUID
-		size      int
 	)
 
 	if err := c.Bind().Query(&request); err != nil {
@@ -54,11 +52,8 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
+	size := request.GetSize()
 	sessionID = appContext.GetSessionIDFromContext(ctxReq)
-	if sessionID == "" {
-		log.Ctx(ctxReq).Error().Msg("sessionID was not informed")
-		return pkg.JsonError(c, pkg.ErrInvalidCredentials)
-	}
 
 	dailySudoku, sessionToken, err := sh.getDailyUseCase.Execute(ctxReq, size, sessionID)
 	if err != nil {

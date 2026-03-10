@@ -60,6 +60,10 @@ func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size int, sessionID
 func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entities.Sudoku) (string, error) {
 	tomorrow := sudoku.Date.AddDate(0, 0, 1)
 
+	if sessionID == "" {
+		sessionID = vo.NewUUID()
+	}
+
 	sessionToken := &entities.SessionToken{
 		Date:       sudoku.Date.Format(time.DateOnly),
 		Size:       int(sudoku.Size),

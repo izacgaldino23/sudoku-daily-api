@@ -43,7 +43,7 @@ func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, seed int64) (*e
 		return nil, fmt.Errorf("failed to fill sudoku")
 	}
 
-	sudoku.Board = sudoku.Solution
+	sudoku.Solution = sudoku.Board
 
 	hide := s.hideStrategy.Hide(sudoku, r)
 	if !hide {
