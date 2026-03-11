@@ -24,9 +24,9 @@ services:
     build: .
     depends_on:
       - db
-    command: ["migrate"]
+    entrypoint: ["migrate"]
     environment:
-      DATABASE_MIGRATIONS_PATH: "migrations/sql"
+      DATABASE_MIGRATIONS_PATH: "/app/migrations/sql"
       DATABASE_HOST: "db"
       DATABASE_PORT: "5432"
       DATABASE_USERNAME: "postgres"

@@ -16,6 +16,7 @@ WORKDIR /app
 
 COPY --from=builder /out/api /usr/local/bin/api
 COPY --from=builder /out/migrate /usr/local/bin/migrate
+COPY --from=builder /app/migrations /app/migrations
 
 EXPOSE 8080
 

@@ -51,13 +51,12 @@ func (g *GetDailySudokuRequest) GetSize() int {
 	}
 }
 
-func (g *SudokuResponse) FromDomain(s *entities.Sudoku, playToken string, sessionID vo.UUID) {
+func (g *SudokuResponse) FromDomain(s *entities.Sudoku, playToken string) {
 	g.ID = s.ID.String()
 	g.Size = s.GetSize()
 	g.Board = BoardFromDomain(s.Board)
 	g.Date = s.Date.Format(time.DateOnly)
 	g.PlayToken = playToken
-	g.SessionID = sessionID
 }
 
 func BoardFromDomain(board entities.Board) []Cell {

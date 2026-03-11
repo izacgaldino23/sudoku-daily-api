@@ -6,6 +6,7 @@ import (
 	"sudoku-daily-api/src/application/usecase/sudoku"
 	appContext "sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
+	"sudoku-daily-api/src/infrastructure/http/middlewares"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -58,7 +59,9 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	}
 
 	var response SudokuResponse
-	response.FromDomain(dailySudoku, playToken, sessionID)
+	response.FromDomain(dailySudoku, playToken)
+
+	c.Append(middlewares.XSessionIdHeader, sessionID.String())
 
 	return c.Status(http.StatusOK).JSON(response)
 }
@@ -78,7 +81,7 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	var response []SudokuResponse
 	for _, sudoku := range dailySudoku {
 		s := SudokuResponse{}
-		s.FromDomain(&sudoku, "", "")
+		s.FromDomain(&sudoku, "")
 		response = append(response, s)
 	}
 

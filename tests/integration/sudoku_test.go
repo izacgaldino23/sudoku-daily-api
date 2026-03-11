@@ -152,6 +152,8 @@ func TestSudokuGetDaily(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tt.wantStatus, resp.StatusCode)
 
+			sessionID := resp.Header.Get("X-Session-Id")
+
 			if resp.StatusCode == http.StatusOK {
 				var sudokuResp sudoku.SudokuResponse
 				err := json.NewDecoder(resp.Body).Decode(&sudokuResp)
@@ -160,6 +162,7 @@ func TestSudokuGetDaily(t *testing.T) {
 				assert.NotEmpty(t, sudokuResp.PlayToken)
 				assert.NotEmpty(t, sudokuResp.Board)
 				assert.NotEmpty(t, sudokuResp.Date)
+				assert.NotEmpty(t, sessionID)
 			} else {
 				var errResp pkg.Error
 				err := json.NewDecoder(resp.Body).Decode(&errResp)
@@ -195,9 +198,9 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 	err = json.NewDecoder(dailyResp.Body).Decode(&sudokuResp)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, sudokuResp.PlayToken)
-	assert.NotEmpty(t, sudokuResp.SessionID)
 
-	t.Logf("Session token: %s", sudokuResp.SessionID)
+	sessionID := dailyResp.Header.Get("X-Session-Id")
+	assert.NotEmpty(t, sessionID)
 
 	tests := []struct {
 		name       string
@@ -211,7 +214,7 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 				"solution":   solution,
 				"play_token": sudokuResp.PlayToken,
 			},
-			header:     sudokuResp.SessionID.String(),
+			header:     sessionID,
 			wantStatus: http.StatusOK,
 		},
 		{
@@ -236,7 +239,7 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 			body: map[string]interface{}{
 				"play_token": sudokuResp.PlayToken,
 			},
-			header:     sudokuResp.SessionID.String(),
+			header:     sessionID,
 			wantStatus: http.StatusBadRequest,
 		},
 	}

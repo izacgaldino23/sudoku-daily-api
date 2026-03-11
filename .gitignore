@@ -1,5 +1,7 @@
 .vscode/**
 **/*.out
-.env
 **/__debug_*
 *.http
+
+.env
+temp.env
