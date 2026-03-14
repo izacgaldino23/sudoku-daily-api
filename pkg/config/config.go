@@ -56,22 +56,7 @@ func viperInit() error {
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.SetConfigType("env")
 
-	name := os.Getenv("ENV")
-	if name == "" {
-		name = "local"
-	}
-	name = strings.TrimSuffix(name, ".env")
-
-	v.SetConfigName(name)
-	v.AddConfigPath(".")
-
 	v.SetDefault("DATABASE.SSL_MODE", "disable")
-
-	if _, err := os.Stat(name + ".env"); err == nil {
-		if err := v.ReadInConfig(); err != nil {
-			return fmt.Errorf("failed to read config file: %w", err)
-		}
-	}
 
 	v.AutomaticEnv()
 
@@ -100,7 +85,7 @@ func viperInit() error {
 		return err
 	}
 
-	if name == "local" {
+	if os.Getenv("ENV") == "local" {
 		configEnv.ApiPort = "127.0.0.1:" + configEnv.ApiPort
 	} else {
 		configEnv.ApiPort = "0.0.0.0:" + configEnv.ApiPort

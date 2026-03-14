@@ -44,11 +44,12 @@ type Container struct {
 	UserLogout       userUsecase.UserLogoutUseCase
 
 	// middlewares
-	RequireJWT    fiber.Handler
-	OptionalJWT   fiber.Handler
-	AuthMinimum   fiber.Handler
-	Session       fiber.Handler
-	LogMiddleware fiber.Handler
+	RequireJWT          fiber.Handler
+	OptionalJWT         fiber.Handler
+	AuthMinimum         fiber.Handler
+	Session             fiber.Handler
+	LogMiddleware       fiber.Handler
+	RequestIDMiddleware fiber.Handler
 
 	// handlers
 	SudokuHandler httpSudoku.SudokuHandler

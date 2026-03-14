@@ -45,13 +45,22 @@ func main() {
 
 func initLogger() {
 	zerolog.TimeFieldFormat = time.RFC3339
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
 	log.Logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
 }
 
 func healthCheck(app *fiber.App) {
 	app.Get("/health", func(c fiber.Ctx) error {
-		return c.SendString("OK")
+		databaseHealth := "ok"
+		databaseErr := database.GetDB().SqlConnection.Ping()
+		if databaseErr != nil {
+			databaseHealth = databaseErr.Error()
+		}
+
+		return c.JSON(fiber.Map{
+			"status":   "ok",
+			"database": databaseHealth,
+		})
 	})
 }

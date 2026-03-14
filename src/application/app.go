@@ -27,6 +27,7 @@ func InitApp(app fiber.Router) error {
 	container.BuildMiddlewares()
 
 	app.Use(container.LogMiddleware)
+	app.Use(container.RequestIDMiddleware)
 
 	http.RegisterRoutes(
 		app,

@@ -12,4 +12,5 @@ func (c *Container) BuildMiddlewares() {
 	c.AuthMinimum = middlewares.AuthMinimumMiddleware(c.TokenService)
 	c.Session = middlewares.SessionMiddleware(c.TokenService)
 	c.LogMiddleware = middlewares.LogMiddleware(log.Logger)
+	c.RequestIDMiddleware = middlewares.NewRequestIDMiddleware()
 }

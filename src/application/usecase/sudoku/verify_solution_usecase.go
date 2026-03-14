@@ -9,6 +9,8 @@ import (
 	"sudoku-daily-api/src/domain/repository"
 	"sudoku-daily-api/src/domain/vo"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 type (
@@ -42,6 +44,7 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 	// parse token
 	claims, err := s.tokenService.ParseToken(token)
 	if err != nil {
+		log.Ctx(ctx).Err(err).Send()
 		return false, pkg.ErrInvalidToken
 	}
 

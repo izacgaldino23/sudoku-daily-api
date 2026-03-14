@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sudoku-daily-api/src/domain"
@@ -43,7 +44,9 @@ func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, seed int64) (*e
 		return nil, fmt.Errorf("failed to fill sudoku")
 	}
 
-	sudoku.Solution = sudoku.Board
+	if err := deepCopy(&sudoku.Board, &sudoku.Solution); err != nil {
+		return nil, err
+	}
 
 	hide := s.hideStrategy.Hide(sudoku, r)
 	if !hide {
@@ -53,4 +56,16 @@ func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, seed int64) (*e
 	fmt.Printf("Finish generating %v x %v sudoku in %vms\n", size, size, time.Since(start).Milliseconds())
 
 	return sudoku, nil
+}
+
+func deepCopy(src, dst interface{}) error {
+	bytes, err := json.Marshal(src)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(bytes, dst)
+	if err != nil {
+		return err
+	}
+	return nil
 }
