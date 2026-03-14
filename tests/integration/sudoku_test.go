@@ -6,11 +6,13 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"sudoku-daily-api/pkg"
-	"sudoku-daily-api/src/infrastructure/http/sudoku"
 	"testing"
 
+	"sudoku-daily-api/pkg"
+	"sudoku-daily-api/src/infrastructure/http/sudoku"
+
 	"github.com/gofiber/fiber/v3"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -94,7 +96,7 @@ func TestSudokuGetDaily(t *testing.T) {
 		},
 		{
 			name:       "get daily sudoku with session header",
-			session:    "some-session-token",
+			session:    uuid.NewString(),
 			auth:       "",
 			size:       "nine",
 			wantStatus: http.StatusOK,
@@ -230,6 +232,7 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 			name: "submit with missing session token",
 			body: map[string]interface{}{
 				"solution": solution,
+				"play_token": sudokuResp.PlayToken,
 			},
 			header:     "",
 			wantStatus: http.StatusUnauthorized,

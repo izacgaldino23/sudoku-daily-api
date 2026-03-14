@@ -43,15 +43,19 @@ type Container struct {
 	UserRefreshToken userUsecase.UserRefreshTokenUseCase
 	UserLogout       userUsecase.UserLogoutUseCase
 
-	// middlewares
+	Middlewares Middlewares
+
+	// handlers
+	SudokuHandler httpSudoku.SudokuHandler
+	AuthHandler   auth.AuthHandler
+}
+
+type Middlewares struct {
 	RequireJWT          fiber.Handler
 	OptionalJWT         fiber.Handler
 	AuthMinimum         fiber.Handler
 	Session             fiber.Handler
 	LogMiddleware       fiber.Handler
-	RequestIDMiddleware fiber.Handler
-
-	// handlers
-	SudokuHandler httpSudoku.SudokuHandler
-	AuthHandler   auth.AuthHandler
+	RequestID fiber.Handler
+	ResponseHeaders     fiber.Handler
 }

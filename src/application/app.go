@@ -10,13 +10,6 @@ import (
 )
 
 func InitApp(app fiber.Router) error {
-	app.Use(recover.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins:  []string{"http://localhost:5173"},
-		AllowHeaders:  []string{"Origin", "Content-Type", "Accept", "X-Session-ID", "Authorization"},
-		ExposeHeaders: []string{"X-Session-ID"},
-	}))
-
 	container := &bootstrap.Container{}
 
 	container.BuildInfrastructure()
@@ -25,18 +18,35 @@ func InitApp(app fiber.Router) error {
 	container.BuildUseCases()
 	container.BuildHandlers()
 	container.BuildMiddlewares()
+	
+	app.Use(container.Middlewares.ResponseHeaders)
+	app.Use(recover.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"http://localhost:5173"},
+		AllowHeaders: []string{"Origin",
+			"Content-Type",
+			"Accept",
+			"X-Session-ID",
+			"Authorization",
+			"X-Request-ID",
+		},
+		ExposeHeaders: []string{
+			"X-Session-ID",
+			"X-Request-ID",
+		},
+	}))
 
-	app.Use(container.LogMiddleware)
-	app.Use(container.RequestIDMiddleware)
+	app.Use(container.Middlewares.LogMiddleware)
+	app.Use(container.Middlewares.RequestID)
 
 	http.RegisterRoutes(
 		app,
 		container.SudokuHandler,
 		container.AuthHandler,
-		container.OptionalJWT,
-		container.RequireJWT,
-		container.Session,
-		container.AuthMinimum,
+		container.Middlewares.OptionalJWT,
+		container.Middlewares.RequireJWT,
+		container.Middlewares.Session,
+		container.Middlewares.AuthMinimum,
 	)
 
 	return nil

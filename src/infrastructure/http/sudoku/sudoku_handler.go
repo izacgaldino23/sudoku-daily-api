@@ -2,11 +2,11 @@ package sudoku
 
 import (
 	"net/http"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/application/usecase/sudoku"
 	appContext "sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
-	"sudoku-daily-api/src/infrastructure/http/middlewares"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -53,15 +53,13 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 
 	size := request.GetSize()
 
-	dailySudoku, playToken, sessionID, err := sh.getDailyUseCase.Execute(ctxReq, size)
+	dailySudoku, playToken, err := sh.getDailyUseCase.Execute(ctxReq, size)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
 
 	var response SudokuResponse
 	response.FromDomain(dailySudoku, playToken)
-
-	c.Append(middlewares.XSessionIdHeader, sessionID.String())
 
 	return c.Status(http.StatusOK).JSON(response)
 }

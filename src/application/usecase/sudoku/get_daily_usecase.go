@@ -4,19 +4,20 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
-	"time"
 
 	"github.com/rs/zerolog/log"
 )
 
 type (
 	ISudokuGetDailyUseCase interface {
-		Execute(ctx context.Context, size int) (sudoku *entities.Sudoku, playToken string, sessionID vo.UUID, err error)
+		Execute(ctx context.Context, size int) (sudoku *entities.Sudoku, playToken string, err error)
 	}
 
 	sudokuGetDailyUseCase struct {
@@ -35,37 +36,33 @@ func NewSudokuGetDailyUseCase(
 	}
 }
 
-func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size int) (*entities.Sudoku, string, vo.UUID, error) {
+func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size int) (*entities.Sudoku, string, error) {
 	_, ok := entities.BoardSizes[entities.BoardSize(size)]
 	if !ok {
 		log.Ctx(ctx).Error().Msgf("Invalid size: %d", size)
-		return nil, "", "", pkg.ErrQueryParamInvalid
+		return nil, "", pkg.ErrQueryParamInvalid
 	}
 
 	sudoku, err := s.sudokuFetcher.GetDaily(ctx, size)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, "", "", pkg.ErrNotFound
+			return nil, "", pkg.ErrNotFound
 		}
-		return nil, "", "", err
+		return nil, "", err
 	}
 
 	sessionID := app_context.GetSessionIDFromContext(ctx)
 
-	token, sessionID, err := s.generateToken(sessionID, sudoku)
+	token, err := s.generateToken(sessionID, sudoku)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", err
 	}
 
-	return sudoku, token, sessionID, nil
+	return sudoku, token, nil
 }
 
-func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entities.Sudoku) (string, vo.UUID, error) {
+func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entities.Sudoku) (string, error) {
 	tomorrow := sudoku.Date.AddDate(0, 0, 1)
-
-	if sessionID == "" {
-		sessionID = vo.NewUUID()
-	}
 
 	playToken := &entities.PlayToken{
 		Date:      sudoku.Date.Format(time.DateOnly),
@@ -76,7 +73,7 @@ func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entitie
 	}
 
 	// seconds until tomorrow
-	
+
 	secondsUntilTomorrow := int(time.Until(tomorrow).Seconds())
 	if secondsUntilTomorrow < 0 {
 		secondsUntilTomorrow = 0
@@ -85,8 +82,8 @@ func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entitie
 	token, err := s.tokenService.GenerateJWTToken(playToken.ToMap(), &secondsUntilTomorrow)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to generate session token")
-		return "", "", err
+		return "", err
 	}
 
-	return token, sessionID, nil
+	return token, nil
 }

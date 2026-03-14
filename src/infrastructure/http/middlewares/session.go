@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	appContext "sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/vo"
@@ -14,16 +15,17 @@ const (
 
 func SessionMiddleware(tokenService domain.TokenService) func(c fiber.Ctx) error {
 	return func(c fiber.Ctx) error {
-		header := c.Get(XSessionIdHeader)
+		var (
+			header    = c.Get(XSessionIdHeader)
+			sessionID = newSessionID()
+		)
 
-		if len(header) == 0 {
-			return c.Next()
-		}
+		if len(header) > 0 {
+			sessionID = vo.UUID(header)
 
-		sessionID := vo.UUID(header)
-
-		if !sessionID.IsValid() {
-			return c.Next()
+			if !sessionID.IsValid() {
+				return pkg.JsonError(c, pkg.ErrInvalidToken)
+			}
 		}
 
 		reqContext := c.Context()
@@ -33,4 +35,8 @@ func SessionMiddleware(tokenService domain.TokenService) func(c fiber.Ctx) error
 
 		return c.Next()
 	}
+}
+
+func newSessionID() vo.UUID {
+	return vo.NewUUID()
 }
