@@ -12,8 +12,9 @@ import (
 func InitApp(app fiber.Router) error {
 	app.Use(recover.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:5173"},
-		AllowHeaders: []string{"Origin", "Content-Type", "Accept"},
+		AllowOrigins:  []string{"http://localhost:5173"},
+		AllowHeaders:  []string{"Origin", "Content-Type", "Accept", "X-Session-ID", "Authorization"},
+		ExposeHeaders: []string{"X-Session-ID"},
 	}))
 
 	container := &bootstrap.Container{}

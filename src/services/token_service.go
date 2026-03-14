@@ -31,9 +31,14 @@ func NewTokenService(
 	}
 }
 
-func (s *TokenService) GenerateJWTToken(fields map[string]any) (string, error) {
+func (s *TokenService) GenerateJWTToken(fields map[string]any, duration *int) (string, error) {
+	var tokenDuration = s.accessTokenDuration
+	if duration != nil && *duration > 0 {
+		tokenDuration = *duration
+	}
+
 	claims := jwt.MapClaims{
-		"exp": time.Now().Add(time.Duration(s.accessTokenDuration) * time.Second).Unix(),
+		"exp": time.Now().Add(time.Duration(tokenDuration) * time.Second).Unix(),
 		"iat": time.Now().Unix(),
 	}
 

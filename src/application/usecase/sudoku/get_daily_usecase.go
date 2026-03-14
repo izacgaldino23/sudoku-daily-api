@@ -16,7 +16,7 @@ import (
 
 type (
 	ISudokuGetDailyUseCase interface {
-		Execute(ctx context.Context, size int) (sudoku *entities.Sudoku, playToken string, sessionID vo.UUID,err error)
+		Execute(ctx context.Context, size int) (sudoku *entities.Sudoku, playToken string, sessionID vo.UUID, err error)
 	}
 
 	sudokuGetDailyUseCase struct {
@@ -39,7 +39,7 @@ func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size int) (*entitie
 	_, ok := entities.BoardSizes[entities.BoardSize(size)]
 	if !ok {
 		log.Ctx(ctx).Error().Msgf("Invalid size: %d", size)
-		return nil, "","", pkg.ErrQueryParamInvalid
+		return nil, "", "", pkg.ErrQueryParamInvalid
 	}
 
 	sudoku, err := s.sudokuFetcher.GetDaily(ctx, size)
@@ -68,15 +68,21 @@ func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entitie
 	}
 
 	playToken := &entities.PlayToken{
-		Date:       sudoku.Date.Format(time.DateOnly),
-		Size:       int(sudoku.Size),
-		SessionID:  sessionID,
-		StartedAt:  time.Now(),
-		ExpiresAt:  tomorrow,
-		
+		Date:      sudoku.Date.Format(time.DateOnly),
+		Size:      int(sudoku.Size),
+		SessionID: sessionID,
+		StartedAt: time.Now(),
+		ExpiresAt: tomorrow,
 	}
 
-	token, err := s.tokenService.GenerateJWTToken(playToken.ToMap())
+	// seconds until tomorrow
+	
+	secondsUntilTomorrow := int(time.Until(tomorrow).Seconds())
+	if secondsUntilTomorrow < 0 {
+		secondsUntilTomorrow = 0
+	}
+
+	token, err := s.tokenService.GenerateJWTToken(playToken.ToMap(), &secondsUntilTomorrow)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to generate session token")
 		return "", "", err
