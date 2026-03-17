@@ -57,7 +57,7 @@ func (a *authHandler) Register(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	return c.SendStatus(http.StatusCreated)
+	return c.Status(http.StatusCreated).SendString("")
 }
 
 func (a *authHandler) Login(c fiber.Ctx) error {

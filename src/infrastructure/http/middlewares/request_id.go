@@ -6,15 +6,19 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
+const (
+	XRequestIDHeader = "X-Request-ID"
+)
+
 func NewRequestIDMiddleware() fiber.Handler {
 	return func(c fiber.Ctx) error {
-		requestID := c.Get("X-Request-ID")
+		requestID := c.Get(XRequestIDHeader)
 
 		if len(requestID) == 0 {
 			requestID = vo.NewUUID().String()
 		}
 
-		c.Set("X-Request-ID", requestID)
+		c.Set(XRequestIDHeader, requestID)
 		return c.Next()
 	}
 }

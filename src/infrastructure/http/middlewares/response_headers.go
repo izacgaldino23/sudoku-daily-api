@@ -12,10 +12,10 @@ func NewResponseHeadersMiddleware() fiber.Handler {
 
 		reqCtx := c.Context()
 		sessionID := app_context.GetSessionIDFromContext(reqCtx)
-		c.Set("X-Session-ID", sessionID.String())
+		c.Set(XSessionIdHeader, sessionID.String())
 
 		requestID := app_context.GetRequestIDFromContext(reqCtx)
-		c.Set("X-Request-ID", requestID.String())
+		c.Set(XRequestIDHeader, requestID.String())
 
 		return err
 	}

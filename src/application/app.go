@@ -3,6 +3,7 @@ package application
 import (
 	"sudoku-daily-api/src/application/bootstrap"
 	"sudoku-daily-api/src/infrastructure/http"
+	"sudoku-daily-api/src/infrastructure/http/middlewares"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
@@ -18,26 +19,8 @@ func InitApp(app fiber.Router) error {
 	container.BuildUseCases()
 	container.BuildHandlers()
 	container.BuildMiddlewares()
-	
-	app.Use(container.Middlewares.ResponseHeaders)
-	app.Use(recover.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:5173"},
-		AllowHeaders: []string{"Origin",
-			"Content-Type",
-			"Accept",
-			"X-Session-ID",
-			"Authorization",
-			"X-Request-ID",
-		},
-		ExposeHeaders: []string{
-			"X-Session-ID",
-			"X-Request-ID",
-		},
-	}))
 
-	app.Use(container.Middlewares.LogMiddleware)
-	app.Use(container.Middlewares.RequestID)
+	addMiddlewares(app, container)
 
 	http.RegisterRoutes(
 		app,
@@ -50,4 +33,26 @@ func InitApp(app fiber.Router) error {
 	)
 
 	return nil
+}
+
+func addMiddlewares(app fiber.Router, container *bootstrap.Container) {
+	app.Use(recover.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"http://localhost:5173"},
+		AllowHeaders: []string{"Origin",
+			"Content-Type",
+			"Accept",
+			"Authorization",
+			middlewares.XSessionIdHeader,
+			middlewares.XRequestIDHeader,
+		},
+		ExposeHeaders: []string{
+			middlewares.XSessionIdHeader,
+			middlewares.XRequestIDHeader,
+		},
+	}))
+
+	app.Use(container.Middlewares.RequestID)
+	app.Use(container.Middlewares.ResponseHeaders)
+	app.Use(container.Middlewares.LogMiddleware)
 }

@@ -29,7 +29,7 @@ type (
 		UserID      string    `bun:"user_id,notnull"`
 		StartedAt   time.Time `bun:"type:timestamp,notnull"`
 		CompletedAt time.Time `bun:"type:timestamp,notnull"`
-		CreatedAt   time.Time `bun:"type:timestamp,notnull"`
+		CreatedAt   time.Time `bun:"type:timestamp,notnull,default:current_timestamp"`
 	}
 )
 
