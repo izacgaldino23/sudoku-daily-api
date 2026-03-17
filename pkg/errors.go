@@ -1,24 +1,23 @@
 package pkg
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gofiber/fiber/v3"
 )
 
 var (
-	ErrNotFound               = errors.New("not found")
-	ErrQueryParamInvalid      = errors.New("invalid query param")
-	ErrInvalidEmail           = errors.New("invalid email")
-	ErrInvalidToken           = errors.New("invalid token")
-	ErrTokenExpired           = errors.New("token expired")
-	ErrInvalidCredentials     = errors.New("invalid credentials")
-	ErrEmailAlreadyRegistered = errors.New("email already registered")
-	ErrRefreshTokenExpired    = errors.New("refresh token expired")
-	ErrRefreshTokenRevoked    = errors.New("refresh token revoked")
-	ErrBodyInvalid            = errors.New("invalid body")
-	ErrInvalidSolution        = errors.New("invalid solution")
+	ErrNotFound               = NewError("not found")
+	ErrQueryParamInvalid      = NewError("invalid query param")
+	ErrInvalidEmail           = NewError("invalid email")
+	ErrInvalidToken           = NewError("invalid token")
+	ErrTokenExpired           = NewError("token expired")
+	ErrInvalidCredentials     = NewError("invalid credentials")
+	ErrEmailAlreadyRegistered = NewError("email already registered")
+	ErrRefreshTokenExpired    = NewError("refresh token expired")
+	ErrRefreshTokenRevoked    = NewError("refresh token revoked")
+	ErrBodyInvalid            = NewError("invalid body")
+	ErrInvalidSolution        = NewError("invalid solution")
 )
 
 type (

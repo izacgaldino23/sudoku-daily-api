@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/vo"
 
 	"github.com/gofiber/fiber/v3"
@@ -18,7 +19,10 @@ func NewRequestIDMiddleware() fiber.Handler {
 			requestID = vo.NewUUID().String()
 		}
 
-		c.Set(XRequestIDHeader, requestID)
+		reqCtx := app_context.SetRequestIDOnContext(c.Context(), vo.UUID(requestID))
+
+		c.SetContext(reqCtx)
+
 		return c.Next()
 	}
 }

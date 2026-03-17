@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/strategies"
-	"time"
 )
 
 type (
@@ -36,8 +36,6 @@ func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, seed int64) (*e
 	sudoku := entities.NewSudoku(size)
 
 	r := rand.New(rand.NewSource(sudoku.Date.Unix()))
-	start := time.Now()
-	fmt.Printf("Start generating %v x %v sudoku at %v\n", size, size, start)
 
 	filled := s.fillStrategy.Fill(sudoku, r)
 	if !filled {
@@ -52,8 +50,6 @@ func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, seed int64) (*e
 	if !hide {
 		return nil, fmt.Errorf("failed to hide sudoku")
 	}
-
-	fmt.Printf("Finish generating %v x %v sudoku in %vms\n", size, size, time.Since(start).Milliseconds())
 
 	return sudoku, nil
 }
