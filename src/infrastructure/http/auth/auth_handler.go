@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/application/usecase/user"
 	"sudoku-daily-api/src/domain/app_context"
@@ -16,6 +17,7 @@ type (
 		Login(c fiber.Ctx) error
 		Refresh(c fiber.Ctx) error
 		Logout(c fiber.Ctx) error
+		Resume(c fiber.Ctx) error
 	}
 
 	authHandler struct {
@@ -23,6 +25,7 @@ type (
 		userLoginUseCase        user.UserLoginUseCase
 		userRefreshTokenUseCase user.UserRefreshTokenUseCase
 		userLogoutUseCase       user.UserLogoutUseCase
+		userResumeUseCase       user.UserResumeUseCase
 	}
 )
 
@@ -132,4 +135,18 @@ func (a *authHandler) Logout(c fiber.Ctx) error {
 	}
 
 	return c.SendStatus(http.StatusOK)
+}
+
+func (a *authHandler) Resume(c fiber.Ctx) error {
+	userID := app_context.GetUserIDFromContext(c.Context())
+
+	resume, err := a.userResumeUseCase.Execute(c.Context(), userID)
+	if err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	response := ResumeResponse{}
+	response.FromDomain(resume)
+
+	return c.Status(http.StatusOK).JSON(response)
 }

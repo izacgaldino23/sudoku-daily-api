@@ -2,8 +2,9 @@ package entities
 
 import (
 	"net/mail"
-	"sudoku-daily-api/src/domain/vo"
 	"time"
+
+	"sudoku-daily-api/src/domain/vo"
 )
 
 const (
@@ -39,6 +40,18 @@ type (
 		Hash      string
 		Revoked   bool
 		ExpiresAt time.Time
+	}
+
+	Resume struct {
+		TotalGames map[BoardSize]int
+		TodayGames []GameResult
+		BestTimes  []GameResult
+	}
+
+	GameResult struct {
+		Size     int
+		Finished bool
+		Time     int
 	}
 )
 

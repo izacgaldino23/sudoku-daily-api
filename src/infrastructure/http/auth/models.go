@@ -1,8 +1,9 @@
 package auth
 
 import (
-	"sudoku-daily-api/src/domain/entities"
 	"time"
+
+	"sudoku-daily-api/src/domain/entities"
 )
 
 type (
@@ -37,6 +38,18 @@ type (
 	LogoutRequest struct {
 		RefreshToken string `json:"refresh_token" validate:"required"`
 	}
+
+	ResumeResponse struct {
+		TotalGames map[int]int  `json:"total_games"`
+		TodayGames []gameResult `json:"today_games"`
+		BestTimes  []gameResult `json:"best_times"`
+	}
+
+	gameResult struct {
+		Size     int  `json:"size"`
+		Finished bool `json:"finished"`
+		Time     int  `json:"time"`
+	}
 )
 
 func (r *RegisterRequest) ToDomain() *entities.User {
@@ -68,4 +81,33 @@ func (r *LoginResponse) FromDomain(user *entities.User) {
 
 func (r *RefreshTokenResponse) FromDomain(accessToken string) {
 	r.AccessToken = accessToken
+}
+
+func (r *ResumeResponse) FromDomain(resume *entities.Resume) {
+	if resume == nil {
+		return
+	}
+
+	r.BestTimes = make([]gameResult, len(resume.BestTimes))
+	for i := range resume.BestTimes {
+		r.BestTimes[i] = gameResult{
+			Size:     resume.BestTimes[i].Size,
+			Finished: resume.BestTimes[i].Finished,
+			Time:     resume.BestTimes[i].Time,
+		}
+	}
+
+	r.TodayGames = make([]gameResult, len(resume.TodayGames))
+	for i := range resume.TodayGames {
+		r.TodayGames[i] = gameResult{
+			Size:     resume.TodayGames[i].Size,
+			Finished: resume.TodayGames[i].Finished,
+			Time:     resume.TodayGames[i].Time,
+		}
+	}
+
+	r.TotalGames = make(map[int]int, len(resume.TotalGames))
+	for size, count := range resume.TotalGames {
+		r.TotalGames[int(size)] = count
+	}
 }

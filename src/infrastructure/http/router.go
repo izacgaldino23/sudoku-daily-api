@@ -17,7 +17,7 @@ func RegisterRoutes(
 	authMinimumMiddleware fiber.Handler,
 ) {
 	registerSudokuRoutes(app.Group("/sudoku"), sudokuHandler, optionalJWTMiddleware, sessionMiddleware, authMinimumMiddleware)
-	registerAuthRoutes(app.Group("/auth"), authHandler, optionalJWTMiddleware, requireJWTMiddleware)
+	registerAuthRoutes(app.Group("/auth"), authHandler, requireJWTMiddleware)
 }
 
 func registerSudokuRoutes(
@@ -35,14 +35,14 @@ func registerSudokuRoutes(
 func registerAuthRoutes(
 	app fiber.Router,
 	authHandler auth.AuthHandler,
-	optionalJWTMiddleware fiber.Handler,
 	requireJWTMiddleware fiber.Handler,
 ) {
 	app.Post("/register", authHandler.Register)
 	app.Post("/login", authHandler.Login)
+	app.Post("/refresh", authHandler.Refresh)
 
-	private := app.Group("/", optionalJWTMiddleware, requireJWTMiddleware)
+	private := app.Group("/", requireJWTMiddleware)
 
-	private.Post("/refresh", authHandler.Refresh)
 	private.Post("/logout", authHandler.Logout)
+	private.Get("/resume", authHandler.Resume)
 }

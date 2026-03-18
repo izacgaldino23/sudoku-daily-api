@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
 )
@@ -25,5 +26,11 @@ type (
 
 	SudokuDailyFetcher interface {
 		GetDaily(ctx context.Context, size int) (*entities.Sudoku, error)
+	}
+
+	ResumeFetcher interface {
+		GetTotalSolvedByUser(ctx context.Context, userID vo.UUID) (map[entities.BoardSize]int, error)
+		GetTodaySolvedByUser(ctx context.Context, userID vo.UUID) ([]entities.GameResult, error)
+		GetBestTimesByUser(ctx context.Context, userID vo.UUID) ([]entities.GameResult, error)
 	}
 )
