@@ -16,7 +16,7 @@ import (
 func TestAuthResume(t *testing.T) {
 	app := SetupTestApp()
 
-	setupAuthenticatedUser := func(withSolves bool) string {
+	setupAuthenticatedUser := func(t *testing.T, withSolves bool) string {
 		TruncateTables(t)
 
 		registerBody, _ := json.Marshal(map[string]string{
@@ -41,15 +41,18 @@ func TestAuthResume(t *testing.T) {
 
 		if withSolves {
 			userID, _ := GetUserIDByEmail("test@example.com")
-			_ = SeedSudokus()
-			_ = SeedSolves(userID)
+			err := SeedSudokus()
+			assert.NoError(t, err)
+
+			err = SeedSolves(userID)
+			assert.NoError(t, err)
 		}
 
 		return loginResult.AccessToken
 	}
 
 	t.Run("valid resume without solves", func(t *testing.T) {
-		accessToken := setupAuthenticatedUser(false)
+		accessToken := setupAuthenticatedUser(t, false)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/auth/resume", nil)
 		req.Header.Set("Content-Type", "application/json")
@@ -68,7 +71,7 @@ func TestAuthResume(t *testing.T) {
 	})
 
 	t.Run("valid resume with solves", func(t *testing.T) {
-		accessToken := setupAuthenticatedUser(true)
+		accessToken := setupAuthenticatedUser(t, true)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/auth/resume", nil)
 		req.Header.Set("Content-Type", "application/json")
@@ -87,7 +90,7 @@ func TestAuthResume(t *testing.T) {
 	})
 
 	t.Run("missing authorization header", func(t *testing.T) {
-		_ = setupAuthenticatedUser(false)
+		_ = setupAuthenticatedUser(t, false)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/auth/resume", nil)
 		req.Header.Set("Content-Type", "application/json")
@@ -98,7 +101,7 @@ func TestAuthResume(t *testing.T) {
 	})
 
 	t.Run("invalid access token", func(t *testing.T) {
-		_ = setupAuthenticatedUser(false)
+		_ = setupAuthenticatedUser(t, false)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/auth/resume", nil)
 		req.Header.Set("Content-Type", "application/json")
@@ -110,7 +113,7 @@ func TestAuthResume(t *testing.T) {
 	})
 
 	t.Run("malformed authorization header", func(t *testing.T) {
-		_ = setupAuthenticatedUser(false)
+		_ = setupAuthenticatedUser(t, false)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/auth/resume", nil)
 		req.Header.Set("Content-Type", "application/json")
@@ -165,7 +168,7 @@ func TestAuthResume_VerifyDataAccuracy(t *testing.T) {
 	err = json.NewDecoder(resp.Body).Decode(&resumeResp)
 	assert.NoError(t, err)
 
-	assert.Equal(t, 2, resumeResp.TotalGames[9])
+	assert.Equal(t, 3, resumeResp.TotalGames[9])
 	assert.Equal(t, 1, resumeResp.TotalGames[4])
 
 	assert.Len(t, resumeResp.TodayGames, 3)
@@ -175,7 +178,7 @@ func TestAuthResume_VerifyDataAccuracy(t *testing.T) {
 		assert.Greater(t, game.Time, 0)
 	}
 
-	assert.Len(t, resumeResp.BestTimes, 2)
+	assert.Len(t, resumeResp.BestTimes, 3)
 
 	for _, game := range resumeResp.BestTimes {
 		assert.True(t, game.Finished)

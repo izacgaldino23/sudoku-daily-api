@@ -25,12 +25,13 @@ type (
 	Solve struct {
 		bun.BaseModel `bun:"table:solves"`
 
-		ID          string    `bun:"id,pk"`
-		SudokuID    string    `bun:"sudoku_id,notnull"`
-		UserID      string    `bun:"user_id,notnull"`
-		StartedAt   time.Time `bun:"type:timestamp,notnull"`
-		Duration    int       `bun:",notnull"`
-		CreatedAt   time.Time `bun:"type:timestamp,notnull,default:current_timestamp"`
+		ID        string    `bun:"id,pk"`
+		SudokuID  string    `bun:"sudoku_id,notnull"`
+		Size      int       `bun:",notnull"`
+		UserID    string    `bun:"user_id,notnull"`
+		StartedAt time.Time `bun:"type:timestamp,notnull"`
+		Duration  int       `bun:",notnull"`
+		CreatedAt time.Time `bun:"type:timestamp,notnull,default:current_timestamp"`
 	}
 
 	sizeCount struct {
@@ -45,6 +46,7 @@ func (s *Sudoku) FromDomain(sudoku *entities.Sudoku) {
 	s.Difficulty = string(sudoku.Difficulty)
 	s.Board = boardFromDomain(&sudoku.Board)
 	s.Solution = boardFromDomain(&sudoku.Solution)
+	s.Size = sudoku.GetSize()
 	s.Date = sudoku.Date
 }
 
@@ -70,12 +72,13 @@ func (s *Solve) FromDomain(solve *entities.Solve) {
 
 func (s *Solve) ToDomain() *entities.Solve {
 	return &entities.Solve{
-		ID:          vo.UUID(s.ID),
-		SudokuID:    vo.UUID(s.SudokuID),
-		UserID:      vo.UUID(s.UserID),
-		StartedAt:   s.StartedAt,
-		Duration:    s.Duration,
-		CreatedAt:   s.CreatedAt,
+		ID:        vo.UUID(s.ID),
+		SudokuID:  vo.UUID(s.SudokuID),
+		UserID:    vo.UUID(s.UserID),
+		Size:      s.Size,
+		StartedAt: s.StartedAt,
+		Duration:  s.Duration,
+		CreatedAt: s.CreatedAt,
 	}
 }
 

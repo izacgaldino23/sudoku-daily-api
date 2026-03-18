@@ -123,7 +123,7 @@ func (r *sudokuRepository) GetBestTimesByUser(ctx context.Context, userID vo.UUI
 		FROM solves 
 		JOIN sudokus ON solves.sudoku_id = sudokus.id 
 		WHERE solves.user_id = ? AND solves.duration > 0 
-		ORDER BY sudokus.size, solves.duration`
+		ORDER BY sudokus.size, solves.duration ASC`
 	err := r.txManager.GetExecutor(ctx).NewRaw(query, userID).Scan(ctx, &solves)
 	if err != nil {
 		return nil, err

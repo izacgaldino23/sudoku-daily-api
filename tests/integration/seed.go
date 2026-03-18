@@ -2,10 +2,11 @@ package integration
 
 import (
 	"context"
-	"fmt"
 	"math"
-	"sudoku-daily-api/pkg/database"
 	"time"
+
+	"sudoku-daily-api/pkg/database"
+	"sudoku-daily-api/src/domain/vo"
 
 	"github.com/uptrace/bun"
 )
@@ -21,6 +22,14 @@ type SudokuSeed struct {
 	Date       time.Time `bun:"type:date,notnull"`
 }
 
+var (
+	sudokusIDs = []string{
+		"00000000-0000-0000-0000-000000000001",
+		"00000000-0000-0000-0000-000000000002",
+		"00000000-0000-0000-0000-000000000003",
+	}
+)
+
 func SeedSudokus() error {
 	db := database.GetDB().BunConnection
 	ctx := context.Background()
@@ -30,7 +39,7 @@ func SeedSudokus() error {
 
 	sudokus := []SudokuSeed{
 		{
-			ID:         "00000000-0000-0000-0000-000000000001",
+			ID:         sudokusIDs[0],
 			Size:       9,
 			Difficulty: "easy",
 			Board:      []byte{0, 0, 0, 0, 9, 4, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 5, 0, 0, 0, 8, 0, 7, 0, 0, 4, 0, 0, 0, 0, 0, 0, 3, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 0, 0, 0, 0, 0},
@@ -38,7 +47,7 @@ func SeedSudokus() error {
 			Date:       today,
 		},
 		{
-			ID:         "00000000-0000-0000-0000-000000000002",
+			ID:         sudokusIDs[1],
 			Size:       4,
 			Difficulty: "easy",
 			Board:      []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -46,7 +55,7 @@ func SeedSudokus() error {
 			Date:       today,
 		},
 		{
-			ID:         "00000000-0000-0000-0000-000000000003",
+			ID:         sudokusIDs[2],
 			Size:       6,
 			Difficulty: "easy",
 			Board:      []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -101,6 +110,7 @@ type SolveSeed struct {
 	SudokuID  string    `bun:"sudoku_id,notnull"`
 	StartedAt time.Time `bun:"type:timestamp,notnull"`
 	Duration  int       `bun:",notnull"`
+	Size      int       `bun:",notnull"`
 	CreatedAt time.Time `bun:"type:timestamp,notnull,default:current_timestamp"`
 }
 
@@ -121,24 +131,12 @@ func SeedSolve(userID, sudokuID string, duration int) error {
 }
 
 func SeedSolves(userID string) error {
-	sudokus := []SudokuSeed{
-		{ID: "00000000-0000-0000-0000-000000000001", Size: 9, Difficulty: "easy", Date: time.Now()},
-		{ID: "00000000-0000-0000-0000-000000000002", Size: 4, Difficulty: "easy", Date: time.Now()},
-	}
-
-	for _, s := range sudokus {
-		_, err := database.GetDB().BunConnection.NewInsert().Model(&s).On("CONFLICT DO NOTHING").Exec(context.Background())
-		if err != nil {
-			return err
-		}
-	}
-
 	solves := []SolveSeed{
-		{ID: generateUUID(), UserID: userID, SudokuID: sudokus[0].ID, StartedAt: time.Now().Add(-60 * time.Second), Duration: 60},
-		{ID: generateUUID(), UserID: userID, SudokuID: sudokus[0].ID, StartedAt: time.Now().Add(-120 * time.Second), Duration: 120},
-		{ID: generateUUID(), UserID: userID, SudokuID: sudokus[1].ID, StartedAt: time.Now().Add(-30 * time.Second), Duration: 30},
-		{ID: generateUUID(), UserID: userID, SudokuID: sudokus[0].ID, StartedAt: time.Now().Add(-24 * time.Hour), Duration: 90},
-		{ID: generateUUID(), UserID: userID, SudokuID: sudokus[0].ID, StartedAt: time.Now().Add(-25 * time.Hour), Duration: 45},
+		{ID: generateUUID(), UserID: userID, SudokuID: sudokusIDs[0], StartedAt: time.Now().Add(-60 * time.Second), Duration: 60, Size: 9},
+		{ID: generateUUID(), UserID: userID, SudokuID: sudokusIDs[0], StartedAt: time.Now().Add(-120 * time.Second), Duration: 120, Size: 9},
+		{ID: generateUUID(), UserID: userID, SudokuID: sudokusIDs[1], StartedAt: time.Now().Add(-30 * time.Second), Duration: 30, Size: 4},
+		{ID: generateUUID(), UserID: userID, SudokuID: sudokusIDs[0], StartedAt: time.Now().Add(-24 * time.Hour), Duration: 90, Size: 9},
+		{ID: generateUUID(), UserID: userID, SudokuID: sudokusIDs[2], StartedAt: time.Now().Add(-25 * time.Hour), Duration: 45, Size: 4},
 	}
 
 	for _, s := range solves {
@@ -167,5 +165,5 @@ func GetUserIDByEmail(email string) (string, error) {
 }
 
 func generateUUID() string {
-	return "00000000-0000-0000-0000-" + fmt.Sprintf("%012d", time.Now().UnixNano()%1000000000000)
+	return vo.NewUUID().String()
 }
