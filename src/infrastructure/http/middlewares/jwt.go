@@ -31,7 +31,7 @@ func OptionalJWTMiddleware(tokenService domain.TokenService) fiber.Handler {
 
 		// Set userID on context
 		reqContext := c.Context()
-		newCtx := appContext.SetUserOnContext(reqContext, userID)
+		newCtx := appContext.SetUserIDOnContext(reqContext, userID)
 
 		c.SetContext(newCtx)
 

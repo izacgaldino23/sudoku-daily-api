@@ -68,6 +68,7 @@ func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entitie
 		Date:      sudoku.Date.Format(time.DateOnly),
 		Size:      int(sudoku.Size),
 		SessionID: sessionID,
+		SudokuID:  sudoku.ID,
 		StartedAt: time.Now(),
 		ExpiresAt: tomorrow,
 	}

@@ -93,7 +93,7 @@ func (r *ResumeResponse) FromDomain(resume *entities.Resume) {
 		r.BestTimes[i] = gameResult{
 			Size:     resume.BestTimes[i].Size,
 			Finished: resume.BestTimes[i].Finished,
-			Time:     resume.BestTimes[i].Time,
+			Time:     resume.BestTimes[i].Duration,
 		}
 	}
 
@@ -102,7 +102,7 @@ func (r *ResumeResponse) FromDomain(resume *entities.Resume) {
 		r.TodayGames[i] = gameResult{
 			Size:     resume.TodayGames[i].Size,
 			Finished: resume.TodayGames[i].Finished,
-			Time:     resume.TodayGames[i].Time,
+			Time:     resume.TodayGames[i].Duration,
 		}
 	}
 

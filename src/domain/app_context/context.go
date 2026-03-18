@@ -2,6 +2,7 @@ package app_context
 
 import (
 	"context"
+
 	"sudoku-daily-api/src/domain/vo"
 )
 
@@ -11,7 +12,7 @@ type (
 	requestIDKey struct{}
 )
 
-func SetUserOnContext(ctx context.Context, userID vo.UUID) context.Context {
+func SetUserIDOnContext(ctx context.Context, userID vo.UUID) context.Context {
 	return context.WithValue(ctx, contextUserIDKey{}, userID)
 }
 

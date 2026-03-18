@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"time"
 
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
@@ -26,6 +27,7 @@ type (
 
 	SudokuDailyFetcher interface {
 		GetDaily(ctx context.Context, size int) (*entities.Sudoku, error)
+		GetByDateAndSize(ctx context.Context, date time.Time, size int) (*entities.Sudoku, error)
 	}
 
 	ResumeFetcher interface {

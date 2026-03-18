@@ -34,12 +34,14 @@ func NewAuthHandler(
 	userLoginUseCase user.UserLoginUseCase,
 	userRefreshTokenUseCase user.UserRefreshTokenUseCase,
 	userLogoutUseCase user.UserLogoutUseCase,
+	userResumeUseCase user.UserResumeUseCase,
 ) AuthHandler {
 	return &authHandler{
 		userRegisterUseCase:     userRegisterUseCase,
 		userLoginUseCase:        userLoginUseCase,
 		userRefreshTokenUseCase: userRefreshTokenUseCase,
 		userLogoutUseCase:       userLogoutUseCase,
+		userResumeUseCase:       userResumeUseCase,
 	}
 }
 
@@ -89,7 +91,6 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 func (a *authHandler) Refresh(c fiber.Ctx) error {
 	var (
 		request RefreshTokenRequest
-		userID  vo.UUID
 	)
 
 	if err := c.Bind().Body(&request); err != nil {
@@ -100,9 +101,7 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	userID = app_context.GetUserIDFromContext(c.Context())
-
-	accessToken, err := a.userRefreshTokenUseCase.Execute(c, request.RefreshToken, userID)
+	accessToken, err := a.userRefreshTokenUseCase.Execute(c, request.RefreshToken)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}

@@ -51,7 +51,7 @@ type (
 	GameResult struct {
 		Size     int
 		Finished bool
-		Time     int
+		Duration int
 	}
 )
 

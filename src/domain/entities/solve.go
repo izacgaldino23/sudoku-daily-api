@@ -2,29 +2,48 @@ package entities
 
 import (
 	"encoding/json"
-	"sudoku-daily-api/src/domain/vo"
 	"time"
+
+	"sudoku-daily-api/src/domain/vo"
 )
 
 type (
 	PlayToken struct {
 		Date      string    `json:"date"`
+		SudokuID  vo.UUID   `json:"sudoku_id"`
+		SessionID vo.UUID   `json:"session_id"`
 		Size      int       `json:"size"`
 		StartedAt time.Time `json:"started_at"`
-		SessionID vo.UUID   `json:"session_id"`
 		ExpiresAt time.Time `json:"expires_at"`
 	}
 
 	Solve struct {
-		ID          vo.UUID
-		SudokuID    vo.UUID
-		UserID      vo.UUID
-		Solution    [][]int
-		StartedAt   time.Time
-		CompletedAt time.Time
-		CreatedAt   time.Time
+		ID        vo.UUID
+		SudokuID  vo.UUID
+		Size      int
+		UserID    vo.UUID
+		Solution  [][]int
+		StartedAt time.Time
+		Duration  int
+		CreatedAt time.Time
 	}
 )
+
+func ConvertSolvesToGameResults(solves []Solve) []GameResult {
+	results := make([]GameResult, 0, len(solves))
+	for _, solve := range solves {
+		results = append(results, *solve.ToGameResult())
+	}
+	return results
+}
+
+func (s *Solve) ToGameResult() *GameResult {
+	return &GameResult{
+		Size:     s.Size,
+		Finished: true,
+		Duration: s.Duration,
+	}
+}
 
 func (s *PlayToken) ToMap() map[string]any {
 	return map[string]any{

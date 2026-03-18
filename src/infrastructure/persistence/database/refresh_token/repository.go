@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain/entities"
 	repository "sudoku-daily-api/src/domain/repository"
@@ -47,13 +48,13 @@ func (r *refreshTokenRepository) Create(ctx context.Context, token *entities.Ref
 	return nil
 }
 
-func (r *refreshTokenRepository) GetByToken(ctx context.Context, userID vo.UUID, token string) (*entities.RefreshToken, error) {
+func (r *refreshTokenRepository) GetByToken(ctx context.Context, token string) (*entities.RefreshToken, error) {
 	var refreshTokenModel RefreshToken
 
 	err := r.txManager.GetExecutor(ctx).
 		NewSelect().
 		Model(&refreshTokenModel).
-		Where("token_hash = ? AND user_id = ?", token, userID).
+		Where("token_hash = ?", token).
 		Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

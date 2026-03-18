@@ -83,6 +83,5 @@ func (s *VerifySolutionRequest) ToDomain(userID vo.UUID) *entities.Solve {
 	return &entities.Solve{
 		Solution:    s.Solution,
 		UserID:      userID,
-		CompletedAt: time.Now(),
 	}
 }

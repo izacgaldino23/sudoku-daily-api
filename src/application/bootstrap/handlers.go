@@ -18,5 +18,6 @@ func (c *Container) BuildHandlers() {
 		c.UserLogin,
 		c.UserRefreshToken,
 		c.UserLogout,
+		c.UserResume,
 	)
 }

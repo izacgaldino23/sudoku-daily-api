@@ -30,7 +30,7 @@ func RequireJWTMiddleware(tokenService domain.TokenService) fiber.Handler {
 		}
 
 		// verify if Bearer is passed and remove
-		if !strings.HasSuffix(header, "Bearer") {
+		if !strings.HasPrefix(header, "Bearer") {
 			logger.Warn().Str("header", header).Msg("token without Bearer")
 			return pkg.JsonError(c, pkg.ErrInvalidToken)
 		} else if parts := strings.Split(header, " "); len(parts) != 2 {
@@ -52,7 +52,7 @@ func RequireJWTMiddleware(tokenService domain.TokenService) fiber.Handler {
 		}
 
 		// Set userID on context
-		newCtx := appContext.SetUserOnContext(reqContext, userID)
+		newCtx := appContext.SetUserIDOnContext(reqContext, userID)
 
 		c.SetContext(newCtx)
 

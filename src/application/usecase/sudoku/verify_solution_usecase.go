@@ -61,8 +61,13 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 		return false, pkg.ErrInvalidToken
 	}
 
+	sudokuDate, err := time.Parse(time.DateOnly, playToken.Date)
+	if err != nil {
+		return false, err
+	}
+
 	// validate solution
-	sudoku, err := s.sudokuFetcher.GetDaily(ctx, playToken.Size)
+	sudoku, err := s.sudokuFetcher.GetByDateAndSize(ctx, sudokuDate, playToken.Size)
 	if err != nil {
 		return false, err
 	}
@@ -76,7 +81,7 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 		solve.ID = vo.NewUUID()
 		solve.SudokuID = sudoku.ID
 		solve.StartedAt = playToken.StartedAt
-		solve.CompletedAt = time.Now()
+		solve.Duration = int(time.Since(playToken.StartedAt).Seconds())
 
 		err = s.sudokuRepo.AddSolve(ctx, solve)
 		if err != nil {

@@ -2,10 +2,14 @@ package sudoku
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"time"
+
 	"sudoku-daily-api/src/domain/entities"
 	repository "sudoku-daily-api/src/domain/repository"
+	"sudoku-daily-api/src/domain/vo"
 	"sudoku-daily-api/src/infrastructure/persistence/database/tx"
-	"time"
 
 	"github.com/uptrace/bun"
 )
@@ -65,4 +69,77 @@ func (r *sudokuRepository) AddSolve(ctx context.Context, solve *entities.Solve) 
 
 	_, err = result.RowsAffected()
 	return err
+}
+
+func (r *sudokuRepository) GetTotalSolvedByUser(ctx context.Context, userID vo.UUID) (map[entities.BoardSize]int, error) {
+    var results []sizeCount
+    err := r.txManager.GetExecutor(ctx).
+        NewSelect().
+        Model(&results).
+        Table("solves").
+        Column("size").
+        Join("sudokus ON solves.sudoku_id = sudokus.id").
+        Where("user_id = ?", userID).
+        Group("size").
+        Scan(ctx)
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, nil
+        }
+        return nil, err
+    }
+    totalSolvesBySize := make(map[entities.BoardSize]int)
+    for _, r := range results {
+        totalSolvesBySize[entities.BoardSize(r.Size)] = r.Total
+    }
+    return totalSolvesBySize, nil
+}
+
+func (r *sudokuRepository) GetTodaySolvedByUser(ctx context.Context, userID vo.UUID) ([]entities.Solve, error) {
+	var (
+		today = time.Now().Truncate(24 * time.Hour)
+		tomorrow = today.Add(24 * time.Hour)
+	)
+	
+	var solves = []Solve{}
+
+	err := r.txManager.GetExecutor(ctx).
+		NewSelect().
+		Model(&solves).
+		Where("user_id = ? and started_at >= ? and started_at < = ?", userID, today, tomorrow).
+		Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]entities.Solve, len(solves))
+	for i, solve := range solves {
+		result[i] = *solve.ToDomain()
+	}
+
+	return result, nil
+}
+
+func (r *sudokuRepository) GetBestTimesByUser(ctx context.Context, userID vo.UUID) ([]entities.Solve, error) {
+	var solves = []Solve{}
+
+	// TODO this is not the best way
+	err := r.txManager.GetExecutor(ctx).
+		NewSelect().
+		Model(&solves).
+		ColumnExpr("DISTINCT ON (sudokus.size) solves.*").
+		Join("sudokus ON solves.sudoku_id = sudokus.id").
+		Where("user_id = ? and duration > 0", userID).
+		Order("sudokus.size, solves.duration").
+		Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]entities.Solve, len(solves))
+	for i, solve := range solves {
+		result[i] = *solve.ToDomain()
+	}
+
+	return result, nil
 }

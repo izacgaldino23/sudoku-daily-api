@@ -32,4 +32,8 @@ func (c *Container) BuildServices() {
 		c.LocalCache,
 		c.SudokuRepository,
 	)
+
+	c.ResumeFetcher = services.NewResumeFetcher(
+		c.SudokuRepository,
+	)
 }

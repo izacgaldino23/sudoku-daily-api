@@ -52,6 +52,10 @@ func (s *sudokuDailyFetcher) GetDaily(ctx context.Context, size int) (*entities.
 	return sudoku, nil
 }
 
+func (s *sudokuDailyFetcher) GetByDateAndSize(ctx context.Context, date time.Time, size int) (*entities.Sudoku, error) {
+	return s.sudokuRepository.GetByDateAndSize(ctx, date, size)
+}
+
 func isSameDate(a, b time.Time) bool {
 	return a.Year() == b.Year() && a.Month() == b.Month() && a.Day() == b.Day()
 }

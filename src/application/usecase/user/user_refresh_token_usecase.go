@@ -3,16 +3,16 @@ package user
 import (
 	"context"
 	"errors"
+	"time"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/repository"
-	"sudoku-daily-api/src/domain/vo"
-	"time"
 )
 
 type (
 	UserRefreshTokenUseCase interface {
-		Execute(ctx context.Context, tokenHash string, userID vo.UUID) (accessToken string, err error)
+		Execute(ctx context.Context, tokenHash string) (accessToken string, err error)
 	}
 
 	userRefreshTokenUseCase struct {
@@ -31,8 +31,8 @@ func NewUserRefreshTokenUseCase(
 	}
 }
 
-func (u *userRefreshTokenUseCase) Execute(ctx context.Context, tokenHash string, userID vo.UUID) (string, error) {
-	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, userID, tokenHash)
+func (u *userRefreshTokenUseCase) Execute(ctx context.Context, tokenHash string) (string, error) {
+	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, tokenHash)
 	if err != nil {
 		if errors.Is(err, pkg.ErrNotFound) {
 			return "", pkg.ErrInvalidToken
@@ -48,5 +48,5 @@ func (u *userRefreshTokenUseCase) Execute(ctx context.Context, tokenHash string,
 		return "", pkg.ErrRefreshTokenExpired
 	}
 
-	return u.tokenService.GenerateJWTToken(map[string]any{"user_id": userID}, nil)
+	return u.tokenService.GenerateJWTToken(map[string]any{"user_id": refreshToken.UserID}, nil)
 }

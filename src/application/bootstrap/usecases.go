@@ -46,4 +46,8 @@ func (c *Container) BuildUseCases() {
 	c.UserLogout = userUsecase.NewUserLogoutUseCase(
 		c.RefreshTokenRepository,
 	)
+
+	c.UserResume = userUsecase.NewUserResumeUseCase(
+		c.ResumeFetcher,
+	)
 }

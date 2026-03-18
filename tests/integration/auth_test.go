@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"testing"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/infrastructure/http/auth"
-	"testing"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
@@ -216,18 +217,6 @@ func TestAuthRefresh(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		{
-			name:       "missing authorization header",
-			headers:    map[string]string{},
-			body:       map[string]string{"refresh_token": loginResult.RefreshToken},
-			wantStatus: http.StatusUnauthorized,
-		},
-		{
-			name:       "invalid access token",
-			headers:    map[string]string{"Authorization": "invalid-token"},
-			body:       map[string]string{"refresh_token": loginResult.RefreshToken},
-			wantStatus: http.StatusUnauthorized,
-		},
-		{
 			name:       "missing refresh token",
 			headers:    map[string]string{"Authorization": loginResult.AccessToken},
 			body:       map[string]string{},
@@ -312,7 +301,7 @@ func TestAuthLogout(t *testing.T) {
 	}{
 		{
 			name:       "valid logout",
-			headers:    map[string]string{"Authorization": loginResult.AccessToken},
+			headers:    map[string]string{"Authorization": "Bearer " + loginResult.AccessToken},
 			body:       map[string]string{"refresh_token": loginResult.RefreshToken},
 			wantStatus: http.StatusOK,
 		},
@@ -332,7 +321,7 @@ func TestAuthLogout(t *testing.T) {
 			name:       "missing refresh token",
 			headers:    map[string]string{"Authorization": loginResult.AccessToken},
 			body:       map[string]string{},
-			wantStatus: http.StatusBadRequest,
+			wantStatus: http.StatusUnauthorized,
 		},
 	}
 

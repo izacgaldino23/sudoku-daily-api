@@ -2,9 +2,10 @@ package sudoku
 
 import (
 	"math"
+	"time"
+
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
-	"time"
 
 	"github.com/uptrace/bun"
 )
@@ -28,8 +29,13 @@ type (
 		SudokuID    string    `bun:"sudoku_id,notnull"`
 		UserID      string    `bun:"user_id,notnull"`
 		StartedAt   time.Time `bun:"type:timestamp,notnull"`
-		CompletedAt time.Time `bun:"type:timestamp,notnull"`
+		Duration    int       `bun:",notnull"`
 		CreatedAt   time.Time `bun:"type:timestamp,notnull,default:current_timestamp"`
+	}
+
+	sizeCount struct {
+		Size  int `bun:"size"`
+		Total int `bun:"total"`
 	}
 )
 
@@ -58,8 +64,19 @@ func (s *Solve) FromDomain(solve *entities.Solve) {
 	s.SudokuID = string(solve.SudokuID)
 	s.UserID = string(solve.UserID)
 	s.StartedAt = solve.StartedAt
-	s.CompletedAt = solve.CompletedAt
+	s.Duration = solve.Duration
 	s.CreatedAt = solve.CreatedAt
+}
+
+func (s *Solve) ToDomain() *entities.Solve {
+	return &entities.Solve{
+		ID:          vo.UUID(s.ID),
+		SudokuID:    vo.UUID(s.SudokuID),
+		UserID:      vo.UUID(s.UserID),
+		StartedAt:   s.StartedAt,
+		Duration:    s.Duration,
+		CreatedAt:   s.CreatedAt,
+	}
 }
 
 func boardToDomain(boardData []byte) entities.Board {

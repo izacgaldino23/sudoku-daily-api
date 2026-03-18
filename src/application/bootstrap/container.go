@@ -32,6 +32,7 @@ type Container struct {
 	PasswordHasher   domain.PasswordHasher
 	TokenService     domain.TokenService
 	SudokuFetcher    domain.SudokuDailyFetcher
+	ResumeFetcher    domain.ResumeFetcher
 
 	// use cases
 	GetDailySudoku     sudokuUsecase.ISudokuGetDailyUseCase
@@ -42,6 +43,7 @@ type Container struct {
 	UserLogin        userUsecase.UserLoginUseCase
 	UserRefreshToken userUsecase.UserRefreshTokenUseCase
 	UserLogout       userUsecase.UserLogoutUseCase
+	UserResume       userUsecase.UserResumeUseCase
 
 	Middlewares Middlewares
 
@@ -51,11 +53,11 @@ type Container struct {
 }
 
 type Middlewares struct {
-	RequireJWT          fiber.Handler
-	OptionalJWT         fiber.Handler
-	AuthMinimum         fiber.Handler
-	Session             fiber.Handler
-	LogMiddleware       fiber.Handler
-	RequestID fiber.Handler
-	ResponseHeaders     fiber.Handler
+	RequireJWT      fiber.Handler
+	OptionalJWT     fiber.Handler
+	AuthMinimum     fiber.Handler
+	Session         fiber.Handler
+	LogMiddleware   fiber.Handler
+	RequestID       fiber.Handler
+	ResponseHeaders fiber.Handler
 }
