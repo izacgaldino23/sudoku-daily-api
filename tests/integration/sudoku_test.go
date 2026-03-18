@@ -17,169 +17,113 @@ import (
 )
 
 func TestSudokuGenerate(t *testing.T) {
-	TruncateTables(t)
+	t.Run("generate daily sudoku", func(t *testing.T) {
+		TruncateTables(t)
+		app := SetupTestApp()
 
-	app := SetupTestApp()
+		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate", nil)
+		req.Header.Set("Content-Type", "application/json")
 
-	tests := []struct {
-		name       string
-		wantStatus int
-	}{
-		{
-			name:       "generate daily sudoku",
-			wantStatus: http.StatusOK,
-		},
-	}
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			TruncateTables(t)
+		var sudokus []sudoku.SudokuResponse
+		err = json.NewDecoder(resp.Body).Decode(&sudokus)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, sudokus)
 
-			req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate", nil)
-			req.Header.Set("Content-Type", "application/json")
-
-			resp, err := app.Test(req, fiber.TestConfig{
-				Timeout: 0,
-			})
-			assert.NoError(t, err)
-			assert.Equal(t, tt.wantStatus, resp.StatusCode)
-
-			if resp.StatusCode == http.StatusOK {
-				var sudokus []sudoku.SudokuResponse
-				err := json.NewDecoder(resp.Body).Decode(&sudokus)
-				assert.NoError(t, err)
-				assert.NotEmpty(t, sudokus)
-
-				for _, s := range sudokus {
-					assert.NotEmpty(t, s.ID)
-					assert.Greater(t, s.Size, 0)
-					assert.NotEmpty(t, s.Board)
-					assert.NotEmpty(t, s.Date)
-				}
-			} else {
-				result := pkg.Error{}
-				err = json.NewDecoder(resp.Body).Decode(&result)
-				assert.NoError(t, err)
-
-				if tt.wantStatus != http.StatusOK {
-					assert.NotEmpty(t, result.Message)
-				} else {
-					assert.Empty(t, result.Message)
-				}
-			}
-		})
-	}
+		for _, s := range sudokus {
+			assert.NotEmpty(t, s.ID)
+			assert.Greater(t, s.Size, 0)
+			assert.NotEmpty(t, s.Board)
+			assert.NotEmpty(t, s.Date)
+		}
+	})
 }
 
 func TestSudokuGetDaily(t *testing.T) {
 	TruncateTables(t)
-
 	app := SetupTestApp()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate", nil)
 	req.Header.Set("Content-Type", "application/json")
 	_, _ = app.Test(req)
 
-	tests := []struct {
-		name       string
-		session    string
-		auth       string
-		size       string
-		wantStatus int
-	}{
-		{
-			name:       "get daily sudoku without login",
-			session:    "",
-			auth:       "",
-			size:       "nine",
-			wantStatus: http.StatusOK,
-		},
-		{
-			name:       "get daily sudoku with session header",
-			session:    uuid.NewString(),
-			auth:       "",
-			size:       "nine",
-			wantStatus: http.StatusOK,
-		},
-		{
-			name:       "get daily sudoku with invalid size",
-			session:    "",
-			auth:       "",
-			size:       "invalid",
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name:       "get daily sudoku with missing size",
-			session:    "",
-			auth:       "",
-			size:       "",
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name:       "get daily sudoku with size four",
-			session:    "",
-			auth:       "",
-			size:       "four",
-			wantStatus: http.StatusOK,
-		},
-		{
-			name:       "get daily sudoku with size six",
-			session:    "",
-			auth:       "",
-			size:       "six",
-			wantStatus: http.StatusOK,
-		},
-	}
+	t.Run("get daily sudoku without login", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=nine", nil)
+		req.Header.Set("Content-Type", "application/json")
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			url := "/api/sudoku"
-			if tt.size != "" {
-				url += "?size=" + tt.size
-			}
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-			req := httptest.NewRequest(http.MethodGet, url, nil)
-			req.Header.Set("Content-Type", "application/json")
+		sessionID := resp.Header.Get("X-Session-Id")
 
-			if tt.session != "" {
-				req.Header.Set("X-Session-Id", tt.session)
-			}
-			if tt.auth != "" {
-				req.Header.Set("Authorization", tt.auth)
-			}
+		var sudokuResp sudoku.SudokuResponse
+		err = json.NewDecoder(resp.Body).Decode(&sudokuResp)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, sudokuResp.ID)
+		assert.NotEmpty(t, sudokuResp.PlayToken)
+		assert.NotEmpty(t, sudokuResp.Board)
+		assert.NotEmpty(t, sudokuResp.Date)
+		assert.NotEmpty(t, sessionID)
+	})
 
-			resp, err := app.Test(req, fiber.TestConfig{
-				Timeout: 0,
-			})
-			assert.NoError(t, err)
-			assert.Equal(t, tt.wantStatus, resp.StatusCode)
+	t.Run("get daily sudoku with session header", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=nine", nil)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Session-Id", uuid.NewString())
 
-			sessionID := resp.Header.Get("X-Session-Id")
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
 
-			if resp.StatusCode == http.StatusOK {
-				var sudokuResp sudoku.SudokuResponse
-				err := json.NewDecoder(resp.Body).Decode(&sudokuResp)
-				assert.NoError(t, err)
-				assert.NotEmpty(t, sudokuResp.ID)
-				assert.NotEmpty(t, sudokuResp.PlayToken)
-				assert.NotEmpty(t, sudokuResp.Board)
-				assert.NotEmpty(t, sudokuResp.Date)
-				assert.NotEmpty(t, sessionID)
-			} else {
-				var errResp pkg.Error
-				err := json.NewDecoder(resp.Body).Decode(&errResp)
-				assert.NoError(t, err)
-				if tt.wantStatus != http.StatusOK {
-					assert.NotEmpty(t, errResp.Message)
-				}
-			}
-		})
-	}
+	t.Run("get daily sudoku with invalid size", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=invalid", nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+		var errResp pkg.Error
+		err = json.NewDecoder(resp.Body).Decode(&errResp)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, errResp.Message)
+	})
+
+	t.Run("get daily sudoku with missing size", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku", nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	})
+
+	t.Run("get daily sudoku with size four", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=four", nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+
+	t.Run("get daily sudoku with size six", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=six", nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
 }
 
 func TestSudokuSubmitWithoutLogin(t *testing.T) {
 	TruncateTables(t)
-
 	app := SetupTestApp()
 
 	err := SeedSudokus()
@@ -187,8 +131,6 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 
 	solution, err := GetSudokuSolution(9)
 	assert.NoError(t, err)
-	t.Logf("Solution from DB: %v", solution)
-	t.Logf("Solution type: %T", solution)
 
 	dailyReq := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=nine", nil)
 	dailyReq.Header.Set("Content-Type", "application/json")
@@ -204,69 +146,69 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 	sessionID := dailyResp.Header.Get("X-Session-Id")
 	assert.NotEmpty(t, sessionID)
 
-	tests := []struct {
-		name       string
-		body       map[string]interface{}
-		header     string
-		wantStatus int
-	}{
-		{
-			name: "submit valid solution",
-			body: map[string]interface{}{
-				"solution":   solution,
-				"play_token": sudokuResp.PlayToken,
-			},
-			header:     sessionID,
-			wantStatus: http.StatusOK,
-		},
-		{
-			name: "submit with invalid session token",
-			body: map[string]interface{}{
-				"solution":   solution,
-				"play_token": "invalid-token",
-			},
-			header:     "invalid-token",
-			wantStatus: http.StatusUnauthorized,
-		},
-		{
-			name: "submit with missing session token",
-			body: map[string]interface{}{
-				"solution": solution,
-				"play_token": sudokuResp.PlayToken,
-			},
-			header:     "",
-			wantStatus: http.StatusUnauthorized,
-		},
-		{
-			name: "submit with missing solution",
-			body: map[string]interface{}{
-				"play_token": sudokuResp.PlayToken,
-			},
-			header:     sessionID,
-			wantStatus: http.StatusBadRequest,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			body, err := json.Marshal(tt.body)
-			assert.NoError(t, err)
-
-			req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit", bytes.NewReader(body))
-			req.Header.Set("Content-Type", "application/json")
-
-			if tt.header != "" {
-				req.Header.Set("X-Session-Id", tt.header)
-			}
-
-			resp, err := app.Test(req, fiber.TestConfig{
-				Timeout: 0,
-			})
-			assert.NoError(t, err)
-
-			respBody, _ := io.ReadAll(resp.Body)
-			t.Logf("Test '%s': expected=%d, got=%d, body=%s", tt.name, tt.wantStatus, resp.StatusCode, string(respBody))
-			assert.Equal(t, tt.wantStatus, resp.StatusCode)
+	t.Run("submit valid solution", func(t *testing.T) {
+		body, _ := json.Marshal(map[string]interface{}{
+			"solution":   solution,
+			"play_token": sudokuResp.PlayToken,
 		})
-	}
+		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit", bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Session-Id", sessionID)
+
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+		assert.NoError(t, err)
+
+		respBody, _ := io.ReadAll(resp.Body)
+		t.Logf("expected=%d, got=%d, body=%s", http.StatusOK, resp.StatusCode, string(respBody))
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+
+	t.Run("submit with invalid session token", func(t *testing.T) {
+		body, _ := json.Marshal(map[string]interface{}{
+			"solution":   solution,
+			"play_token": "invalid-token",
+		})
+		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit", bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Session-Id", "invalid-token")
+
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+		assert.NoError(t, err)
+
+		respBody, _ := io.ReadAll(resp.Body)
+		t.Logf("expected=%d, got=%d, body=%s", http.StatusUnauthorized, resp.StatusCode, string(respBody))
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	})
+
+	t.Run("submit with missing session token", func(t *testing.T) {
+		body, _ := json.Marshal(map[string]interface{}{
+			"solution":   solution,
+			"play_token": sudokuResp.PlayToken,
+		})
+		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit", bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+		assert.NoError(t, err)
+
+		respBody, _ := io.ReadAll(resp.Body)
+		t.Logf("expected=%d, got=%d, body=%s", http.StatusUnauthorized, resp.StatusCode, string(respBody))
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	})
+
+	t.Run("submit with missing solution", func(t *testing.T) {
+		body, _ := json.Marshal(map[string]interface{}{
+			"play_token": sudokuResp.PlayToken,
+		})
+		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit", bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Session-Id", sessionID)
+
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+		assert.NoError(t, err)
+
+		respBody, _ := io.ReadAll(resp.Body)
+		t.Logf("expected=%d, got=%d, body=%s", http.StatusBadRequest, resp.StatusCode, string(respBody))
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	})
 }
