@@ -2,6 +2,7 @@ package integration
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"sudoku-daily-api/pkg/database"
 	"time"
@@ -90,4 +91,81 @@ func bytesToMatrix(data []byte) [][]int {
 	}
 
 	return matrix
+}
+
+type SolveSeed struct {
+	bun.BaseModel `bun:"table:solves"`
+
+	ID        string    `bun:"id,pk"`
+	UserID    string    `bun:"user_id,notnull"`
+	SudokuID  string    `bun:"sudoku_id,notnull"`
+	StartedAt time.Time `bun:"type:timestamp,notnull"`
+	Duration  int       `bun:",notnull"`
+	CreatedAt time.Time `bun:"type:timestamp,notnull,default:current_timestamp"`
+}
+
+func SeedSolve(userID, sudokuID string, duration int) error {
+	db := database.GetDB().BunConnection
+	ctx := context.Background()
+
+	solve := SolveSeed{
+		ID:        generateUUID(),
+		UserID:    userID,
+		SudokuID:  sudokuID,
+		StartedAt: time.Now().Add(-time.Duration(duration) * time.Second),
+		Duration:  duration,
+	}
+
+	_, err := db.NewInsert().Model(&solve).Exec(ctx)
+	return err
+}
+
+func SeedSolves(userID string) error {
+	sudokus := []SudokuSeed{
+		{ID: "00000000-0000-0000-0000-000000000001", Size: 9, Difficulty: "easy", Date: time.Now()},
+		{ID: "00000000-0000-0000-0000-000000000002", Size: 4, Difficulty: "easy", Date: time.Now()},
+	}
+
+	for _, s := range sudokus {
+		_, err := database.GetDB().BunConnection.NewInsert().Model(&s).On("CONFLICT DO NOTHING").Exec(context.Background())
+		if err != nil {
+			return err
+		}
+	}
+
+	solves := []SolveSeed{
+		{ID: generateUUID(), UserID: userID, SudokuID: sudokus[0].ID, StartedAt: time.Now().Add(-60 * time.Second), Duration: 60},
+		{ID: generateUUID(), UserID: userID, SudokuID: sudokus[0].ID, StartedAt: time.Now().Add(-120 * time.Second), Duration: 120},
+		{ID: generateUUID(), UserID: userID, SudokuID: sudokus[1].ID, StartedAt: time.Now().Add(-30 * time.Second), Duration: 30},
+		{ID: generateUUID(), UserID: userID, SudokuID: sudokus[0].ID, StartedAt: time.Now().Add(-24 * time.Hour), Duration: 90},
+		{ID: generateUUID(), UserID: userID, SudokuID: sudokus[0].ID, StartedAt: time.Now().Add(-25 * time.Hour), Duration: 45},
+	}
+
+	for _, s := range solves {
+		_, err := database.GetDB().BunConnection.NewInsert().Model(&s).Exec(context.Background())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func GetUserIDByEmail(email string) (string, error) {
+	db := database.GetDB().BunConnection
+	ctx := context.Background()
+
+	var user struct {
+		ID string `bun:"id"`
+	}
+	err := db.NewSelect().Model(&user).Table("users").Where("email = ?", email).Scan(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return user.ID, nil
+}
+
+func generateUUID() string {
+	return "00000000-0000-0000-0000-" + fmt.Sprintf("%012d", time.Now().UnixNano()%1000000000000)
 }

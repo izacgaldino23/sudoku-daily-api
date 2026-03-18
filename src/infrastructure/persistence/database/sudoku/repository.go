@@ -72,41 +72,38 @@ func (r *sudokuRepository) AddSolve(ctx context.Context, solve *entities.Solve) 
 }
 
 func (r *sudokuRepository) GetTotalSolvedByUser(ctx context.Context, userID vo.UUID) (map[entities.BoardSize]int, error) {
-    var results []sizeCount
-    err := r.txManager.GetExecutor(ctx).
-        NewSelect().
-        Model(&results).
-        Table("solves").
-        Column("size").
-        Join("sudokus ON solves.sudoku_id = sudokus.id").
-        Where("user_id = ?", userID).
-        Group("size").
-        Scan(ctx)
-    if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            return nil, nil
-        }
-        return nil, err
-    }
-    totalSolvesBySize := make(map[entities.BoardSize]int)
-    for _, r := range results {
-        totalSolvesBySize[entities.BoardSize(r.Size)] = r.Total
-    }
-    return totalSolvesBySize, nil
+	var results []sizeCount
+	query := `SELECT sudokus.size, COUNT(*) AS total 
+		FROM solves 
+		JOIN sudokus ON solves.sudoku_id = sudokus.id 
+		WHERE solves.user_id = ? 
+		GROUP BY sudokus.size`
+	err := r.txManager.GetExecutor(ctx).NewRaw(query, userID).Scan(ctx, &results)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	totalSolvesBySize := make(map[entities.BoardSize]int)
+	for _, result := range results {
+		totalSolvesBySize[entities.BoardSize(result.Size)] = result.Total
+	}
+	return totalSolvesBySize, nil
 }
 
 func (r *sudokuRepository) GetTodaySolvedByUser(ctx context.Context, userID vo.UUID) ([]entities.Solve, error) {
 	var (
-		today = time.Now().Truncate(24 * time.Hour)
+		today    = time.Now().Truncate(24 * time.Hour)
 		tomorrow = today.Add(24 * time.Hour)
 	)
-	
+
 	var solves = []Solve{}
 
 	err := r.txManager.GetExecutor(ctx).
 		NewSelect().
 		Model(&solves).
-		Where("user_id = ? and started_at >= ? and started_at < = ?", userID, today, tomorrow).
+		Where("user_id = ? AND started_at >= ? AND started_at < ?", userID, today, tomorrow).
 		Scan(ctx)
 	if err != nil {
 		return nil, err
@@ -121,17 +118,13 @@ func (r *sudokuRepository) GetTodaySolvedByUser(ctx context.Context, userID vo.U
 }
 
 func (r *sudokuRepository) GetBestTimesByUser(ctx context.Context, userID vo.UUID) ([]entities.Solve, error) {
-	var solves = []Solve{}
-
-	// TODO this is not the best way
-	err := r.txManager.GetExecutor(ctx).
-		NewSelect().
-		Model(&solves).
-		ColumnExpr("DISTINCT ON (sudokus.size) solves.*").
-		Join("sudokus ON solves.sudoku_id = sudokus.id").
-		Where("user_id = ? and duration > 0", userID).
-		Order("sudokus.size, solves.duration").
-		Scan(ctx)
+	var solves []Solve
+	query := `SELECT DISTINCT ON (sudokus.size) solves.* 
+		FROM solves 
+		JOIN sudokus ON solves.sudoku_id = sudokus.id 
+		WHERE solves.user_id = ? AND solves.duration > 0 
+		ORDER BY sudokus.size, solves.duration`
+	err := r.txManager.GetExecutor(ctx).NewRaw(query, userID).Scan(ctx, &solves)
 	if err != nil {
 		return nil, err
 	}

@@ -104,6 +104,7 @@ func TruncateTables(t *testing.T) {
 	}
 
 	tables := []string{
+		`"solves"`,
 		`"refresh_tokens"`,
 		`"users"`,
 		`"sudokus"`,
