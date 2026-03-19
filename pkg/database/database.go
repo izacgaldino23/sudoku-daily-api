@@ -3,11 +3,13 @@ package database
 import (
 	"database/sql"
 	"fmt"
+
 	"sudoku-daily-api/pkg/config"
 
 	_ "github.com/lib/pq"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/extra/bundebug"
 )
 
 type DatabaseConnection struct {
@@ -29,6 +31,7 @@ func ConnectDB(configEnv *config.Config) (err error) {
 
 	dbConnection.SqlConnection = sqlDB
 	dbConnection.BunConnection = bun.NewDB(sqlDB, pgdialect.New())
+	dbConnection.BunConnection.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
 
 	return
 }

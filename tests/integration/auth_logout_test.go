@@ -14,7 +14,7 @@ import (
 
 func TestAuthLogout(t *testing.T) {
 	setupTokens := func() (string, string) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		registerBody, _ := json.Marshal(map[string]string{

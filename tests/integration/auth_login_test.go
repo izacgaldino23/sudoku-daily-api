@@ -14,7 +14,7 @@ import (
 
 func TestAuthLogin(t *testing.T) {
 	t.Run("valid login", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		registerBody, _ := json.Marshal(map[string]string{
@@ -47,7 +47,7 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("wrong password", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		registerBody, _ := json.Marshal(map[string]string{
@@ -72,7 +72,7 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("user not found", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		loginBody, _ := json.Marshal(map[string]string{
@@ -88,7 +88,7 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("missing email", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		registerBody, _ := json.Marshal(map[string]string{
@@ -112,7 +112,7 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("missing password", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		registerBody, _ := json.Marshal(map[string]string{

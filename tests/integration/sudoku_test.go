@@ -18,7 +18,7 @@ import (
 
 func TestSudokuGenerate(t *testing.T) {
 	t.Run("generate daily sudoku", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate", nil)
@@ -43,7 +43,7 @@ func TestSudokuGenerate(t *testing.T) {
 }
 
 func TestSudokuGetDaily(t *testing.T) {
-	TruncateTables(t)
+	t.Cleanup(TruncateTables)
 	app := SetupTestApp()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate", nil)
@@ -123,7 +123,7 @@ func TestSudokuGetDaily(t *testing.T) {
 }
 
 func TestSudokuSubmitWithoutLogin(t *testing.T) {
-	TruncateTables(t)
+	t.Cleanup(TruncateTables)
 	app := SetupTestApp()
 
 	err := SeedSudokus()

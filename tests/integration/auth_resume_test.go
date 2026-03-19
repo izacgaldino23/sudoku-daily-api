@@ -15,9 +15,10 @@ import (
 
 func TestAuthResume(t *testing.T) {
 	app := SetupTestApp()
+	t.Cleanup(TruncateTables)
 
 	setupAuthenticatedUser := func(t *testing.T, withSolves bool) string {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 
 		registerBody, _ := json.Marshal(map[string]string{
 			"email":    "test@example.com",
@@ -126,7 +127,7 @@ func TestAuthResume(t *testing.T) {
 }
 
 func TestAuthResume_VerifyDataAccuracy(t *testing.T) {
-	TruncateTables(t)
+	t.Cleanup(TruncateTables)
 	app := SetupTestApp()
 
 	registerBody, _ := json.Marshal(map[string]string{
@@ -198,7 +199,7 @@ func TestAuthResume_VerifyDataAccuracy(t *testing.T) {
 }
 
 func TestAuthResume_MultipleUsers(t *testing.T) {
-	TruncateTables(t)
+	t.Cleanup(TruncateTables)
 	app := SetupTestApp()
 
 	registerBody1, _ := json.Marshal(map[string]string{

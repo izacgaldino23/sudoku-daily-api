@@ -12,7 +12,7 @@ import (
 
 func TestAuthRegister(t *testing.T) {
 	t.Run("valid registration", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
@@ -29,7 +29,7 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("missing email", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
@@ -45,7 +45,7 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("invalid email format", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
@@ -62,7 +62,7 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("missing username", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
@@ -78,7 +78,7 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("username too short", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
@@ -95,7 +95,7 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("missing password", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
@@ -111,7 +111,7 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("password too short", func(t *testing.T) {
-		TruncateTables(t)
+		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
