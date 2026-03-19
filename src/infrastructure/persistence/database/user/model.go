@@ -1,9 +1,10 @@
 package user
 
 import (
+	"time"
+
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
-	"time"
 
 	"github.com/uptrace/bun"
 )
@@ -11,15 +12,15 @@ import (
 type User struct {
 	bun.BaseModel `bun:"table:users"`
 
-	ID            string `bun:"id,pk"`
-	Username      string `bun:",unique,notnull"`
-	Email         string `bun:",unique,notnull"`
-	PasswordHash  string `bun:",notnull"`
-	Provider      string
-	ProviderID    *string `bun:",notnull"`
-	EmailVerified bool    `bun:",notnull"`
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID            string    `bun:"id,pk"`
+	Username      string    `bun:",unique,notnull"`
+	Email         string    `bun:",unique,notnull"`
+	PasswordHash  string    `bun:",notnull"`
+	Provider      string    `bun:",notnull"`
+	ProviderID    *string   `bun:",notnull"`
+	EmailVerified bool      `bun:",notnull"`
+	CreatedAt     time.Time `bun:",notnull,default:current_timestamp"`
+	UpdatedAt     time.Time `bun:",notnull,default:current_timestamp"`
 }
 
 func (u *User) FromDomain(user *entities.User) {

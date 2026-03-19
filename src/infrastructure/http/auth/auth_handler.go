@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/application/usecase/user"
 	"sudoku-daily-api/src/domain/app_context"
@@ -16,6 +17,7 @@ type (
 		Login(c fiber.Ctx) error
 		Refresh(c fiber.Ctx) error
 		Logout(c fiber.Ctx) error
+		Resume(c fiber.Ctx) error
 	}
 
 	authHandler struct {
@@ -23,6 +25,7 @@ type (
 		userLoginUseCase        user.UserLoginUseCase
 		userRefreshTokenUseCase user.UserRefreshTokenUseCase
 		userLogoutUseCase       user.UserLogoutUseCase
+		userResumeUseCase       user.UserResumeUseCase
 	}
 )
 
@@ -31,12 +34,14 @@ func NewAuthHandler(
 	userLoginUseCase user.UserLoginUseCase,
 	userRefreshTokenUseCase user.UserRefreshTokenUseCase,
 	userLogoutUseCase user.UserLogoutUseCase,
+	userResumeUseCase user.UserResumeUseCase,
 ) AuthHandler {
 	return &authHandler{
 		userRegisterUseCase:     userRegisterUseCase,
 		userLoginUseCase:        userLoginUseCase,
 		userRefreshTokenUseCase: userRefreshTokenUseCase,
 		userLogoutUseCase:       userLogoutUseCase,
+		userResumeUseCase:       userResumeUseCase,
 	}
 }
 
@@ -57,7 +62,7 @@ func (a *authHandler) Register(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	return c.SendStatus(http.StatusCreated)
+	return c.Status(http.StatusCreated).SendString("")
 }
 
 func (a *authHandler) Login(c fiber.Ctx) error {
@@ -86,7 +91,6 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 func (a *authHandler) Refresh(c fiber.Ctx) error {
 	var (
 		request RefreshTokenRequest
-		userID  vo.UUID
 	)
 
 	if err := c.Bind().Body(&request); err != nil {
@@ -97,9 +101,7 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	userID = app_context.GetUserIDFromContext(c.Context())
-
-	accessToken, err := a.userRefreshTokenUseCase.Execute(c, request.RefreshToken, userID)
+	accessToken, err := a.userRefreshTokenUseCase.Execute(c, request.RefreshToken)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
@@ -132,4 +134,18 @@ func (a *authHandler) Logout(c fiber.Ctx) error {
 	}
 
 	return c.SendStatus(http.StatusOK)
+}
+
+func (a *authHandler) Resume(c fiber.Ctx) error {
+	userID := app_context.GetUserIDFromContext(c.Context())
+
+	resume, err := a.userResumeUseCase.Execute(c.Context(), userID)
+	if err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	response := ResumeResponse{}
+	response.FromDomain(resume)
+
+	return c.Status(http.StatusOK).JSON(response)
 }

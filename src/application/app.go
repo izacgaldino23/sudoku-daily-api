@@ -1,73 +1,58 @@
 package application
 
 import (
-	"sudoku-daily-api/pkg/config"
-	"sudoku-daily-api/pkg/database"
-	sudokuUsecase "sudoku-daily-api/src/application/usecase/sudoku"
-	userUsecase "sudoku-daily-api/src/application/usecase/user"
-	"sudoku-daily-api/src/domain/strategies"
+	"sudoku-daily-api/src/application/bootstrap"
 	"sudoku-daily-api/src/infrastructure/http"
-	"sudoku-daily-api/src/infrastructure/http/auth"
 	"sudoku-daily-api/src/infrastructure/http/middlewares"
-	httpSudoku "sudoku-daily-api/src/infrastructure/http/sudoku"
-	persistenceRefreshToken "sudoku-daily-api/src/infrastructure/persistence/refresh_token"
-	persistenceSudoku "sudoku-daily-api/src/infrastructure/persistence/sudoku"
-	persistenceTx "sudoku-daily-api/src/infrastructure/persistence/tx"
-	persistenceUser "sudoku-daily-api/src/infrastructure/persistence/user"
-	"sudoku-daily-api/src/services"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/recover"
-	"github.com/rs/zerolog/log"
 )
 
 func InitApp(app fiber.Router) error {
-	app.Use(recover.New(recover.Config{
-		EnableStackTrace: true,
-	}))
+	container := &bootstrap.Container{}
 
-	// others
-	databaseConnection := database.GetDB()
+	container.BuildInfrastructure()
+	container.BuildRepositories()
+	container.BuildServices()
+	container.BuildUseCases()
+	container.BuildHandlers()
+	container.BuildMiddlewares()
 
-	// strategies
-	fillStrategy := strategies.NewFillStrategy()
-	hideStrategy := strategies.NewHideStrategy()
+	addMiddlewares(app, container)
 
-	// repositories
-	sudokuRepository := persistenceSudoku.NewRepository(databaseConnection.BunConnection)
-	userRepository := persistenceUser.NewRepository(databaseConnection.BunConnection)
-	refreshTokenRepository := persistenceRefreshToken.NewRepository(databaseConnection.BunConnection)
-
-	txManager := persistenceTx.NewTransactionManager(databaseConnection.BunConnection)
-
-	authConfig := config.GetConfig().Auth
-
-	// services
-	generatorService := services.NewGenerator(fillStrategy, hideStrategy)
-	passHasher := services.NewPasswordHasher(authConfig.Iterations, authConfig.Memory, authConfig.Parallelism, authConfig.KeyLen, authConfig.SaltLen)
-	tokenService := services.NewTokenService(authConfig.SecretKey, authConfig.AccessTokenDuration, authConfig.RefreshTokenDuration)
-
-	// use cases
-	getDailySudoku := sudokuUsecase.NewSudokuGetDailyUseCase(sudokuRepository)
-	generateAll := sudokuUsecase.NewSudokuGenerateAllUseCase(txManager, sudokuRepository, generatorService)
-
-	userRegister := userUsecase.NewUserRegisterUseCase(userRepository, passHasher)
-	userLogin := userUsecase.NewUserLoginUseCase(txManager, userRepository, refreshTokenRepository, passHasher, tokenService)
-	userRefreshToken := userUsecase.NewUserRefreshTokenUseCase(refreshTokenRepository, tokenService)
-	userLogoutUseCase := userUsecase.NewUserLogoutUseCase(refreshTokenRepository)
-
-	// middlewares
-	authMiddleware := middlewares.NewJWTMiddleware(tokenService)
-	logMiddleware := middlewares.NewLogMiddleware()
-
-	// handlers
-	sudokuHandler := httpSudoku.NewSudokuHandler(getDailySudoku, generateAll)
-	authHandler := auth.NewAuthHandler(userRegister, userLogin, userRefreshToken, userLogoutUseCase)
-
-	app.Use(logMiddleware.Execute(log.Logger))
-
-	// routes
-	http.RegisterRoutes(app, authMiddleware, sudokuHandler, authHandler)
+	http.RegisterRoutes(
+		app,
+		container.SudokuHandler,
+		container.AuthHandler,
+		container.Middlewares.OptionalJWT,
+		container.Middlewares.RequireJWT,
+		container.Middlewares.Session,
+		container.Middlewares.AuthMinimum,
+	)
 
 	return nil
+}
+
+func addMiddlewares(app fiber.Router, container *bootstrap.Container) {
+	app.Use(recover.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"http://localhost:5173"},
+		AllowHeaders: []string{"Origin",
+			"Content-Type",
+			"Accept",
+			"Authorization",
+			middlewares.XSessionIdHeader,
+			middlewares.XRequestIDHeader,
+		},
+		ExposeHeaders: []string{
+			middlewares.XSessionIdHeader,
+			middlewares.XRequestIDHeader,
+		},
+	}))
+
+	app.Use(container.Middlewares.RequestID)
+	app.Use(container.Middlewares.ResponseHeaders)
+	app.Use(container.Middlewares.LogMiddleware)
 }

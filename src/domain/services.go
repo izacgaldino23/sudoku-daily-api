@@ -1,6 +1,9 @@
 package domain
 
 import (
+	"context"
+	"time"
+
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
 )
@@ -16,8 +19,20 @@ type (
 	}
 
 	TokenService interface {
-		GenerateAccessToken(userID vo.UUID) (string, error)
+		GenerateJWTToken(map[string]any, *int) (string, error)
 		GenerateRefreshToken(userID vo.UUID) (*entities.RefreshToken, error)
 		ValidateAccessToken(token string) (vo.UUID, error)
+		ParseToken(token string) (result map[string]any, err error)
+	}
+
+	SudokuDailyFetcher interface {
+		GetDaily(ctx context.Context, size int) (*entities.Sudoku, error)
+		GetByDateAndSize(ctx context.Context, date time.Time, size int) (*entities.Sudoku, error)
+	}
+
+	ResumeFetcher interface {
+		GetTotalSolvedByUser(ctx context.Context, userID vo.UUID) (map[entities.BoardSize]int, error)
+		GetTodaySolvedByUser(ctx context.Context, userID vo.UUID) ([]entities.GameResult, error)
+		GetBestTimesByUser(ctx context.Context, userID vo.UUID) ([]entities.GameResult, error)
 	}
 )

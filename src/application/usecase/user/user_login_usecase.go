@@ -55,7 +55,7 @@ func (u *userLoginUseCase) Execute(ctx context.Context, loginData *entities.User
 
 		user.Tokens = &entities.Tokens{}
 
-		user.Tokens.AccessToken, err = u.tokenService.GenerateAccessToken(user.ID)
+		user.Tokens.AccessToken, err = u.tokenService.GenerateJWTToken(map[string]any{"user_id": user.ID}, nil)
 		if err != nil {
 			return err
 		}

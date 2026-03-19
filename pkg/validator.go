@@ -61,6 +61,8 @@ func formatValidationError(e validator.FieldError) string {
 		return fmt.Sprintf("must be %s characters", e.Param())
 	case "numeric":
 		return "must be numeric"
+	case "oneof":
+		return fmt.Sprintf("must be one of %s", e.Param())
 	default:
 		return fmt.Sprintf("failed %s validation", e.Tag())
 	}

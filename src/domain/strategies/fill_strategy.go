@@ -18,7 +18,7 @@ func NewFillStrategy() FillStrategy {
 }
 
 func (f *fillBacktracking) Fill(board *entities.Sudoku, r *rand.Rand) bool {
-	return f.fillCell(&board.Solution, 0, 0, r)
+	return f.fillCell(&board.Board, 0, 0, r)
 }
 
 func (f *fillBacktracking) fillCell(board *entities.Board, currentRow, currentCol int, r *rand.Rand) bool {

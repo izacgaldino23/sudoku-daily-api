@@ -2,7 +2,6 @@ package http
 
 import (
 	"sudoku-daily-api/src/infrastructure/http/auth"
-	"sudoku-daily-api/src/infrastructure/http/middlewares"
 	"sudoku-daily-api/src/infrastructure/http/sudoku"
 
 	"github.com/gofiber/fiber/v3"
@@ -10,25 +9,40 @@ import (
 
 func RegisterRoutes(
 	app fiber.Router,
-	authMiddleware middlewares.JWTMiddleware,
-	sudokuHandler sudoku.ISudokuHandler,
+	sudokuHandler sudoku.SudokuHandler,
 	authHandler auth.AuthHandler,
+	optionalJWTMiddleware fiber.Handler,
+	requireJWTMiddleware fiber.Handler,
+	sessionMiddleware fiber.Handler,
+	authMinimumMiddleware fiber.Handler,
 ) {
-	registerSudokuRoutes(app, sudokuHandler)
-	registerAuthRoutes(app, authHandler, authMiddleware)
+	registerSudokuRoutes(app.Group("/sudoku"), sudokuHandler, optionalJWTMiddleware, sessionMiddleware, authMinimumMiddleware)
+	registerAuthRoutes(app.Group("/auth"), authHandler, requireJWTMiddleware)
 }
 
-func registerSudokuRoutes(api fiber.Router, sudokuHandler sudoku.ISudokuHandler) {
-	api.Get("/sudoku", sudokuHandler.GetDailySudoku)
-	api.Post("/sudoku/generate", sudokuHandler.CreateSudoku)
+func registerSudokuRoutes(
+	api fiber.Router,
+	sudokuHandler sudoku.SudokuHandler,
+	optionalJWTMiddleware fiber.Handler,
+	sessionMiddleware fiber.Handler,
+	authMinimumMiddleware fiber.Handler,
+) {
+	api.Get("/", sessionMiddleware, optionalJWTMiddleware, sudokuHandler.GetDailySudoku)
+	api.Post("/generate", sudokuHandler.CreateSudoku)
+	api.Post("/submit", sessionMiddleware, optionalJWTMiddleware, authMinimumMiddleware, sudokuHandler.VerifySolution)
 }
 
-func registerAuthRoutes(app fiber.Router, authHandler auth.AuthHandler, authMiddleware middlewares.JWTMiddleware) {
-	app.Post("/auth/register", authHandler.Register)
-	app.Post("/auth/login", authHandler.Login)
+func registerAuthRoutes(
+	app fiber.Router,
+	authHandler auth.AuthHandler,
+	requireJWTMiddleware fiber.Handler,
+) {
+	app.Post("/register", authHandler.Register)
+	app.Post("/login", authHandler.Login)
+	app.Post("/refresh", authHandler.Refresh)
 
-	private := app.Group("/auth", authMiddleware.Execute())
+	private := app.Group("/", requireJWTMiddleware)
 
-	private.Post("/refresh", authHandler.Refresh)
 	private.Post("/logout", authHandler.Logout)
+	private.Get("/resume", authHandler.Resume)
 }

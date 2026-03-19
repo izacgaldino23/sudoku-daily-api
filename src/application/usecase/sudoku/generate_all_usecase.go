@@ -11,7 +11,7 @@ import (
 )
 
 type (
-	ISudokuGenerateAllUseCase interface {
+	SudokuGenerateAllUseCase interface {
 		Execute(ctx context.Context) ([]entities.Sudoku, error)
 	}
 
@@ -26,7 +26,7 @@ func NewSudokuGenerateAllUseCase(
 	txManager repository.TransactionManager,
 	sudokuRepo repository.SudokuRepository,
 	sudokuService domain.SudokuGenerator,
-) ISudokuGenerateAllUseCase {
+) SudokuGenerateAllUseCase {
 	return &sudokuGenerateAllUseCase{
 		txManager:     txManager,
 		sudokuRepo:    sudokuRepo,
@@ -48,7 +48,7 @@ func (s *sudokuGenerateAllUseCase) Execute(ctx context.Context) ([]entities.Sudo
 			}
 
 			sudoku.Date = today
-			sudoku.ID = string(vo.NewUUID())
+			sudoku.ID = vo.NewUUID()
 
 			err = s.sudokuRepo.Create(ctx, sudoku)
 			if err != nil {

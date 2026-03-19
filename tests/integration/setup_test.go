@@ -3,14 +3,16 @@ package integration
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
+	"testing"
+	"time"
+
 	"sudoku-daily-api/migrations"
 	"sudoku-daily-api/pkg/config"
 	"sudoku-daily-api/pkg/database"
 	"sudoku-daily-api/src/application"
-	"testing"
-	"time"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -97,13 +99,14 @@ func teardownTestDB() {
 	}
 }
 
-func TruncateTables(t *testing.T) {
+func TruncateTables() {
 	dbConn := database.GetDB()
 	if dbConn.BunConnection == nil {
 		return
 	}
 
 	tables := []string{
+		`"solves"`,
 		`"refresh_tokens"`,
 		`"users"`,
 		`"sudokus"`,
@@ -113,7 +116,7 @@ func TruncateTables(t *testing.T) {
 	for _, table := range tables {
 		_, err := dbConn.BunConnection.ExecContext(ctx, fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", table))
 		if err != nil {
-			t.Fatalf("warning: failed to truncate table %s: %v\n", table, err)
+			log.Printf("warning: failed to truncate table %s: %v\n", table, err)
 		}
 	}
 }

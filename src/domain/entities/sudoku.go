@@ -53,7 +53,7 @@ type (
 	}
 
 	Sudoku struct {
-		ID         string
+		ID         vo.UUID
 		Size       BoardSize
 		Board      Board
 		Solution   Board
@@ -62,7 +62,7 @@ type (
 	}
 
 	Board struct {
-		cells     [][]int
+		Cells     [][]int
 		RowCount  []vo.Binary
 		ColCount  []vo.Binary
 		GridCount []vo.Binary
@@ -89,7 +89,7 @@ func newBoard(size int) Board {
 	}
 
 	return Board{
-		cells:     cells,
+		Cells:     cells,
 		RowCount:  make([]vo.Binary, size),
 		ColCount:  make([]vo.Binary, size),
 		GridCount: make([]vo.Binary, size*size),
@@ -116,7 +116,7 @@ func (s *Sudoku) GetSize() int {
 func (b *Board) SetCell(row, col, value int) {
 
 	if value == 0 {
-		n := b.cells[row][col]
+		n := b.Cells[row][col]
 
 		b.RowCount[row].Remove(n)
 		b.ColCount[col].Remove(n)
@@ -127,19 +127,19 @@ func (b *Board) SetCell(row, col, value int) {
 		b.GridCount[b.GetGridByPosition(row, col)].Add(value)
 	}
 
-	b.cells[row][col] = value
+	b.Cells[row][col] = value
 }
 
 func (b *Board) GetCell(row, col int) int {
-	return b.cells[row][col]
+	return b.Cells[row][col]
 }
 
 func (b *Board) GetSize() int {
-	return len(b.cells)
+	return len(b.Cells)
 }
 
 func (b *Board) GetBoard() [][]int {
-	return b.cells
+	return b.Cells
 }
 
 func (b *Board) GetPossibleByPosition(row, col int) vo.Binary {

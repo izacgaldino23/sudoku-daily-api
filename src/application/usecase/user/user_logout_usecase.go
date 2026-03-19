@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain/repository"
 	"sudoku-daily-api/src/domain/vo"
@@ -23,7 +24,7 @@ func NewUserLogoutUseCase(refreshTokenRepo repository.RefreshTokenRepository) Us
 }
 
 func (u *userLogoutUseCase) Execute(ctx context.Context, userID vo.UUID, token string) error {
-	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, userID, token)
+	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, token)
 	if err != nil {
 		if errors.Is(err, pkg.ErrNotFound) {
 			return nil
@@ -31,9 +32,14 @@ func (u *userLogoutUseCase) Execute(ctx context.Context, userID vo.UUID, token s
 		return err
 	}
 
+	if refreshToken.Revoked {
+		return nil
+	} else if refreshToken.UserID != userID {
+		return nil
+	}
+
 	err = u.refreshTokenRepo.Revoke(ctx, userID, refreshToken.Hash)
 	if err != nil {
-		// TODO log the error in the database
 		if errors.Is(err, pkg.ErrNotFound) {
 			return nil
 		}

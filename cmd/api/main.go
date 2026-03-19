@@ -2,10 +2,11 @@ package main
 
 import (
 	"os"
+	"time"
+
 	"sudoku-daily-api/pkg/config"
 	"sudoku-daily-api/pkg/database"
 	"sudoku-daily-api/src/application"
-	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog"
@@ -29,6 +30,7 @@ func init() {
 
 func main() {
 	app := fiber.New()
+	healthCheck(app)
 
 	apiRouter := app.Group("/api")
 	_ = application.InitApp(apiRouter)
@@ -46,5 +48,24 @@ func initLogger() {
 	zerolog.TimeFieldFormat = time.RFC3339
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
+	if config.GetConfig().Debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
 	log.Logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
+}
+
+func healthCheck(app *fiber.App) {
+	app.Get("/health", func(c fiber.Ctx) error {
+		databaseHealth := "ok"
+		databaseErr := database.GetDB().SqlConnection.Ping()
+		if databaseErr != nil {
+			databaseHealth = databaseErr.Error()
+		}
+
+		return c.JSON(fiber.Map{
+			"status":   "ok",
+			"database": databaseHealth,
+		})
+	})
 }
