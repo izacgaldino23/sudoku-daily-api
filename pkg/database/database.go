@@ -31,7 +31,10 @@ func ConnectDB(configEnv *config.Config) (err error) {
 
 	dbConnection.SqlConnection = sqlDB
 	dbConnection.BunConnection = bun.NewDB(sqlDB, pgdialect.New())
-	dbConnection.BunConnection.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
+	
+	if configEnv.Debug {
+		dbConnection.BunConnection.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
+	}
 
 	return
 }

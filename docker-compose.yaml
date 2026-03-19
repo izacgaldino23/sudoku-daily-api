@@ -20,6 +20,7 @@ services:
       AUTH_KEY_LEN: "32"
       AUTH_SALT_LEN: "16"
       ENV: "docker"
+      DEBUG: true
   migrate:
     build: .
     depends_on:
@@ -38,6 +39,7 @@ services:
       AUTH_PARALLELISM: "1"
       AUTH_KEY_LEN: "32"
       AUTH_SALT_LEN: "16"
+      DEBUG: true
   db:
     container_name: postgres
     image: postgres

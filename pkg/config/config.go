@@ -17,6 +17,8 @@ type Config struct {
 	ApiPort  string   `mapstructure:"API_PORT"`
 	Database Database `mapstructure:"DATABASE"`
 	Auth     Auth     `mapstructure:"AUTH"`
+
+	Debug bool `mapstructure:"DEBUG"`
 }
 
 type Auth struct {

@@ -2,10 +2,11 @@ package main
 
 import (
 	"os"
+	"time"
+
 	"sudoku-daily-api/pkg/config"
 	"sudoku-daily-api/pkg/database"
 	"sudoku-daily-api/src/application"
-	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog"
@@ -45,7 +46,11 @@ func main() {
 
 func initLogger() {
 	zerolog.TimeFieldFormat = time.RFC3339
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	if config.GetConfig().Debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
 
 	log.Logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
 }
