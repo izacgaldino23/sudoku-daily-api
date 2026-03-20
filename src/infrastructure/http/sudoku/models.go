@@ -38,14 +38,14 @@ type (
 	}
 )
 
-func (g *GetDailySudokuRequest) GetSize() int {
+func (g *GetDailySudokuRequest) GetSize() entities.BoardSize {
 	switch g.Size {
 	case "four":
-		return 4
+		return entities.BoardSize4
 	case "six":
-		return 6
+		return entities.BoardSize6
 	case "nine":
-		return 9
+		return entities.BoardSize9
 	default:
 		return 0
 	}

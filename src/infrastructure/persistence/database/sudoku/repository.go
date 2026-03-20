@@ -28,7 +28,7 @@ func NewRepository(db *bun.DB) repository.SudokuRepository {
 	}
 }
 
-func (r *sudokuRepository) GetByDateAndSize(ctx context.Context, date time.Time, size int) (*entities.Sudoku, error) {
+func (r *sudokuRepository) GetByDateAndSize(ctx context.Context, date time.Time, size entities.BoardSize) (*entities.Sudoku, error) {
 	var sudokuResp Sudoku
 
 	err := r.txManager.GetExecutor(ctx).NewSelect().Model(&sudokuResp).Where("size = ? and date = ?", size, date).Scan(ctx)

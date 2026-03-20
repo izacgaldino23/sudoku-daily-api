@@ -3,9 +3,10 @@ package strategies
 import (
 	"fmt"
 	"math/rand"
-	"sudoku-daily-api/src/domain/entities"
 	"testing"
 	"time"
+
+	"sudoku-daily-api/src/domain/entities"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -46,7 +47,7 @@ func TestHideStrategy(t *testing.T) {
 	now := time.Now()
 	fakeDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
-	size := 6
+	var size entities.BoardSize = 6
 
 	r := rand.New(rand.NewSource(fakeDate.Unix()))
 	sudoku := generateValidSudoku(size, r)
@@ -66,7 +67,7 @@ func TestHideStrategy(t *testing.T) {
 
 	min, max := entities.GetClue(entities.BoardSize(size), entities.DifficultyMedium)
 
-	totalCells := size * size
+	var totalCells int = int(size * size)
 
 	assert.GreaterOrEqual(t, totalCells-emptyCells, min, "min value for difficulty %v is %v", sudoku.Difficulty, min)
 	assert.LessOrEqual(t, totalCells-emptyCells, max, "max value for difficulty %v is %v", sudoku.Difficulty, max)
@@ -92,7 +93,7 @@ func TestSolver(t *testing.T) {
 	assert.Equal(t, 2, solver.Execute(&sudoku.Board))
 }
 
-func generateValidSudoku(size int, r *rand.Rand) *entities.Sudoku {
+func generateValidSudoku(size entities.BoardSize, r *rand.Rand) *entities.Sudoku {
 	f := NewFillStrategy()
 
 	sudoku := entities.NewSudoku(entities.BoardSize(size))

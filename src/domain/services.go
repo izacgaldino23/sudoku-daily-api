@@ -26,8 +26,8 @@ type (
 	}
 
 	SudokuDailyFetcher interface {
-		GetDaily(ctx context.Context, size int) (*entities.Sudoku, error)
-		GetByDateAndSize(ctx context.Context, date time.Time, size int) (*entities.Sudoku, error)
+		GetDaily(ctx context.Context, size entities.BoardSize) (*entities.Sudoku, error)
+		GetByDateAndSize(ctx context.Context, date time.Time, size entities.BoardSize) (*entities.Sudoku, error)
 	}
 
 	ResumeFetcher interface {

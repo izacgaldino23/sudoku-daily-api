@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"sudoku-daily-api/pkg/database"
+	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
 
 	"github.com/uptrace/bun"
@@ -74,7 +75,7 @@ func SeedSudokus() error {
 	return nil
 }
 
-func GetSudokuSolution(size int) ([][]int, error) {
+func GetSudokuSolution(size entities.BoardSize) ([][]int, error) {
 	db := database.GetDB().BunConnection
 	ctx := context.Background()
 

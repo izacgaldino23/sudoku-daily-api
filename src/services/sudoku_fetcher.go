@@ -26,7 +26,7 @@ func NewSudokuDailyFetcher(cache domain.Cache, sudokuRepository repository.Sudok
 	}
 }
 
-func (s *sudokuDailyFetcher) GetDaily(ctx context.Context, size int) (*entities.Sudoku, error) {
+func (s *sudokuDailyFetcher) GetDaily(ctx context.Context, size entities.BoardSize) (*entities.Sudoku, error) {
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
@@ -52,7 +52,7 @@ func (s *sudokuDailyFetcher) GetDaily(ctx context.Context, size int) (*entities.
 	return sudoku, nil
 }
 
-func (s *sudokuDailyFetcher) GetByDateAndSize(ctx context.Context, date time.Time, size int) (*entities.Sudoku, error) {
+func (s *sudokuDailyFetcher) GetByDateAndSize(ctx context.Context, date time.Time, size entities.BoardSize) (*entities.Sudoku, error) {
 	return s.sudokuRepository.GetByDateAndSize(ctx, date, size)
 }
 

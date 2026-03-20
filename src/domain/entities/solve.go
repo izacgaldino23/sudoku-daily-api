@@ -12,7 +12,7 @@ type (
 		Date      string    `json:"date"`
 		SudokuID  vo.UUID   `json:"sudoku_id"`
 		SessionID vo.UUID   `json:"session_id"`
-		Size      int       `json:"size"`
+		Size      BoardSize `json:"size"`
 		StartedAt time.Time `json:"started_at"`
 		ExpiresAt time.Time `json:"expires_at"`
 	}
@@ -70,7 +70,7 @@ func PlayTokenFromMap(m map[string]any) (*PlayToken, error) {
 		token.Date = date
 	}
 	if size, ok := m["size"].(float64); ok {
-		token.Size = int(size)
+		token.Size = BoardSize(size)
 	}
 	if sessionID, ok := m["session_id"].(string); ok {
 		token.SessionID = vo.UUID(sessionID)

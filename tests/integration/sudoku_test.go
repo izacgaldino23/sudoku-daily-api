@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"sudoku-daily-api/pkg"
+	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/infrastructure/http/sudoku"
 
 	"github.com/gofiber/fiber/v3"
@@ -129,7 +130,7 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 	err := SeedSudokus()
 	assert.NoError(t, err)
 
-	solution, err := GetSudokuSolution(9)
+	solution, err := GetSudokuSolution(entities.BoardSize9)
 	assert.NoError(t, err)
 
 	dailyReq := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=nine", nil)

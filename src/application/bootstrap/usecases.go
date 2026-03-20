@@ -16,6 +16,7 @@ func (c *Container) BuildUseCases() {
 		c.TxManager,
 		c.SudokuRepository,
 		c.GeneratorService,
+		c.SudokuFetcher,
 	)
 
 	c.VerifySolution = sudokuUsecase.NewSudokuVerifySolutionUseCase(

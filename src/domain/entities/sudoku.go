@@ -78,10 +78,10 @@ type (
 )
 
 func NewSudoku(size BoardSize) *Sudoku {
-	return &Sudoku{Size: size, Board: newBoard(int(size))}
+	return &Sudoku{Size: size, Board: newBoard(size)}
 }
 
-func newBoard(size int) Board {
+func newBoard(size BoardSize) Board {
 	cells := make([][]int, size)
 
 	for i := range cells {
@@ -93,12 +93,13 @@ func newBoard(size int) Board {
 		RowCount:  make([]vo.Binary, size),
 		ColCount:  make([]vo.Binary, size),
 		GridCount: make([]vo.Binary, size*size),
-		fullCount: vo.NewFullBinary(size),
+		fullCount: vo.NewFullBinary(int(size)),
 	}
 }
 
 func NewFilledBoard(values [][]int) Board {
-	board := newBoard(len(values))
+	size := BoardSize(len(values))
+	board := newBoard(size)
 
 	for i := range values {
 		for j := range values[i] {

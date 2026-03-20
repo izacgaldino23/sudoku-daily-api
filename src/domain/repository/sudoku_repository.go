@@ -10,7 +10,7 @@ import (
 
 type SudokuRepository interface {
 	Create(ctx context.Context, sudoku *entities.Sudoku) error
-	GetByDateAndSize(ctx context.Context, date time.Time, size int) (*entities.Sudoku, error)
+	GetByDateAndSize(ctx context.Context, date time.Time, size entities.BoardSize) (*entities.Sudoku, error)
 	AddSolve(ctx context.Context, solve *entities.Solve) error
 	GetTotalSolvedByUser(ctx context.Context, userID vo.UUID) (map[entities.BoardSize]int, error)
 	GetTodaySolvedByUser(ctx context.Context, userID vo.UUID) ([]entities.Solve, error)

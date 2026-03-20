@@ -17,7 +17,7 @@ import (
 
 type (
 	ISudokuGetDailyUseCase interface {
-		Execute(ctx context.Context, size int) (sudoku *entities.Sudoku, playToken string, err error)
+		Execute(ctx context.Context, size entities.BoardSize) (sudoku *entities.Sudoku, playToken string, err error)
 	}
 
 	sudokuGetDailyUseCase struct {
@@ -36,14 +36,16 @@ func NewSudokuGetDailyUseCase(
 	}
 }
 
-func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size int) (*entities.Sudoku, string, error) {
-	_, ok := entities.BoardSizes[entities.BoardSize(size)]
+func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.BoardSize) (*entities.Sudoku, string, error) {
+	boardSize := entities.BoardSize(size)
+
+	_, ok := entities.BoardSizes[boardSize]
 	if !ok {
 		log.Ctx(ctx).Error().Msgf("Invalid size: %d", size)
 		return nil, "", pkg.ErrQueryParamInvalid
 	}
 
-	sudoku, err := s.sudokuFetcher.GetDaily(ctx, size)
+	sudoku, err := s.sudokuFetcher.GetDaily(ctx, boardSize)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, "", pkg.ErrNotFound
@@ -66,7 +68,7 @@ func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entitie
 
 	playToken := &entities.PlayToken{
 		Date:      sudoku.Date.Format(time.DateOnly),
-		Size:      int(sudoku.Size),
+		Size:      sudoku.Size,
 		SessionID: sessionID,
 		SudokuID:  sudoku.ID,
 		StartedAt: time.Now(),
