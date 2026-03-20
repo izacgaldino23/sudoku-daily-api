@@ -4,17 +4,10 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
-type ctxKey struct{}
-
-var LoggerKey = ctxKey{}
-
 func Log(ctx context.Context) *zerolog.Logger {
-	if log, ok := ctx.Value(LoggerKey).(*zerolog.Logger); ok {
-		return log
-	}
+	return log.Ctx(ctx)
 
-	l := zerolog.Nop()
-	return &l
 }
