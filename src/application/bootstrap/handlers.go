@@ -1,15 +1,15 @@
 package bootstrap
 
 import (
-	httpSudoku "sudoku-daily-api/src/infrastructure/http/sudoku"
 	"sudoku-daily-api/src/infrastructure/http/auth"
+	httpSudoku "sudoku-daily-api/src/infrastructure/http/sudoku"
 )
 
 func (c *Container) BuildHandlers() {
 
 	c.SudokuHandler = httpSudoku.NewSudokuHandler(
 		c.GetDailySudoku,
-		c.GenerateAllSudokus,
+		c.GenerateDailySudokus,
 		c.VerifySolution,
 	)
 

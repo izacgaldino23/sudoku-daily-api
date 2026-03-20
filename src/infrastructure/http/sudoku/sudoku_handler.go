@@ -20,14 +20,14 @@ type (
 
 	sudokuHandler struct {
 		getDailyUseCase       sudoku.ISudokuGetDailyUseCase
-		createSudokuUseCase   sudoku.SudokuGenerateAllUseCase
+		createSudokuUseCase   sudoku.SudokuGenerateDailyUseCase
 		verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase
 	}
 )
 
 func NewSudokuHandler(
 	getDailyUseCase sudoku.ISudokuGetDailyUseCase,
-	createSudokuUseCase sudoku.SudokuGenerateAllUseCase,
+	createSudokuUseCase sudoku.SudokuGenerateDailyUseCase,
 	verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase,
 ) SudokuHandler {
 	return &sudokuHandler{

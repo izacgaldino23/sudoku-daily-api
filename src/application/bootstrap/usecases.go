@@ -12,7 +12,7 @@ func (c *Container) BuildUseCases() {
 		c.SudokuFetcher,
 	)
 
-	c.GenerateAllSudokus = sudokuUsecase.NewSudokuGenerateAllUseCase(
+	c.GenerateDailySudokus = sudokuUsecase.NewSudokuGenerateDailyUseCase(
 		c.TxManager,
 		c.SudokuRepository,
 		c.GeneratorService,

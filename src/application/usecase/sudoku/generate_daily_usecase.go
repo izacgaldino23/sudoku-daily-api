@@ -3,38 +3,39 @@ package sudoku
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/repository"
 	"sudoku-daily-api/src/domain/vo"
-	"time"
 )
 
 type (
-	SudokuGenerateAllUseCase interface {
+	SudokuGenerateDailyUseCase interface {
 		Execute(ctx context.Context) ([]entities.Sudoku, error)
 	}
 
-	sudokuGenerateAllUseCase struct {
+	sudokuGenerateDailyUseCase struct {
 		txManager     repository.TransactionManager
 		sudokuRepo    repository.SudokuRepository
 		sudokuService domain.SudokuGenerator
 	}
 )
 
-func NewSudokuGenerateAllUseCase(
+func NewSudokuGenerateDailyUseCase(
 	txManager repository.TransactionManager,
 	sudokuRepo repository.SudokuRepository,
 	sudokuService domain.SudokuGenerator,
-) SudokuGenerateAllUseCase {
-	return &sudokuGenerateAllUseCase{
+) SudokuGenerateDailyUseCase {
+	return &sudokuGenerateDailyUseCase{
 		txManager:     txManager,
 		sudokuRepo:    sudokuRepo,
 		sudokuService: sudokuService,
 	}
 }
 
-func (s *sudokuGenerateAllUseCase) Execute(ctx context.Context) ([]entities.Sudoku, error) {
+func (s *sudokuGenerateDailyUseCase) Execute(ctx context.Context) ([]entities.Sudoku, error) {
 	var sudokuList []entities.Sudoku
 
 	now := time.Now()

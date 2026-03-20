@@ -35,9 +35,9 @@ type Container struct {
 	ResumeFetcher    domain.ResumeFetcher
 
 	// use cases
-	GetDailySudoku     sudokuUsecase.ISudokuGetDailyUseCase
-	GenerateAllSudokus sudokuUsecase.SudokuGenerateAllUseCase
-	VerifySolution     sudokuUsecase.SudokuVerifySolutionUseCase
+	GetDailySudoku       sudokuUsecase.ISudokuGetDailyUseCase
+	GenerateDailySudokus sudokuUsecase.SudokuGenerateDailyUseCase
+	VerifySolution       sudokuUsecase.SudokuVerifySolutionUseCase
 
 	UserRegister     userUsecase.UserRegisterUseCase
 	UserLogin        userUsecase.UserLoginUseCase
