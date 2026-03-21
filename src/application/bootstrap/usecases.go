@@ -3,6 +3,7 @@ package bootstrap
 import (
 	sudokuUsecase "sudoku-daily-api/src/application/usecase/sudoku"
 	userUsecase "sudoku-daily-api/src/application/usecase/user"
+	user_stats_usecase "sudoku-daily-api/src/application/usecase/user_stats"
 )
 
 func (c *Container) BuildUseCases() {
@@ -20,10 +21,11 @@ func (c *Container) BuildUseCases() {
 	)
 
 	c.VerifySolution = sudokuUsecase.NewSudokuVerifySolutionUseCase(
-		c.UserRepository,
 		c.SudokuRepository,
 		c.TokenService,
 		c.SudokuFetcher,
+		c.UserStatsSolveAddStrike,
+		c.TxManager,
 	)
 
 	c.UserRegister = userUsecase.NewUserRegisterUseCase(
@@ -50,5 +52,9 @@ func (c *Container) BuildUseCases() {
 
 	c.UserResume = userUsecase.NewUserResumeUseCase(
 		c.ResumeFetcher,
+	)
+
+	c.UserStatsSolveAddStrike = user_stats_usecase.NewSolveAddStrikeUseCase(
+		c.UserStatsRepository,
 	)
 }

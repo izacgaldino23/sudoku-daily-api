@@ -8,6 +8,7 @@ import (
 
 	sudokuUsecase "sudoku-daily-api/src/application/usecase/sudoku"
 	userUsecase "sudoku-daily-api/src/application/usecase/user"
+	user_stats_usecase "sudoku-daily-api/src/application/usecase/user_stats"
 
 	"sudoku-daily-api/src/infrastructure/http/auth"
 	httpSudoku "sudoku-daily-api/src/infrastructure/http/sudoku"
@@ -25,6 +26,7 @@ type Container struct {
 	SudokuRepository       repository.SudokuRepository
 	UserRepository         repository.UserRepository
 	RefreshTokenRepository repository.RefreshTokenRepository
+	UserStatsRepository    repository.UserStatsRepository
 	TxManager              repository.TransactionManager
 
 	// services
@@ -44,6 +46,8 @@ type Container struct {
 	UserRefreshToken userUsecase.UserRefreshTokenUseCase
 	UserLogout       userUsecase.UserLogoutUseCase
 	UserResume       userUsecase.UserResumeUseCase
+
+	UserStatsSolveAddStrike user_stats_usecase.SolveAddStrikeUseCase
 
 	Middlewares Middlewares
 

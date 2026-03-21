@@ -2,13 +2,15 @@ package sudoku
 
 import (
 	"context"
+	"time"
+
 	"sudoku-daily-api/pkg"
+	user_stats_usecase "sudoku-daily-api/src/application/usecase/user_stats"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/repository"
 	"sudoku-daily-api/src/domain/vo"
-	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -19,24 +21,27 @@ type (
 	}
 
 	sudokuVerifySolutionUseCase struct {
-		userRep       repository.UserRepository
-		sudokuRepo    repository.SudokuRepository
-		tokenService  domain.TokenService
-		sudokuFetcher domain.SudokuDailyFetcher
+		sudokuRepo            repository.SudokuRepository
+		tokenService          domain.TokenService
+		sudokuFetcher         domain.SudokuDailyFetcher
+		solveAddStrikeUseCase user_stats_usecase.SolveAddStrikeUseCase
+		txManager             repository.TransactionManager
 	}
 )
 
 func NewSudokuVerifySolutionUseCase(
-	userRep repository.UserRepository,
 	sudokuRepo repository.SudokuRepository,
 	tokenService domain.TokenService,
 	sudokuFetcher domain.SudokuDailyFetcher,
+	solveAddStrikeUseCase user_stats_usecase.SolveAddStrikeUseCase,
+	txManager repository.TransactionManager,
 ) SudokuVerifySolutionUseCase {
 	return &sudokuVerifySolutionUseCase{
-		userRep:       userRep,
-		sudokuRepo:    sudokuRepo,
-		tokenService:  tokenService,
-		sudokuFetcher: sudokuFetcher,
+		sudokuRepo:            sudokuRepo,
+		tokenService:          tokenService,
+		sudokuFetcher:         sudokuFetcher,
+		solveAddStrikeUseCase: solveAddStrikeUseCase,
+		txManager:             txManager,
 	}
 }
 
@@ -66,27 +71,38 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 		return false, err
 	}
 
-	// validate solution
-	sudoku, err := s.sudokuFetcher.GetByDateAndSize(ctx, sudokuDate, playToken.Size)
-	if err != nil {
-		return false, err
-	}
-
-	if !compareSolution(sudoku, solve) {
-		return false, pkg.ErrInvalidSolution
-	}
-
-	// if logged, save on db
-	if solve.UserID != "" {
-		solve.ID = vo.NewUUID()
-		solve.SudokuID = sudoku.ID
-		solve.StartedAt = playToken.StartedAt
-		solve.Duration = int(time.Since(playToken.StartedAt).Seconds())
-
-		err = s.sudokuRepo.AddSolve(ctx, solve)
+	if err = s.txManager.WithinTransaction(ctx, func(txCtx context.Context) error {
+		// validate solution
+		sudoku, err := s.sudokuFetcher.GetByDateAndSize(txCtx, sudokuDate, playToken.Size)
 		if err != nil {
-			return false, err
+			return err
 		}
+
+		if !compareSolution(sudoku, solve) {
+			return pkg.ErrInvalidSolution
+		}
+
+		// if logged, save on db
+		if solve.UserID != "" {
+			solve.ID = vo.NewUUID()
+			solve.SudokuID = sudoku.ID
+			solve.StartedAt = playToken.StartedAt
+			solve.Duration = int(time.Since(playToken.StartedAt).Seconds())
+
+			err = s.sudokuRepo.AddSolve(txCtx, solve)
+			if err != nil {
+				return err
+			}
+
+			err = s.solveAddStrikeUseCase.Execute(txCtx, solve.UserID)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return false, err
 	}
 
 	return true, nil

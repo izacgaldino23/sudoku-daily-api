@@ -30,7 +30,8 @@ func NewRepository(db *bun.DB) repository.UserStatsRepository {
 
 func (u *userStatsRepository) GetByUserID(ctx context.Context, userID vo.UUID) (*entities.UserStats, error) {
 	stats := Stats{}
-	err := u.db.NewSelect().
+	err := u.txManager.GetExecutor(ctx).
+		NewSelect().
 		Model(&stats).
 		Column("users.username").
 		Join("JOIN users ON user_stats.user_id = users.id").
