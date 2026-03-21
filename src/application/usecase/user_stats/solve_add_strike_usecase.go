@@ -10,7 +10,7 @@ import (
 
 type (
 	SolveAddStrikeUseCase interface {
-		Execute(ctx context.Context, userID vo.UUID) error
+		Execute(ctx context.Context, userID vo.UUID, solveDate time.Time) error
 	}
 
 	solveAddStrikeUseCase struct {
@@ -24,28 +24,32 @@ func NewSolveAddStrikeUseCase(userStatsRepository repository.UserStatsRepository
 	}
 }
 
-func (s *solveAddStrikeUseCase) Execute(ctx context.Context, userID vo.UUID) error {
-	today := time.Now().Truncate(time.Hour * 24)
+func (s *solveAddStrikeUseCase) Execute(ctx context.Context, userID vo.UUID, solveDate time.Time) error {
+	solveDateOnly := solveDate.Truncate(24 * time.Hour)
 
-	// get current stats
 	stats, err := s.userStatsRepository.GetOrCreate(ctx, userID)
 	if err != nil {
 		return err
 	}
 
-	if stats.LastSolvedDate.Equal(today) {
-		stats.CurrentStreak++
-	} else {
-		if stats.CurrentStreak > stats.LongestStreak {
-			stats.LongestStreak = stats.CurrentStreak
+	if !stats.LastSolvedDate.IsZero() {
+		yesterday := solveDateOnly.AddDate(0, 0, -1)
+		if stats.LastSolvedDate.Equal(solveDateOnly) {
+			return nil
+		} else if stats.LastSolvedDate.Equal(yesterday) {
+			stats.CurrentStreak++
+		} else {
+			stats.CurrentStreak = 1
 		}
-		stats.CurrentStreak = 1
+	}
+
+	if stats.CurrentStreak > stats.LongestStreak {
+		stats.LongestStreak = stats.CurrentStreak
 	}
 	
-	stats.LastSolvedDate = time.Now()
+	stats.LastSolvedDate = solveDateOnly
 	stats.TotalSolved++
 
-	// update stats
 	if err = s.userStatsRepository.Update(ctx, stats); err != nil {
 		return err
 	}

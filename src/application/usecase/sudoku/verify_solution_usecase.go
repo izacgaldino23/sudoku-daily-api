@@ -94,7 +94,7 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 				return err
 			}
 
-			err = s.solveAddStrikeUseCase.Execute(txCtx, solve.UserID)
+			err = s.solveAddStrikeUseCase.Execute(txCtx, solve.UserID, sudokuDate)
 			if err != nil {
 				return err
 			}
