@@ -9,19 +9,23 @@ import (
 	"github.com/uptrace/bun"
 )
 
-type User struct {
-	bun.BaseModel `bun:"table:users"`
+type (
+	User struct {
+		bun.BaseModel `bun:"table:users"`
 
-	ID            string    `bun:"id,pk"`
-	Username      string    `bun:",unique,notnull"`
-	Email         string    `bun:",unique,notnull"`
-	PasswordHash  string    `bun:",notnull"`
-	Provider      string    `bun:",notnull"`
-	ProviderID    *string   `bun:",notnull"`
-	EmailVerified bool      `bun:",notnull"`
-	CreatedAt     time.Time `bun:",notnull,default:current_timestamp"`
-	UpdatedAt     time.Time `bun:",notnull,default:current_timestamp"`
-}
+		ID            string    `bun:"id,pk"`
+		Username      string    `bun:",unique,notnull"`
+		Email         string    `bun:",unique,notnull"`
+		PasswordHash  string    `bun:",notnull"`
+		Provider      string    `bun:",notnull"`
+		ProviderID    *string   `bun:",notnull"`
+		EmailVerified bool      `bun:",notnull"`
+		CreatedAt     time.Time `bun:",notnull,default:current_timestamp"`
+		UpdatedAt     time.Time `bun:",notnull,default:current_timestamp"`
+
+		// Stats *Stats `bun:"rel:has-one,join:id=user_id"`
+	}
+)
 
 func (u *User) FromDomain(user *entities.User) {
 	u.ID = string(user.ID)

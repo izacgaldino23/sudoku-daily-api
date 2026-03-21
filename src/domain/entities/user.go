@@ -53,6 +53,16 @@ type (
 		Finished bool
 		Duration int
 	}
+
+	UserStats struct {
+		ID             vo.UUID
+		UserID         vo.UUID
+		UserName       string
+		CurrentStreak  int
+		LongestStreak  int
+		LastSolvedDate time.Time
+		TotalSolved    int
+	}
 )
 
 func (u *User) IsEmailAuth() bool {
