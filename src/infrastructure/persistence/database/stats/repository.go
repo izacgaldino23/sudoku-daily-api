@@ -28,9 +28,9 @@ func NewRepository(db *bun.DB) repository.UserStatsRepository {
 	}
 }
 
-func (u *userStatsRepository) GetByUserID(ctx context.Context, userID vo.UUID) (*entities.UserStats, error) {
+func (r *userStatsRepository) GetByUserID(ctx context.Context, userID vo.UUID) (*entities.UserStats, error) {
 	stats := Stats{}
-	err := u.txManager.GetExecutor(ctx).
+	err := r.txManager.GetExecutor(ctx).
 		NewSelect().
 		Model(&stats).
 		Column("users.username").
@@ -44,8 +44,8 @@ func (u *userStatsRepository) GetByUserID(ctx context.Context, userID vo.UUID) (
 	return stats.ToDomain(), nil
 }
 
-func (u *userStatsRepository) GetOrCreate(ctx context.Context, userID vo.UUID) (*entities.UserStats, error) {
-	stats, err := u.GetByUserID(ctx, userID)
+func (r *userStatsRepository) GetOrCreate(ctx context.Context, userID vo.UUID) (*entities.UserStats, error) {
+	stats, err := r.GetByUserID(ctx, userID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (u *userStatsRepository) GetOrCreate(ctx context.Context, userID vo.UUID) (
 		TotalSolved:    1,
 	}
 
-	result, err := u.txManager.GetExecutor(ctx).
+	result, err := r.txManager.GetExecutor(ctx).
 		NewInsert().
 		Model(stats).
 		Exec(ctx)
@@ -75,9 +75,9 @@ func (u *userStatsRepository) GetOrCreate(ctx context.Context, userID vo.UUID) (
 	return stats, err
 }
 
-func (u *userStatsRepository) Update(ctx context.Context, stats *entities.UserStats) error {
+func (r *userStatsRepository) Update(ctx context.Context, stats *entities.UserStats) error {
 	// update stats
-	result, err := u.txManager.GetExecutor(ctx).
+	result, err := r.txManager.GetExecutor(ctx).
 		NewUpdate().
 		Model(stats).
 		Exec(ctx)
@@ -87,4 +87,66 @@ func (u *userStatsRepository) Update(ctx context.Context, stats *entities.UserSt
 
 	_, err = result.RowsAffected()
 	return err
+}
+
+func (r *userStatsRepository) GetBestStreakLeaderboard(ctx context.Context, limit int, offset int, filterDate time.Time) ([]entities.UserStats, bool, error) {
+	var stats []Stats
+
+	currentDate := filterDate.Truncate(24 * time.Hour)
+	dayBefore := currentDate.AddDate(0, 0, -1)
+
+	err := r.txManager.GetExecutor(ctx).
+		NewSelect().
+		Column("users.username").
+		Model(&stats).
+		Join("JOIN users ON solve.user_id = users.id").
+		Where("last_solved_date >= ? AND last_solved_date <= ?", dayBefore, currentDate).
+		Order("user_stats.longest_streak DESC").
+		Limit(limit + 1).
+		Offset(offset).
+		Scan(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+
+	hasNext := len(stats) > limit
+	if hasNext {
+		stats = stats[:limit]
+	}
+
+	result := make([]entities.UserStats, len(stats)-1)
+	for i, stat := range stats {
+		result[i] = *stat.ToDomain()
+	}
+
+	return result, hasNext, nil
+}
+
+func (r *userStatsRepository) GetTotalSolvesLeaderboard(ctx context.Context, limit int, offset int) ([]entities.UserStats, bool, error) {
+	var stats []Stats
+
+	err := r.txManager.GetExecutor(ctx).
+		NewSelect().
+		Column("users.username").
+		Model(&stats).
+		Join("JOIN users ON user_stats.user_id = users.id").
+		Order("user_stats.total_solved DESC").
+		Limit(limit + 1).
+		Offset(offset).
+		Scan(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+
+	hasNext := len(stats) > limit
+	if hasNext {
+		stats = stats[:limit]
+	}
+
+	result := make([]entities.UserStats, len(stats)-1)
+	for i, stat := range stats {
+		result[i] = *stat.ToDomain()
+	}
+
+	return result, hasNext, nil
 }

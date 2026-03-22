@@ -15,4 +15,6 @@ type SudokuRepository interface {
 	GetTotalSolvedByUser(ctx context.Context, userID vo.UUID) (map[entities.BoardSize]int, error)
 	GetTodaySolvedByUser(ctx context.Context, userID vo.UUID) ([]entities.Solve, error)
 	GetBestTimesByUser(ctx context.Context, userID vo.UUID) ([]entities.Solve, error)
+	GetDailyLeaderboard(ctx context.Context, sudokuID vo.UUID, limit, offset int) ([]entities.Solve, bool, error)
+	GetAllTimeBestLeaderboard(ctx context.Context, size entities.BoardSize, limit, offset int) ([]entities.Solve, bool, error)
 }

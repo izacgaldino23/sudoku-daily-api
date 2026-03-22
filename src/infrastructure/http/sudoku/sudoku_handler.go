@@ -51,7 +51,7 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	size := request.GetSize()
+	size := entities.BoardSizeFromName(request.Size)
 
 	dailySudoku, playToken, err := sh.getDailyUseCase.Execute(ctxReq, size)
 	if err != nil {

@@ -1,9 +1,10 @@
 package sudoku
 
 import (
+	"time"
+
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
-	"time"
 )
 
 type (
@@ -38,19 +39,6 @@ type (
 	}
 )
 
-func (g *GetDailySudokuRequest) GetSize() entities.BoardSize {
-	switch g.Size {
-	case "four":
-		return entities.BoardSize4
-	case "six":
-		return entities.BoardSize6
-	case "nine":
-		return entities.BoardSize9
-	default:
-		return 0
-	}
-}
-
 func (g *SudokuResponse) FromDomain(s *entities.Sudoku, playToken string) {
 	g.ID = s.ID.String()
 	g.Size = s.GetSize()
@@ -81,7 +69,7 @@ func BoardFromDomain(board entities.Board) []Cell {
 
 func (s *VerifySolutionRequest) ToDomain(userID vo.UUID) *entities.Solve {
 	return &entities.Solve{
-		Solution:    s.Solution,
-		UserID:      userID,
+		Solution: s.Solution,
+		UserID:   userID,
 	}
 }

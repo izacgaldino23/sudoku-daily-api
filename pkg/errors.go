@@ -18,6 +18,7 @@ var (
 	ErrRefreshTokenRevoked    = NewError("refresh token revoked")
 	ErrBodyInvalid            = NewError("invalid body")
 	ErrInvalidSolution        = NewError("invalid solution")
+	ErrInvalidLeaderboardType = NewError("invalid leaderboard type")
 )
 
 type (

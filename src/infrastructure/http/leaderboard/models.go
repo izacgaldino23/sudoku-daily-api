@@ -4,10 +4,10 @@ import "sudoku-daily-api/src/domain/entities"
 
 type (
 	LeaderboardRequest struct {
-		Type  string `query:"type" validate:"required,oneof=daily all-time streak"`
-		Size  string `query:"size" validate:"required,oneof=four six nine"`
-		Limit int    `query:"limit" validate:"required,min=1,max=100"`
-		Page  int    `query:"page" validate:"required,min=1"`
+		Type  string `query:"type" validate:"oneof=daily all-time streak"`
+		Size  string `query:"size" validate:"oneof=four six nine"`
+		Limit int    `query:"limit" validate:"min=1,max=100"`
+		Page  int    `query:"page" validate:"min=1"`
 	}
 
 	LeaderboardResponse struct {
@@ -21,6 +21,15 @@ type (
 		Value    string `json:"value"`
 	}
 )
+
+func (r *LeaderboardRequest) ToDomain() *entities.LeaderboardSearchParams {
+	return &entities.LeaderboardSearchParams{
+		Type:  r.Type,
+		Size:  entities.BoardSizeFromName(r.Size),
+		Limit: r.Limit,
+		Page:  r.Page,
+	}
+}
 
 func responseFromDomain(leaderboard *entities.Leaderboard) LeaderboardResponse {
 	var entries []Entry

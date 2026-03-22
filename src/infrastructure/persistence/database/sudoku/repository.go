@@ -143,3 +143,66 @@ func (r *sudokuRepository) GetBestTimesByUser(ctx context.Context, userID vo.UUI
 
 	return result, nil
 }
+
+func (r *sudokuRepository) GetDailyLeaderboard(ctx context.Context, sudokuID vo.UUID, limit, offset int) ([]entities.Solve, bool, error) {
+	var solves []Solve
+
+	err := r.txManager.GetExecutor(ctx).
+		NewSelect().
+		Column("users.username").
+		Model(&solves).
+		Join("JOIN users ON solve.user_id = users.id").
+		Where("sudoku.id = ?", sudokuID).
+		Order("solves.duration").
+		Limit(limit + 1).
+		Offset(offset).
+		Scan(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+
+	hasNext := len(solves) > limit
+	if hasNext {
+		solves = solves[:limit]
+	}
+
+	result := make([]entities.Solve, len(solves)-1)
+	for i, solve := range solves {
+		result[i] = *solve.ToDomain()
+	}
+
+	return result, hasNext, nil
+}
+
+func (r *sudokuRepository) GetAllTimeBestLeaderboard(ctx context.Context, size entities.BoardSize, limit, offset int) ([]entities.Solve, bool, error) {
+	var solves []Solve
+
+	err := r.txManager.GetExecutor(ctx).
+		NewSelect().
+		Column("users.username").
+		ExcludeColumn("duration").
+		ColumnExpr("MIN(duration) AS duration").
+		Model(&solves).
+		Join("JOIN users ON solve.user_id = users.id").
+		Where("size = ?", size).
+		Group("user_id").
+		Order("solves.duration").
+		Limit(limit + 1).
+		Offset(offset).
+		Scan(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+
+	hasNext := len(solves) > limit
+	if hasNext {
+		solves = solves[:limit]
+	}
+
+	result := make([]entities.Solve, len(solves)-1)
+	for i, solve := range solves {
+		result[i] = *solve.ToDomain()
+	}
+
+	return result, hasNext, nil
+}

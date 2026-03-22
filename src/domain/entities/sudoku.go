@@ -110,6 +110,19 @@ func NewFilledBoard(values [][]int) Board {
 	return board
 }
 
+func BoardSizeFromName(name string) BoardSize {
+	switch name {
+	case "four":
+		return BoardSize4
+	case "six":
+		return BoardSize6
+	case "nine":
+		return BoardSize9
+	default:
+		return 0
+	}
+}
+
 func (s *Sudoku) GetSize() int {
 	return int(s.Size)
 }

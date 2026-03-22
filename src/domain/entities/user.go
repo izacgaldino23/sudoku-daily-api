@@ -57,7 +57,7 @@ type (
 	UserStats struct {
 		ID             vo.UUID
 		UserID         vo.UUID
-		UserName       string
+		Username       string
 		CurrentStreak  int
 		LongestStreak  int
 		LastSolvedDate time.Time

@@ -1,9 +1,10 @@
 package entities
 
 const (
-	DailyLeaderboardType   LeaderboardType = "daily"
-	AllTimeLeaderboardType LeaderboardType = "all-time"
-	StreakLeaderboardType  LeaderboardType = "streak"
+	DailyLeaderboardType       LeaderboardType = "daily"
+	AllTimeLeaderboardType     LeaderboardType = "all-time"
+	TotalSolvesLeaderboardType LeaderboardType = "total"
+	StreakLeaderboardType      LeaderboardType = "streak"
 )
 
 type (
@@ -11,7 +12,7 @@ type (
 
 	LeaderboardSearchParams struct {
 		Type  string
-		Size  string
+		Size  BoardSize
 		Limit int
 		Page  int
 	}
@@ -27,3 +28,7 @@ type (
 		Value    string
 	}
 )
+
+func (l LeaderboardType) String() string {
+	return string(l)
+}

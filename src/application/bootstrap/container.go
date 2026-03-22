@@ -6,11 +6,13 @@ import (
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/repository"
 
+	leaderboard_usecase "sudoku-daily-api/src/application/usecase/leaderboard"
 	sudokuUsecase "sudoku-daily-api/src/application/usecase/sudoku"
 	userUsecase "sudoku-daily-api/src/application/usecase/user"
 	user_stats_usecase "sudoku-daily-api/src/application/usecase/user_stats"
 
 	"sudoku-daily-api/src/infrastructure/http/auth"
+	"sudoku-daily-api/src/infrastructure/http/leaderboard"
 	httpSudoku "sudoku-daily-api/src/infrastructure/http/sudoku"
 
 	"github.com/gofiber/fiber/v3"
@@ -49,11 +51,14 @@ type Container struct {
 
 	UserStatsSolveAddStrike user_stats_usecase.SolveAddStrikeUseCase
 
+	GetLeaderboardUseCase leaderboard_usecase.GetLeaderboard
+
 	Middlewares Middlewares
 
 	// handlers
-	SudokuHandler httpSudoku.SudokuHandler
-	AuthHandler   auth.AuthHandler
+	SudokuHandler      httpSudoku.SudokuHandler
+	AuthHandler        auth.AuthHandler
+	LeaderboardHandler leaderboard.LeaderboardHandler
 }
 
 type Middlewares struct {

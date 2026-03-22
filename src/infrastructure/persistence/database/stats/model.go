@@ -27,7 +27,7 @@ func (s *Stats) ToDomain() *entities.UserStats {
 	return &entities.UserStats{
 		ID:             vo.UUID(s.ID),
 		UserID:         vo.UUID(s.UserID),
-		UserName:       s.UserName,
+		Username:       s.UserName,
 		CurrentStreak:  s.CurrentStreak,
 		LongestStreak:  s.LongestStreak,
 		LastSolvedDate: s.LastSolvedDate,

@@ -7,7 +7,6 @@ import (
 
 	"sudoku-daily-api/pkg"
 	usecase "sudoku-daily-api/src/application/usecase/leaderboard"
-	"sudoku-daily-api/src/domain/entities"
 )
 
 type (
@@ -16,11 +15,11 @@ type (
 	}
 
 	leaderboardHandler struct {
-		leaderboardUsecase usecase.LeaderboardUsecase
+		leaderboardUsecase usecase.GetLeaderboard
 	}
 )
 
-func NewLeaderboardHandler(leaderboardUsecase usecase.LeaderboardUsecase) LeaderboardHandler {
+func NewLeaderboardHandler(leaderboardUsecase usecase.GetLeaderboard) LeaderboardHandler {
 	return &leaderboardHandler{
 		leaderboardUsecase: leaderboardUsecase,
 	}
@@ -28,7 +27,7 @@ func NewLeaderboardHandler(leaderboardUsecase usecase.LeaderboardUsecase) Leader
 
 func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 	var (
-		params entities.LeaderboardSearchParams
+		params LeaderboardRequest
 		err    error
 		reqCtx = c.Context()
 	)
@@ -41,12 +40,12 @@ func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	leaderboard, err := h.leaderboardUsecase.Execute(reqCtx, params)
+	leaderboard, err := h.leaderboardUsecase.Execute(reqCtx, params.ToDomain())
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
 
 	return c.
 		Status(http.StatusOK).
-		JSON(responseFromDomain(&leaderboard))
+		JSON(responseFromDomain(leaderboard))
 }

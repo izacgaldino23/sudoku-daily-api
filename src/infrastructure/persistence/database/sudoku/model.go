@@ -29,6 +29,7 @@ type (
 		SudokuID  string    `bun:"sudoku_id,notnull"`
 		Size      int       `bun:",notnull"`
 		UserID    string    `bun:"user_id,notnull"`
+		UserName  string    `bun:"username,scanonly"`
 		StartedAt time.Time `bun:"type:timestamp,notnull"`
 		Duration  int       `bun:",notnull"`
 		CreatedAt time.Time `bun:"type:timestamp,notnull,default:current_timestamp"`
@@ -75,6 +76,7 @@ func (s *Solve) ToDomain() *entities.Solve {
 		ID:        vo.UUID(s.ID),
 		SudokuID:  vo.UUID(s.SudokuID),
 		UserID:    vo.UUID(s.UserID),
+		Username:  s.UserName,
 		Size:      s.Size,
 		StartedAt: s.StartedAt,
 		Duration:  s.Duration,

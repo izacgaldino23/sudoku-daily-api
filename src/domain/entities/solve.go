@@ -22,6 +22,7 @@ type (
 		SudokuID  vo.UUID
 		Size      int
 		UserID    vo.UUID
+		Username  string
 		Solution  [][]int
 		StartedAt time.Time
 		Duration  int
