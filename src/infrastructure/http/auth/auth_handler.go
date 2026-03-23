@@ -45,6 +45,16 @@ func NewAuthHandler(
 	}
 }
 
+// @Summary Register a new user
+// @Description Creates a new user account
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body RegisterRequest true "User registration request"
+// @Success 201 {string} string "User created"
+// @Failure 400 {object} pkg.Error
+// @Failure 409 {object} pkg.Error
+// @Router /auth/register [post]
 func (a *authHandler) Register(c fiber.Ctx) error {
 	var (
 		request RegisterRequest
@@ -65,6 +75,16 @@ func (a *authHandler) Register(c fiber.Ctx) error {
 	return c.Status(http.StatusCreated).SendString("")
 }
 
+// @Summary Login user
+// @Description Authenticates a user and returns access and refresh tokens
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body LoginRequest true "User login request"
+// @Success 200 {object} LoginResponse
+// @Failure 400 {object} pkg.Error
+// @Failure 401 {object} pkg.Error
+// @Router /auth/login [post]
 func (a *authHandler) Login(c fiber.Ctx) error {
 	var (
 		request LoginRequest
@@ -88,6 +108,16 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(resp)
 }
 
+// @Summary Refresh access token
+// @Description Refreshes an expired access token using a refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body RefreshTokenRequest true "Refresh token request"
+// @Success 200 {object} RefreshTokenResponse
+// @Failure 400 {object} pkg.Error
+// @Failure 401 {object} pkg.Error
+// @Router /auth/refresh [post]
 func (a *authHandler) Refresh(c fiber.Ctx) error {
 	var (
 		request RefreshTokenRequest
@@ -112,6 +142,16 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(refreshTokenResponse)
 }
 
+// @Summary Logout user
+// @Description Invalidates the user's refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body LogoutRequest true "Logout request"
+// @Success 200 {string} string "Logged out successfully"
+// @Failure 400 {object} pkg.Error
+// @Router /auth/logout [post]
 func (a *authHandler) Logout(c fiber.Ctx) error {
 	var (
 		userID  vo.UUID
@@ -136,6 +176,13 @@ func (a *authHandler) Logout(c fiber.Ctx) error {
 	return c.SendStatus(http.StatusOK)
 }
 
+// @Summary Get user resume
+// @Description Returns user statistics including total games, today's games, and best times
+// @Tags auth
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} ResumeResponse
+// @Router /auth/resume [get]
 func (a *authHandler) Resume(c fiber.Ctx) error {
 	userID := app_context.GetUserIDFromContext(c.Context())
 

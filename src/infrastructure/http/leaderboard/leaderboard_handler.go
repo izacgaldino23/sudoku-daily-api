@@ -25,6 +25,18 @@ func NewLeaderboardHandler(leaderboardUsecase usecase.GetLeaderboard) Leaderboar
 	}
 }
 
+// @Summary Get leaderboard
+// @Description Returns the leaderboard with rankings for a given type and size
+// @Tags leaderboard
+// @Accept json
+// @Produce json
+// @Param type query LeaderboardRequest false "Leaderboard type (daily, all-time, streak, total)"
+// @Param size query LeaderboardRequest false "Board size (four, six, nine)"
+// @Param limit query int false "Number of entries to return (1-100)"
+// @Param page query int false "Page number"
+// @Success 200 {object} LeaderboardResponse
+// @Failure 400 {object} pkg.Error
+// @Router /leaderboard [get]
 func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 	var (
 		params LeaderboardRequest

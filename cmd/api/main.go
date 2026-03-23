@@ -8,9 +8,12 @@ import (
 	"sudoku-daily-api/pkg/database"
 	"sudoku-daily-api/src/application"
 
+	swaggo "github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	_ "sudoku-daily-api/docs"
 )
 
 func init() {
@@ -31,6 +34,8 @@ func init() {
 func main() {
 	app := fiber.New()
 	healthCheck(app)
+
+	app.Get("/swagger/*", swaggo.HandlerDefault)
 
 	apiRouter := app.Group("/api")
 	_ = application.InitApp(apiRouter)
@@ -57,15 +62,8 @@ func initLogger() {
 
 func healthCheck(app *fiber.App) {
 	app.Get("/health", func(c fiber.Ctx) error {
-		databaseHealth := "ok"
-		databaseErr := database.GetDB().SqlConnection.Ping()
-		if databaseErr != nil {
-			databaseHealth = databaseErr.Error()
-		}
-
 		return c.JSON(fiber.Map{
-			"status":   "ok",
-			"database": databaseHealth,
+			"status": "ok",
 		})
 	})
 }

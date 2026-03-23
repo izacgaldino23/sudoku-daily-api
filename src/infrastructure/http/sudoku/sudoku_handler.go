@@ -37,6 +37,15 @@ func NewSudokuHandler(
 	}
 }
 
+// @Summary Get daily sudoku
+// @Description Returns the daily sudoku puzzle for a given size
+// @Tags sudoku
+// @Accept json
+// @Produce json
+// @Param size query GetDailySudokuRequest true "Board size (four, six, or nine)"
+// @Success 200 {object} SudokuResponse
+// @Failure 400 {object} pkg.Error
+// @Router /sudoku [get]
 func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	var (
 		ctxReq  = c.Context()
@@ -64,6 +73,12 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(response)
 }
 
+// @Summary Generate sudoku
+// @Description Generates new daily sudoku puzzles for all sizes
+// @Tags sudoku
+// @Produce json
+// @Success 200 {array} SudokuResponse
+// @Router /sudoku/generate [post]
 func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	var (
 		ctxReq = c.Context()
@@ -86,6 +101,16 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(response)
 }
 
+// @Summary Verify sudoku solution
+// @Description Verifies if the submitted solution is correct
+// @Tags sudoku
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body VerifySolutionRequest true "Solution request"
+// @Success 200 {string} string "Solution verified successfully"
+// @Failure 400 {object} pkg.Error
+// @Router /sudoku/submit [post]
 func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 	var (
 		ctxReq  = c.Context()

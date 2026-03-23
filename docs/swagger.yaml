@@ -1,0 +1,445 @@
+definitions:
+  pkg.Error:
+    properties:
+      message:
+        type: string
+      validation_errors:
+        items:
+          $ref: '#/definitions/pkg.ValidationError'
+        type: array
+    type: object
+  pkg.ValidationError:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  src_infrastructure_http_auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 100
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  src_infrastructure_http_auth.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      refresh_token:
+        type: string
+      username:
+        type: string
+    type: object
+  src_infrastructure_http_auth.LogoutRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  src_infrastructure_http_auth.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  src_infrastructure_http_auth.RefreshTokenResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+  src_infrastructure_http_auth.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 100
+        minLength: 6
+        type: string
+      username:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  src_infrastructure_http_auth.ResumeResponse:
+    properties:
+      best_times:
+        items:
+          $ref: '#/definitions/src_infrastructure_http_auth.gameResult'
+        type: array
+      today_games:
+        items:
+          $ref: '#/definitions/src_infrastructure_http_auth.gameResult'
+        type: array
+      total_games:
+        additionalProperties:
+          type: integer
+        type: object
+    type: object
+  src_infrastructure_http_auth.gameResult:
+    properties:
+      finished:
+        type: boolean
+      size:
+        type: integer
+      time:
+        type: integer
+    type: object
+  src_infrastructure_http_leaderboard.Entry:
+    properties:
+      rank:
+        type: integer
+      username:
+        type: string
+      value:
+        type: string
+    type: object
+  src_infrastructure_http_leaderboard.LeaderboardResponse:
+    properties:
+      has_next:
+        type: boolean
+      solves:
+        items:
+          $ref: '#/definitions/src_infrastructure_http_leaderboard.Entry'
+        type: array
+    type: object
+  src_infrastructure_http_sudoku.Cell:
+    properties:
+      col:
+        type: integer
+      row:
+        type: integer
+      value:
+        type: integer
+    type: object
+  src_infrastructure_http_sudoku.SudokuResponse:
+    properties:
+      board:
+        items:
+          $ref: '#/definitions/src_infrastructure_http_sudoku.Cell'
+        type: array
+      date:
+        type: string
+      id:
+        type: string
+      session_id:
+        type: string
+      session_token:
+        type: string
+      size:
+        type: integer
+    type: object
+  src_infrastructure_http_sudoku.VerifySolutionRequest:
+    properties:
+      play_token:
+        type: string
+      solution:
+        items:
+          items:
+            type: integer
+          type: array
+        type: array
+    required:
+    - play_token
+    - solution
+    type: object
+info:
+  contact: {}
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns access and refresh tokens
+      parameters:
+      - description: User login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/src_infrastructure_http_auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/src_infrastructure_http_auth.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pkg.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/pkg.Error'
+      summary: Login user
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidates the user's refresh token
+      parameters:
+      - description: Logout request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/src_infrastructure_http_auth.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logged out successfully
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pkg.Error'
+      security:
+      - BearerAuth: []
+      summary: Logout user
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes an expired access token using a refresh token
+      parameters:
+      - description: Refresh token request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/src_infrastructure_http_auth.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/src_infrastructure_http_auth.RefreshTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pkg.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/pkg.Error'
+      summary: Refresh access token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account
+      parameters:
+      - description: User registration request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/src_infrastructure_http_auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pkg.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/pkg.Error'
+      summary: Register a new user
+      tags:
+      - auth
+  /auth/resume:
+    get:
+      description: Returns user statistics including total games, today's games, and
+        best times
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/src_infrastructure_http_auth.ResumeResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user resume
+      tags:
+      - auth
+  /leaderboard:
+    get:
+      consumes:
+      - application/json
+      description: Returns the leaderboard with rankings for a given type and size
+      parameters:
+      - in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - in: query
+        minimum: 1
+        name: page
+        type: integer
+      - enum:
+        - four
+        - six
+        - nine
+        in: query
+        name: size
+        type: string
+      - enum:
+        - daily
+        - all-time
+        - streak
+        - total
+        in: query
+        name: type
+        type: string
+      - in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - in: query
+        minimum: 1
+        name: page
+        type: integer
+      - enum:
+        - four
+        - six
+        - nine
+        in: query
+        name: size
+        type: string
+      - enum:
+        - daily
+        - all-time
+        - streak
+        - total
+        in: query
+        name: type
+        type: string
+      - description: Number of entries to return (1-100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/src_infrastructure_http_leaderboard.LeaderboardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pkg.Error'
+      summary: Get leaderboard
+      tags:
+      - leaderboard
+  /sudoku:
+    get:
+      consumes:
+      - application/json
+      description: Returns the daily sudoku puzzle for a given size
+      parameters:
+      - enum:
+        - four
+        - six
+        - nine
+        in: query
+        name: size
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/src_infrastructure_http_sudoku.SudokuResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pkg.Error'
+      summary: Get daily sudoku
+      tags:
+      - sudoku
+  /sudoku/generate:
+    post:
+      description: Generates new daily sudoku puzzles for all sizes
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/src_infrastructure_http_sudoku.SudokuResponse'
+            type: array
+      summary: Generate sudoku
+      tags:
+      - sudoku
+  /sudoku/submit:
+    post:
+      consumes:
+      - application/json
+      description: Verifies if the submitted solution is correct
+      parameters:
+      - description: Solution request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/src_infrastructure_http_sudoku.VerifySolutionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Solution verified successfully
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pkg.Error'
+      security:
+      - BearerAuth: []
+      summary: Verify sudoku solution
+      tags:
+      - sudoku
+swagger: "2.0"
