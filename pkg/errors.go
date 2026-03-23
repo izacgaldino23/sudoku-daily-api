@@ -19,6 +19,7 @@ var (
 	ErrBodyInvalid            = NewError("invalid body")
 	ErrInvalidSolution        = NewError("invalid solution")
 	ErrInvalidLeaderboardType = NewError("invalid leaderboard type")
+	ErrInternalServerError    = NewError("internal server error")
 )
 
 type (

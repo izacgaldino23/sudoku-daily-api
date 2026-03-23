@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-func InitApp(app fiber.Router) error {
+func InitApp(app fiber.Router) *bootstrap.Container {
 	container := &bootstrap.Container{}
 
 	container.BuildInfrastructure()
@@ -17,5 +17,5 @@ func InitApp(app fiber.Router) error {
 	container.BuildMiddlewares()
 	container.BuildRouters(app)
 
-	return nil
+	return container
 }

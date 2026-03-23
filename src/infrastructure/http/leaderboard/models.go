@@ -4,7 +4,7 @@ import "sudoku-daily-api/src/domain/entities"
 
 type (
 	LeaderboardRequest struct {
-		Type  string `query:"type" validate:"oneof=daily all-time streak"`
+		Type  string `query:"type" validate:"oneof=daily all-time streak total"`
 		Size  string `query:"size" validate:"oneof=four six nine"`
 		Limit int    `query:"limit" validate:"min=1,max=100"`
 		Page  int    `query:"page" validate:"min=1"`

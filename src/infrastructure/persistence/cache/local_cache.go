@@ -9,18 +9,18 @@ import (
 type (
 	localCache struct {
 		sync.RWMutex
-		data map[string]any
-		order []string
-		maxSize int
+		data      map[string]any
+		order     []string
+		maxSize   int
 		updatedAt time.Time
 	}
 )
 
 func NewLocalCache(maxSize int) domain.Cache {
 	return &localCache{
-		data: make(map[string]any),
-		order: make([]string, 0),
-		maxSize: maxSize,
+		data:      make(map[string]any),
+		order:     make([]string, 0),
+		maxSize:   maxSize,
 		updatedAt: time.Now(),
 	}
 }
@@ -47,5 +47,14 @@ func (c *localCache) Set(key string, value any) {
 
 	c.data[key] = value
 	c.order = append(c.order, key)
+	c.updatedAt = time.Now()
+}
+
+func (c *localCache) Flush() {
+	c.Lock()
+	defer c.Unlock()
+
+	c.data = make(map[string]any)
+	c.order = make([]string, 0)
 	c.updatedAt = time.Now()
 }

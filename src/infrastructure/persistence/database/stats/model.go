@@ -34,3 +34,12 @@ func (s *Stats) ToDomain() *entities.UserStats {
 		TotalSolved:    s.TotalSolved,
 	}
 }
+
+func (s *Stats) FromDomain(stats *entities.UserStats) {
+	s.ID = stats.ID.String()
+	s.UserID = stats.UserID.String()
+	s.CurrentStreak = stats.CurrentStreak
+	s.LongestStreak = stats.LongestStreak
+	s.LastSolvedDate = stats.LastSolvedDate
+	s.TotalSolved = stats.TotalSolved
+}

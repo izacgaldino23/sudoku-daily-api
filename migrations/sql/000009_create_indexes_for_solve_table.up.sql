@@ -1,15 +1,12 @@
 -- create indexes for solve table
-CREATE INDEX idx_solves_sudoku_duration_user
-ON solves (sudoku_id, duration, user_id);
-
-CREATE INDEX idx_solves_duration
-ON solves (duration);
-
 CREATE INDEX idx_solves_user_duration
 ON solves (user_id, duration);
 
 CREATE INDEX idx_solves_sudoku_size_duration
 ON solves (sudoku_id, size, duration);
+
+CREATE INDEX idx_solves_size_user_duration
+ON solves (size, user_id, duration);
 
 -- create indexes for user_stats
 CREATE INDEX idx_user_stats_streak_date_user

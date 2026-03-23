@@ -1,15 +1,19 @@
 package bootstrap
 
 import (
+	"runtime/debug"
+
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 
+	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/infrastructure/http/middlewares"
+	"sudoku-daily-api/src/infrastructure/logging"
 )
 
 func (c *Container) BuildRouters(app fiber.Router) {
-	addMiddlewares(app, c)
+	applyMiddlewares(app, c)
 
 	// sudoku router
 	sudokuGroup := app.Group("/sudoku")
@@ -33,8 +37,17 @@ func (c *Container) BuildRouters(app fiber.Router) {
 	leaderboardGroup.Get("/", c.LeaderboardHandler.GetLeaderboard)
 }
 
-func addMiddlewares(app fiber.Router, container *Container) {
-	app.Use(recover.New())
+func applyMiddlewares(app fiber.Router, container *Container) {
+	app.Use(recover.New(recover.Config{
+		StackTraceHandler: func(c fiber.Ctx, e any) {
+			stack := debug.Stack()
+			logging.Log(c.Context()).Error().Msgf("Recovered from panic: %v\n%s", e, stack)
+
+			_ = pkg.JsonError(c, pkg.ErrInternalServerError)
+		},
+		EnableStackTrace: true,
+	}))
+
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"http://localhost:5173"},
 		AllowHeaders: []string{"Origin",

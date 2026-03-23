@@ -2,10 +2,12 @@ package integration
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"time"
 
 	"sudoku-daily-api/pkg/database"
+	"sudoku-daily-api/src/application/bootstrap"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
 
@@ -24,6 +26,8 @@ type SudokuSeed struct {
 }
 
 var (
+	container *bootstrap.Container
+
 	sudokusIDs = []string{
 		"00000000-0000-0000-0000-000000000001",
 		"00000000-0000-0000-0000-000000000002",
@@ -119,12 +123,21 @@ func SeedSolve(userID, sudokuID string, duration int) error {
 	db := database.GetDB().BunConnection
 	ctx := context.Background()
 
+	size := 9
+	switch sudokuID {
+	case sudokusIDs[1]:
+		size = 4
+	case sudokusIDs[2]:
+		size = 6
+	}
+
 	solve := SolveSeed{
 		ID:        generateUUID(),
 		UserID:    userID,
 		SudokuID:  sudokuID,
 		StartedAt: time.Now().Add(-time.Duration(duration) * time.Second),
 		Duration:  duration,
+		Size:      size,
 	}
 
 	_, err := db.NewInsert().Model(&solve).Exec(ctx)
@@ -140,10 +153,17 @@ func SeedSolves(userID string) error {
 		{ID: generateUUID(), UserID: userID, SudokuID: sudokusIDs[2], StartedAt: time.Now().Add(-25 * time.Hour), Duration: 45, Size: 4},
 	}
 
+	ctx := context.Background()
+	solveDate := time.Now().Truncate(24 * time.Hour)
 	for _, s := range solves {
 		_, err := database.GetDB().BunConnection.NewInsert().Model(&s).Exec(context.Background())
 		if err != nil {
 			return err
+		}
+
+		err = container.UserStatsSolveAddStrike.Execute(ctx, vo.UUID(userID), solveDate)
+		if err != nil {
+			return fmt.Errorf("failed to add strike: %w", err)
 		}
 	}
 
@@ -163,6 +183,35 @@ func GetUserIDByEmail(email string) (string, error) {
 	}
 
 	return user.ID, nil
+}
+
+type UserSeed struct {
+	bun.BaseModel `bun:"table:users"`
+
+	ID            string `bun:"id,pk"`
+	Email         string `bun:",notnull,unique"`
+	Username      string `bun:",notnull,unique"`
+	PasswordHash  string `bun:",notnull"`
+	Provider      string `bun:",notnull"`
+	EmailVerified bool   `bun:",notnull,default:false"`
+	CreatedAt     string `bun:"type:timestamp,notnull,default:current_timestamp"`
+}
+
+func SeedUser(email, username, passwordHash string) error {
+	db := database.GetDB().BunConnection
+	ctx := context.Background()
+
+	user := UserSeed{
+		ID:            generateUUID(),
+		Email:         email,
+		Username:      username,
+		PasswordHash:  passwordHash,
+		Provider:      "email",
+		EmailVerified: false,
+	}
+
+	_, err := db.NewInsert().Model(&user).Exec(ctx)
+	return err
 }
 
 func generateUUID() string {

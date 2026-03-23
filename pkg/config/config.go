@@ -70,6 +70,7 @@ func viperInit() error {
 	_ = v.BindEnv("DATABASE.SSL_MODE", "DATABASE_SSL_MODE")
 	_ = v.BindEnv("DATABASE.MIGRATIONS_PATH", "MIGRATIONS_PATH")
 
+	_ = v.BindEnv("DEBUG")
 	_ = v.BindEnv("API_PORT")
 	_ = v.BindEnv("AUTH.ITERATIONS", "AUTH_ITERATIONS")
 	_ = v.BindEnv("AUTH.MEMORY", "AUTH_MEMORY")

@@ -35,6 +35,7 @@ func setupTestEnvironment() {
 	os.Setenv("DATABASE_NAME", "sudoku_test")
 	os.Setenv("DATABASE_SSL_MODE", "disable")
 	os.Setenv("API_PORT", "8081")
+	os.Setenv("DEBUG", "false")
 
 	memory := 64
 
@@ -110,6 +111,7 @@ func TruncateTables() {
 		`"refresh_tokens"`,
 		`"users"`,
 		`"sudokus"`,
+		`"user_stats"`,
 	}
 
 	ctx := context.Background()
@@ -130,7 +132,7 @@ func SetupTestApp() *fiber.App {
 
 	api := app.Group("/api")
 
-	_ = application.InitApp(api)
+	container = application.InitApp(api)
 
 	return app
 }

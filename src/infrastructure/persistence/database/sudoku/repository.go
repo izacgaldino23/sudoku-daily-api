@@ -149,11 +149,11 @@ func (r *sudokuRepository) GetDailyLeaderboard(ctx context.Context, sudokuID vo.
 
 	err := r.txManager.GetExecutor(ctx).
 		NewSelect().
-		Column("users.username").
 		Model(&solves).
+		Column("users.username", "solve.*").
 		Join("JOIN users ON solve.user_id = users.id").
-		Where("sudoku.id = ?", sudokuID).
-		Order("solves.duration").
+		Where("sudoku_id = ?", sudokuID).
+		Order("solve.duration").
 		Limit(limit + 1).
 		Offset(offset).
 		Scan(ctx)
@@ -166,7 +166,11 @@ func (r *sudokuRepository) GetDailyLeaderboard(ctx context.Context, sudokuID vo.
 		solves = solves[:limit]
 	}
 
-	result := make([]entities.Solve, len(solves)-1)
+	if len(solves) == 0 {
+		return nil, false, nil
+	}
+
+	result := make([]entities.Solve, len(solves))
 	for i, solve := range solves {
 		result[i] = *solve.ToDomain()
 	}
@@ -177,19 +181,23 @@ func (r *sudokuRepository) GetDailyLeaderboard(ctx context.Context, sudokuID vo.
 func (r *sudokuRepository) GetAllTimeBestLeaderboard(ctx context.Context, size entities.BoardSize, limit, offset int) ([]entities.Solve, bool, error) {
 	var solves []Solve
 
+	subq := r.txManager.GetExecutor(ctx).
+		NewSelect().
+		Model((*Solve)(nil)).
+		Column("solve.*", "users.username").
+		Join("JOIN users ON solve.user_id = users.id").
+		Where("solve.size = ?", size).
+		DistinctOn("solve.user_id").
+		OrderExpr("solve.user_id, solve.duration ASC")
+
 	err := r.txManager.GetExecutor(ctx).
 		NewSelect().
-		Column("users.username").
-		ExcludeColumn("duration").
-		ColumnExpr("MIN(duration) AS duration").
-		Model(&solves).
-		Join("JOIN users ON solve.user_id = users.id").
-		Where("size = ?", size).
-		Group("user_id").
-		Order("solves.duration").
-		Limit(limit + 1).
+		TableExpr("(?) AS best", subq).
+		Column("best.*").
+		OrderExpr("best.duration ASC").
+		Limit(limit+1).
 		Offset(offset).
-		Scan(ctx)
+		Scan(ctx, &solves)
 	if err != nil {
 		return nil, false, err
 	}
@@ -199,7 +207,11 @@ func (r *sudokuRepository) GetAllTimeBestLeaderboard(ctx context.Context, size e
 		solves = solves[:limit]
 	}
 
-	result := make([]entities.Solve, len(solves)-1)
+	if len(solves) == 0 {
+		return nil, false, nil
+	}
+
+	result := make([]entities.Solve, len(solves))
 	for i, solve := range solves {
 		result[i] = *solve.ToDomain()
 	}
