@@ -45,7 +45,7 @@ func NewSudokuHandler(
 // @Param size query GetDailySudokuRequest true "Board size (four, six, or nine)"
 // @Success 200 {object} SudokuResponse
 // @Failure 400 {object} pkg.Error
-// @Router /sudoku [get]
+// @Router /api/sudoku [get]
 func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	var (
 		ctxReq  = c.Context()
@@ -78,7 +78,7 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 // @Tags sudoku
 // @Produce json
 // @Success 200 {array} SudokuResponse
-// @Router /sudoku/generate [post]
+// @Router /api/sudoku/generate [post]
 func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	var (
 		ctxReq = c.Context()
@@ -110,7 +110,7 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 // @Param request body VerifySolutionRequest true "Solution request"
 // @Success 200 {string} string "Solution verified successfully"
 // @Failure 400 {object} pkg.Error
-// @Router /sudoku/submit [post]
+// @Router /api/sudoku/submit [post]
 func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 	var (
 		ctxReq  = c.Context()

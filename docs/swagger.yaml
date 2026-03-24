@@ -1,21 +1,5 @@
 definitions:
-  pkg.Error:
-    properties:
-      message:
-        type: string
-      validation_errors:
-        items:
-          $ref: '#/definitions/pkg.ValidationError'
-        type: array
-    type: object
-  pkg.ValidationError:
-    properties:
-      field:
-        type: string
-      message:
-        type: string
-    type: object
-  src_infrastructure_http_auth.LoginRequest:
+  auth.LoginRequest:
     properties:
       email:
         type: string
@@ -27,7 +11,7 @@ definitions:
     - email
     - password
     type: object
-  src_infrastructure_http_auth.LoginResponse:
+  auth.LoginResponse:
     properties:
       access_token:
         type: string
@@ -40,26 +24,26 @@ definitions:
       username:
         type: string
     type: object
-  src_infrastructure_http_auth.LogoutRequest:
+  auth.LogoutRequest:
     properties:
       refresh_token:
         type: string
     required:
     - refresh_token
     type: object
-  src_infrastructure_http_auth.RefreshTokenRequest:
+  auth.RefreshTokenRequest:
     properties:
       refresh_token:
         type: string
     required:
     - refresh_token
     type: object
-  src_infrastructure_http_auth.RefreshTokenResponse:
+  auth.RefreshTokenResponse:
     properties:
       access_token:
         type: string
     type: object
-  src_infrastructure_http_auth.RegisterRequest:
+  auth.RegisterRequest:
     properties:
       email:
         type: string
@@ -76,22 +60,22 @@ definitions:
     - password
     - username
     type: object
-  src_infrastructure_http_auth.ResumeResponse:
+  auth.ResumeResponse:
     properties:
       best_times:
         items:
-          $ref: '#/definitions/src_infrastructure_http_auth.gameResult'
+          $ref: '#/definitions/auth.gameResult'
         type: array
       today_games:
         items:
-          $ref: '#/definitions/src_infrastructure_http_auth.gameResult'
+          $ref: '#/definitions/auth.gameResult'
         type: array
       total_games:
         additionalProperties:
           type: integer
         type: object
     type: object
-  src_infrastructure_http_auth.gameResult:
+  auth.gameResult:
     properties:
       finished:
         type: boolean
@@ -100,7 +84,7 @@ definitions:
       time:
         type: integer
     type: object
-  src_infrastructure_http_leaderboard.Entry:
+  leaderboard.Entry:
     properties:
       rank:
         type: integer
@@ -109,16 +93,32 @@ definitions:
       value:
         type: string
     type: object
-  src_infrastructure_http_leaderboard.LeaderboardResponse:
+  leaderboard.LeaderboardResponse:
     properties:
       has_next:
         type: boolean
       solves:
         items:
-          $ref: '#/definitions/src_infrastructure_http_leaderboard.Entry'
+          $ref: '#/definitions/leaderboard.Entry'
         type: array
     type: object
-  src_infrastructure_http_sudoku.Cell:
+  pkg.Error:
+    properties:
+      message:
+        type: string
+      validation_errors:
+        items:
+          $ref: '#/definitions/pkg.ValidationError'
+        type: array
+    type: object
+  pkg.ValidationError:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  sudoku.Cell:
     properties:
       col:
         type: integer
@@ -127,11 +127,11 @@ definitions:
       value:
         type: integer
     type: object
-  src_infrastructure_http_sudoku.SudokuResponse:
+  sudoku.SudokuResponse:
     properties:
       board:
         items:
-          $ref: '#/definitions/src_infrastructure_http_sudoku.Cell'
+          $ref: '#/definitions/sudoku.Cell'
         type: array
       date:
         type: string
@@ -144,7 +144,7 @@ definitions:
       size:
         type: integer
     type: object
-  src_infrastructure_http_sudoku.VerifySolutionRequest:
+  sudoku.VerifySolutionRequest:
     properties:
       play_token:
         type: string
@@ -161,7 +161,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /auth/login:
+  /api/auth/login:
     post:
       consumes:
       - application/json
@@ -172,14 +172,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/src_infrastructure_http_auth.LoginRequest'
+          $ref: '#/definitions/auth.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/src_infrastructure_http_auth.LoginResponse'
+            $ref: '#/definitions/auth.LoginResponse'
         "400":
           description: Bad Request
           schema:
@@ -191,7 +191,7 @@ paths:
       summary: Login user
       tags:
       - auth
-  /auth/logout:
+  /api/auth/logout:
     post:
       consumes:
       - application/json
@@ -202,7 +202,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/src_infrastructure_http_auth.LogoutRequest'
+          $ref: '#/definitions/auth.LogoutRequest'
       produces:
       - application/json
       responses:
@@ -219,7 +219,7 @@ paths:
       summary: Logout user
       tags:
       - auth
-  /auth/refresh:
+  /api/auth/refresh:
     post:
       consumes:
       - application/json
@@ -230,14 +230,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/src_infrastructure_http_auth.RefreshTokenRequest'
+          $ref: '#/definitions/auth.RefreshTokenRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/src_infrastructure_http_auth.RefreshTokenResponse'
+            $ref: '#/definitions/auth.RefreshTokenResponse'
         "400":
           description: Bad Request
           schema:
@@ -249,7 +249,7 @@ paths:
       summary: Refresh access token
       tags:
       - auth
-  /auth/register:
+  /api/auth/register:
     post:
       consumes:
       - application/json
@@ -260,7 +260,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/src_infrastructure_http_auth.RegisterRequest'
+          $ref: '#/definitions/auth.RegisterRequest'
       produces:
       - application/json
       responses:
@@ -279,7 +279,7 @@ paths:
       summary: Register a new user
       tags:
       - auth
-  /auth/resume:
+  /api/auth/resume:
     get:
       description: Returns user statistics including total games, today's games, and
         best times
@@ -289,13 +289,13 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/src_infrastructure_http_auth.ResumeResponse'
+            $ref: '#/definitions/auth.ResumeResponse'
       security:
       - BearerAuth: []
       summary: Get user resume
       tags:
       - auth
-  /leaderboard:
+  /api/leaderboard:
     get:
       consumes:
       - application/json
@@ -363,7 +363,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/src_infrastructure_http_leaderboard.LeaderboardResponse'
+            $ref: '#/definitions/leaderboard.LeaderboardResponse'
         "400":
           description: Bad Request
           schema:
@@ -371,7 +371,7 @@ paths:
       summary: Get leaderboard
       tags:
       - leaderboard
-  /sudoku:
+  /api/sudoku:
     get:
       consumes:
       - application/json
@@ -391,7 +391,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/src_infrastructure_http_sudoku.SudokuResponse'
+            $ref: '#/definitions/sudoku.SudokuResponse'
         "400":
           description: Bad Request
           schema:
@@ -399,7 +399,7 @@ paths:
       summary: Get daily sudoku
       tags:
       - sudoku
-  /sudoku/generate:
+  /api/sudoku/generate:
     post:
       description: Generates new daily sudoku puzzles for all sizes
       produces:
@@ -409,12 +409,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/src_infrastructure_http_sudoku.SudokuResponse'
+              $ref: '#/definitions/sudoku.SudokuResponse'
             type: array
       summary: Generate sudoku
       tags:
       - sudoku
-  /sudoku/submit:
+  /api/sudoku/submit:
     post:
       consumes:
       - application/json
@@ -425,7 +425,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/src_infrastructure_http_sudoku.VerifySolutionRequest'
+          $ref: '#/definitions/sudoku.VerifySolutionRequest'
       produces:
       - application/json
       responses:

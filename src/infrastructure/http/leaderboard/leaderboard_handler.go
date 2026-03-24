@@ -36,7 +36,7 @@ func NewLeaderboardHandler(leaderboardUsecase usecase.GetLeaderboard) Leaderboar
 // @Param page query int false "Page number"
 // @Success 200 {object} LeaderboardResponse
 // @Failure 400 {object} pkg.Error
-// @Router /leaderboard [get]
+// @Router /api/leaderboard [get]
 func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 	var (
 		params LeaderboardRequest

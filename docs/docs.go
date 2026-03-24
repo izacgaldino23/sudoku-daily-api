@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/login": {
+        "/api/auth/login": {
             "post": {
                 "description": "Authenticates a user and returns access and refresh tokens",
                 "consumes": [
@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/src_infrastructure_http_auth.LoginRequest"
+                            "$ref": "#/definitions/auth.LoginRequest"
                         }
                     }
                 ],
@@ -43,7 +43,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/src_infrastructure_http_auth.LoginResponse"
+                            "$ref": "#/definitions/auth.LoginResponse"
                         }
                     },
                     "400": {
@@ -61,7 +61,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/logout": {
+        "/api/auth/logout": {
             "post": {
                 "security": [
                     {
@@ -86,7 +86,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/src_infrastructure_http_auth.LogoutRequest"
+                            "$ref": "#/definitions/auth.LogoutRequest"
                         }
                     }
                 ],
@@ -106,7 +106,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/refresh": {
+        "/api/auth/refresh": {
             "post": {
                 "description": "Refreshes an expired access token using a refresh token",
                 "consumes": [
@@ -126,7 +126,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/src_infrastructure_http_auth.RefreshTokenRequest"
+                            "$ref": "#/definitions/auth.RefreshTokenRequest"
                         }
                     }
                 ],
@@ -134,7 +134,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/src_infrastructure_http_auth.RefreshTokenResponse"
+                            "$ref": "#/definitions/auth.RefreshTokenResponse"
                         }
                     },
                     "400": {
@@ -152,7 +152,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/register": {
+        "/api/auth/register": {
             "post": {
                 "description": "Creates a new user account",
                 "consumes": [
@@ -172,7 +172,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/src_infrastructure_http_auth.RegisterRequest"
+                            "$ref": "#/definitions/auth.RegisterRequest"
                         }
                     }
                 ],
@@ -198,7 +198,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/resume": {
+        "/api/auth/resume": {
             "get": {
                 "security": [
                     {
@@ -217,13 +217,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/src_infrastructure_http_auth.ResumeResponse"
+                            "$ref": "#/definitions/auth.ResumeResponse"
                         }
                     }
                 }
             }
         },
-        "/leaderboard": {
+        "/api/leaderboard": {
             "get": {
                 "description": "Returns the leaderboard with rankings for a given type and size",
                 "consumes": [
@@ -322,7 +322,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/src_infrastructure_http_leaderboard.LeaderboardResponse"
+                            "$ref": "#/definitions/leaderboard.LeaderboardResponse"
                         }
                     },
                     "400": {
@@ -334,7 +334,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sudoku": {
+        "/api/sudoku": {
             "get": {
                 "description": "Returns the daily sudoku puzzle for a given size",
                 "consumes": [
@@ -364,7 +364,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/src_infrastructure_http_sudoku.SudokuResponse"
+                            "$ref": "#/definitions/sudoku.SudokuResponse"
                         }
                     },
                     "400": {
@@ -376,7 +376,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sudoku/generate": {
+        "/api/sudoku/generate": {
             "post": {
                 "description": "Generates new daily sudoku puzzles for all sizes",
                 "produces": [
@@ -392,14 +392,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/src_infrastructure_http_sudoku.SudokuResponse"
+                                "$ref": "#/definitions/sudoku.SudokuResponse"
                             }
                         }
                     }
                 }
             }
         },
-        "/sudoku/submit": {
+        "/api/sudoku/submit": {
             "post": {
                 "security": [
                     {
@@ -424,7 +424,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/src_infrastructure_http_sudoku.VerifySolutionRequest"
+                            "$ref": "#/definitions/sudoku.VerifySolutionRequest"
                         }
                     }
                 ],
@@ -446,6 +446,161 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "auth.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 6
+                }
+            }
+        },
+        "auth.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.LogoutRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.RefreshTokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 6
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                }
+            }
+        },
+        "auth.ResumeResponse": {
+            "type": "object",
+            "properties": {
+                "best_times": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/auth.gameResult"
+                    }
+                },
+                "today_games": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/auth.gameResult"
+                    }
+                },
+                "total_games": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "auth.gameResult": {
+            "type": "object",
+            "properties": {
+                "finished": {
+                    "type": "boolean"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "time": {
+                    "type": "integer"
+                }
+            }
+        },
+        "leaderboard.Entry": {
+            "type": "object",
+            "properties": {
+                "rank": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "leaderboard.LeaderboardResponse": {
+            "type": "object",
+            "properties": {
+                "has_next": {
+                    "type": "boolean"
+                },
+                "solves": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/leaderboard.Entry"
+                    }
+                }
+            }
+        },
         "pkg.Error": {
             "type": "object",
             "properties": {
@@ -471,162 +626,7 @@ const docTemplate = `{
                 }
             }
         },
-        "src_infrastructure_http_auth.LoginRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 6
-                }
-            }
-        },
-        "src_infrastructure_http_auth.LoginResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "refresh_token": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "src_infrastructure_http_auth.LogoutRequest": {
-            "type": "object",
-            "required": [
-                "refresh_token"
-            ],
-            "properties": {
-                "refresh_token": {
-                    "type": "string"
-                }
-            }
-        },
-        "src_infrastructure_http_auth.RefreshTokenRequest": {
-            "type": "object",
-            "required": [
-                "refresh_token"
-            ],
-            "properties": {
-                "refresh_token": {
-                    "type": "string"
-                }
-            }
-        },
-        "src_infrastructure_http_auth.RefreshTokenResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                }
-            }
-        },
-        "src_infrastructure_http_auth.RegisterRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "password",
-                "username"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 6
-                },
-                "username": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 3
-                }
-            }
-        },
-        "src_infrastructure_http_auth.ResumeResponse": {
-            "type": "object",
-            "properties": {
-                "best_times": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/src_infrastructure_http_auth.gameResult"
-                    }
-                },
-                "today_games": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/src_infrastructure_http_auth.gameResult"
-                    }
-                },
-                "total_games": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "integer"
-                    }
-                }
-            }
-        },
-        "src_infrastructure_http_auth.gameResult": {
-            "type": "object",
-            "properties": {
-                "finished": {
-                    "type": "boolean"
-                },
-                "size": {
-                    "type": "integer"
-                },
-                "time": {
-                    "type": "integer"
-                }
-            }
-        },
-        "src_infrastructure_http_leaderboard.Entry": {
-            "type": "object",
-            "properties": {
-                "rank": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                }
-            }
-        },
-        "src_infrastructure_http_leaderboard.LeaderboardResponse": {
-            "type": "object",
-            "properties": {
-                "has_next": {
-                    "type": "boolean"
-                },
-                "solves": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/src_infrastructure_http_leaderboard.Entry"
-                    }
-                }
-            }
-        },
-        "src_infrastructure_http_sudoku.Cell": {
+        "sudoku.Cell": {
             "type": "object",
             "properties": {
                 "col": {
@@ -640,13 +640,13 @@ const docTemplate = `{
                 }
             }
         },
-        "src_infrastructure_http_sudoku.SudokuResponse": {
+        "sudoku.SudokuResponse": {
             "type": "object",
             "properties": {
                 "board": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/src_infrastructure_http_sudoku.Cell"
+                        "$ref": "#/definitions/sudoku.Cell"
                     }
                 },
                 "date": {
@@ -666,7 +666,7 @@ const docTemplate = `{
                 }
             }
         },
-        "src_infrastructure_http_sudoku.VerifySolutionRequest": {
+        "sudoku.VerifySolutionRequest": {
             "type": "object",
             "required": [
                 "play_token",

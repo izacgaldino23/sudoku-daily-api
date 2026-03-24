@@ -54,7 +54,7 @@ func NewAuthHandler(
 // @Success 201 {string} string "User created"
 // @Failure 400 {object} pkg.Error
 // @Failure 409 {object} pkg.Error
-// @Router /auth/register [post]
+// @Router /api/auth/register [post]
 func (a *authHandler) Register(c fiber.Ctx) error {
 	var (
 		request RegisterRequest
@@ -84,7 +84,7 @@ func (a *authHandler) Register(c fiber.Ctx) error {
 // @Success 200 {object} LoginResponse
 // @Failure 400 {object} pkg.Error
 // @Failure 401 {object} pkg.Error
-// @Router /auth/login [post]
+// @Router /api/auth/login [post]
 func (a *authHandler) Login(c fiber.Ctx) error {
 	var (
 		request LoginRequest
@@ -117,7 +117,7 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 // @Success 200 {object} RefreshTokenResponse
 // @Failure 400 {object} pkg.Error
 // @Failure 401 {object} pkg.Error
-// @Router /auth/refresh [post]
+// @Router /api/auth/refresh [post]
 func (a *authHandler) Refresh(c fiber.Ctx) error {
 	var (
 		request RefreshTokenRequest
@@ -151,7 +151,7 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 // @Param request body LogoutRequest true "Logout request"
 // @Success 200 {string} string "Logged out successfully"
 // @Failure 400 {object} pkg.Error
-// @Router /auth/logout [post]
+// @Router /api/auth/logout [post]
 func (a *authHandler) Logout(c fiber.Ctx) error {
 	var (
 		userID  vo.UUID
@@ -182,7 +182,7 @@ func (a *authHandler) Logout(c fiber.Ctx) error {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} ResumeResponse
-// @Router /auth/resume [get]
+// @Router /api/auth/resume [get]
 func (a *authHandler) Resume(c fiber.Ctx) error {
 	userID := app_context.GetUserIDFromContext(c.Context())
 
