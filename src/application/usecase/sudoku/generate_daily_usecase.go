@@ -45,8 +45,7 @@ func NewSudokuGenerateDailyUseCase(
 func (s *sudokuGenerateDailyUseCase) Execute(ctx context.Context) ([]entities.Sudoku, error) {
 	var sudokuList []entities.Sudoku
 
-	now := time.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	today := time.Now().Truncate(24 * time.Hour)
 
 	if err := s.txManager.WithinTransaction(ctx, func(ctx context.Context) error {
 		for boardSize := range entities.BoardSizes {
@@ -61,7 +60,7 @@ func (s *sudokuGenerateDailyUseCase) Execute(ctx context.Context) ([]entities.Su
 				continue
 			}
 
-			sudoku, err := s.sudokuService.GenerateDaily(boardSize, today.UnixNano())
+			sudoku, err := s.sudokuService.GenerateDaily(boardSize, today)
 			if err != nil {
 				return fmt.Errorf("Failed to generate sudoku for size %v: %w", boardSize, err)
 			}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"time"
 
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
@@ -27,7 +28,7 @@ func NewGenerator(
 	}
 }
 
-func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, seed int64) (*entities.Sudoku, error) {
+func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, date time.Time) (*entities.Sudoku, error) {
 	sum := 0
 	for i := 0; i < int(size); i++ {
 		sum += i + 1
@@ -35,7 +36,7 @@ func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, seed int64) (*e
 
 	sudoku := entities.NewSudoku(size)
 
-	r := rand.New(rand.NewSource(sudoku.Date.Unix()))
+	r := rand.New(rand.NewSource(date.Unix()))
 
 	filled := s.fillStrategy.Fill(sudoku, r)
 	if !filled {

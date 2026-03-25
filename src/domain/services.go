@@ -10,7 +10,7 @@ import (
 
 type (
 	SudokuGenerator interface {
-		GenerateDaily(size entities.BoardSize, seed int64) (*entities.Sudoku, error)
+		GenerateDaily(size entities.BoardSize, date time.Time) (*entities.Sudoku, error)
 	}
 
 	PasswordHasher interface {
