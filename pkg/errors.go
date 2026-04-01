@@ -18,7 +18,12 @@ var (
 	ErrRefreshTokenRevoked    = NewError("refresh token revoked")
 	ErrBodyInvalid            = NewError("invalid body")
 	ErrInvalidSolution        = NewError("invalid solution")
-	ErrInvalidLeaderboardType = NewError("invalid leaderboard type")
+	ErrInvalidLeaderboardType = NewError("invalid leaderboard type: must be one of daily, all-time, streak, or total")
+	ErrSizeRequired           = NewError("size is required for daily and all-time leaderboards")
+	ErrSizeNotAllowed         = NewError("size is not allowed for streak and total leaderboards")
+	ErrInvalidSize            = NewError("invalid size: must be one of four, six, or nine")
+	ErrInvalidLimit           = NewError("invalid limit: must be between 1 and 100")
+	ErrInvalidPage            = NewError("invalid page: must be greater than 0")
 	ErrInternalServerError    = NewError("internal server error")
 )
 
@@ -66,7 +71,7 @@ func MapErrorToStatus(err error) int {
 	switch err {
 	case ErrNotFound:
 		return http.StatusNotFound
-	case ErrEmailAlreadyRegistered, ErrQueryParamInvalid, ErrBodyInvalid:
+	case ErrEmailAlreadyRegistered, ErrQueryParamInvalid, ErrBodyInvalid, ErrSizeRequired, ErrSizeNotAllowed, ErrInvalidSize, ErrInvalidLimit, ErrInvalidPage, ErrInvalidLeaderboardType:
 		return http.StatusBadRequest
 	case ErrInvalidCredentials, ErrRefreshTokenExpired, ErrRefreshTokenRevoked, ErrInvalidToken, ErrInvalidEmail, ErrTokenExpired:
 		return http.StatusUnauthorized

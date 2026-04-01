@@ -135,7 +135,7 @@ func TestGetLeaderboard(t *testing.T) {
 		err = SeedSolves(user1ID)
 		assert.NoError(t, err)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=total&size=nine&limit=10&page=1", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=total&limit=10&page=1", nil)
 
 		resp, err := app.Test(req)
 		assert.NoError(t, err)
@@ -270,7 +270,7 @@ func TestGetLeaderboard(t *testing.T) {
 		`, generateUUID(), user1ID)
 		assert.NoError(t, err)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=streak&size=nine&limit=10&page=1", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=streak&limit=10&page=1", nil)
 
 		resp, err := app.Test(req)
 		assert.NoError(t, err)
@@ -280,5 +280,43 @@ func TestGetLeaderboard(t *testing.T) {
 		err = json.NewDecoder(resp.Body).Decode(&leaderboardResp)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, leaderboardResp.Entries)
+	})
+
+	t.Run("get leaderboard with total type and size returns bad request", func(t *testing.T) {
+		t.Cleanup(TruncateTables)
+		app := SetupTestApp()
+
+		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=total&size=nine&limit=10&page=1", nil)
+
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+		body, _ := io.ReadAll(resp.Body)
+		var errorResp pkg.Error
+		err = json.Unmarshal(body, &errorResp)
+		assert.NoError(t, err)
+		assert.Len(t, errorResp.ValidationErr, 1)
+		assert.Equal(t, "Size", errorResp.ValidationErr[0].Field)
+		assert.Contains(t, errorResp.ValidationErr[0].Message, "not allowed")
+	})
+
+	t.Run("get leaderboard with streak type and size returns bad request", func(t *testing.T) {
+		t.Cleanup(TruncateTables)
+		app := SetupTestApp()
+
+		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=streak&size=nine&limit=10&page=1", nil)
+
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+		body, _ := io.ReadAll(resp.Body)
+		var errorResp pkg.Error
+		err = json.Unmarshal(body, &errorResp)
+		assert.NoError(t, err)
+		assert.Len(t, errorResp.ValidationErr, 1)
+		assert.Equal(t, "Size", errorResp.ValidationErr[0].Field)
+		assert.Contains(t, errorResp.ValidationErr[0].Message, "not allowed")
 	})
 }

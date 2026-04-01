@@ -123,6 +123,10 @@ func BoardSizeFromName(name string) BoardSize {
 	}
 }
 
+func IsValidBoardSizeName(name string) bool {
+	return BoardSizeFromName(name) != 0
+}
+
 func (s *Sudoku) GetSize() int {
 	return int(s.Size)
 }

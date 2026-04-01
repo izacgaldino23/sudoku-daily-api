@@ -26,12 +26,12 @@ func NewLeaderboardHandler(leaderboardUsecase usecase.GetLeaderboard) Leaderboar
 }
 
 // @Summary Get leaderboard
-// @Description Returns the leaderboard with rankings for a given type and size
+// @Description Returns the leaderboard with rankings for a given type and size. For daily and all-time types, size is required. For streak and total types, size should not be provided.
 // @Tags leaderboard
 // @Accept json
 // @Produce json
-// @Param type query string false "Leaderboard type (daily, all-time, streak, total)"
-// @Param size query string false "Board size (four, six, nine)"
+// @Param type query string true "Leaderboard type (daily, all-time, streak, total)"
+// @Param size query string false "Board size (four, six, nine) - required for daily and all-time, not allowed for streak and total"
 // @Param limit query int false "Number of entries to return (1-100)"
 // @Param page query int false "Page number"
 // @Success 200 {object} LeaderboardResponse
@@ -48,7 +48,7 @@ func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 		return pkg.JsonError(c, pkg.ErrQueryParamInvalid)
 	}
 
-	if err = pkg.ValidateStruct(params); err != nil {
+	if err = params.Validate(); err != nil {
 		return pkg.JsonError(c, err)
 	}
 

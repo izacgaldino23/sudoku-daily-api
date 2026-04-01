@@ -7,6 +7,32 @@ const (
 	StreakLeaderboardType      LeaderboardType = "streak"
 )
 
+var (
+	ValidLeaderboardTypes = []LeaderboardType{
+		DailyLeaderboardType,
+		AllTimeLeaderboardType,
+		TotalSolvesLeaderboardType,
+		StreakLeaderboardType,
+	}
+)
+
+func (l LeaderboardType) IsValid() bool {
+	for _, valid := range ValidLeaderboardTypes {
+		if l == valid {
+			return true
+		}
+	}
+	return false
+}
+
+func (l LeaderboardType) RequiresSize() bool {
+	return l == DailyLeaderboardType || l == AllTimeLeaderboardType
+}
+
+func (l LeaderboardType) IsSizeAllowed() bool {
+	return !l.RequiresSize()
+}
+
 type (
 	LeaderboardType string
 
