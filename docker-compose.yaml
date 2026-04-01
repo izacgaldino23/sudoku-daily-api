@@ -10,6 +10,7 @@ services:
       - local.env
     environment:
       DATABASE_HOST: "db"
+      DATABASE_PORT: "5432"
   migrate:
     build: .
     depends_on:
@@ -19,6 +20,7 @@ services:
       - local.env
     environment:
       DATABASE_HOST: "db"
+      DATABASE_PORT: "5432"
   db:
     container_name: postgres
     image: postgres
