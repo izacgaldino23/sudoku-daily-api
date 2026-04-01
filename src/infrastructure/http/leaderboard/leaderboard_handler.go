@@ -30,8 +30,8 @@ func NewLeaderboardHandler(leaderboardUsecase usecase.GetLeaderboard) Leaderboar
 // @Tags leaderboard
 // @Accept json
 // @Produce json
-// @Param type query LeaderboardRequest false "Leaderboard type (daily, all-time, streak, total)"
-// @Param size query LeaderboardRequest false "Board size (four, six, nine)"
+// @Param type query string false "Leaderboard type (daily, all-time, streak, total)"
+// @Param size query string false "Board size (four, six, nine)"
 // @Param limit query int false "Number of entries to return (1-100)"
 // @Param page query int false "Page number"
 // @Success 200 {object} LeaderboardResponse
@@ -57,7 +57,9 @@ func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
+	response := responseFromDomain(leaderboard)
+
 	return c.
 		Status(http.StatusOK).
-		JSON(responseFromDomain(leaderboard))
+		JSON(response)
 }

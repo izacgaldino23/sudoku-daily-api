@@ -238,71 +238,15 @@ const docTemplate = `{
                 "summary": "Get leaderboard",
                 "parameters": [
                     {
-                        "maximum": 100,
-                        "minimum": 1,
-                        "type": "integer",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 1,
-                        "type": "integer",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "four",
-                            "six",
-                            "nine"
-                        ],
                         "type": "string",
-                        "name": "size",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "daily",
-                            "all-time",
-                            "streak",
-                            "total"
-                        ],
-                        "type": "string",
+                        "description": "Leaderboard type (daily, all-time, streak, total)",
                         "name": "type",
                         "in": "query"
                     },
                     {
-                        "maximum": 100,
-                        "minimum": 1,
-                        "type": "integer",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 1,
-                        "type": "integer",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "four",
-                            "six",
-                            "nine"
-                        ],
                         "type": "string",
+                        "description": "Board size (four, six, nine)",
                         "name": "size",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "daily",
-                            "all-time",
-                            "streak",
-                            "total"
-                        ],
-                        "type": "string",
-                        "name": "type",
                         "in": "query"
                     },
                     {

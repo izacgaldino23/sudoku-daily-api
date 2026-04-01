@@ -301,53 +301,13 @@ paths:
       - application/json
       description: Returns the leaderboard with rankings for a given type and size
       parameters:
-      - in: query
-        maximum: 100
-        minimum: 1
-        name: limit
-        type: integer
-      - in: query
-        minimum: 1
-        name: page
-        type: integer
-      - enum:
-        - four
-        - six
-        - nine
-        in: query
-        name: size
-        type: string
-      - enum:
-        - daily
-        - all-time
-        - streak
-        - total
+      - description: Leaderboard type (daily, all-time, streak, total)
         in: query
         name: type
         type: string
-      - in: query
-        maximum: 100
-        minimum: 1
-        name: limit
-        type: integer
-      - in: query
-        minimum: 1
-        name: page
-        type: integer
-      - enum:
-        - four
-        - six
-        - nine
+      - description: Board size (four, six, nine)
         in: query
         name: size
-        type: string
-      - enum:
-        - daily
-        - all-time
-        - streak
-        - total
-        in: query
-        name: type
         type: string
       - description: Number of entries to return (1-100)
         in: query
