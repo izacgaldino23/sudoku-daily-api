@@ -2,6 +2,8 @@
 **/*.out
 **/__debug_*
 *.http
+seed/
 
 .env
 temp.env
+local.env
