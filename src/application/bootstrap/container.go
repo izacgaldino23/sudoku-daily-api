@@ -52,6 +52,7 @@ type Container struct {
 	UserStatsSolveAddStrike user_stats_usecase.SolveAddStrikeUseCase
 
 	GetLeaderboardUseCase leaderboard_usecase.GetLeaderboard
+	ResetStrikesUseCase   leaderboard_usecase.ResetStrikesUseCase
 
 	Middlewares Middlewares
 
@@ -69,4 +70,5 @@ type Middlewares struct {
 	LogMiddleware   fiber.Handler
 	RequestID       fiber.Handler
 	ResponseHeaders fiber.Handler
+	AuthOIDC        fiber.Handler
 }

@@ -1,6 +1,8 @@
 package leaderboard
 
 import (
+	"time"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain/entities"
 )
@@ -22,6 +24,10 @@ type (
 		Rank     int    `json:"rank"`
 		Username string `json:"username"`
 		Value    string `json:"value"`
+	}
+
+	ResetStrikesRequest struct {
+		Date time.Time `json:"date" validate:"required"`
 	}
 )
 

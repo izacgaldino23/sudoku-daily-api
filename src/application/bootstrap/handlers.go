@@ -24,5 +24,6 @@ func (c *Container) BuildHandlers() {
 
 	c.LeaderboardHandler = leaderboard.NewLeaderboardHandler(
 		c.GetLeaderboardUseCase,
+		c.ResetStrikesUseCase,
 	)
 }

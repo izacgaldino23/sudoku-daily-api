@@ -64,4 +64,8 @@ func (c *Container) BuildUseCases() {
 		c.SudokuRepository,
 		c.SudokuFetcher,
 	)
+
+	c.ResetStrikesUseCase = leaderboard_usecase.NewResetStrikesUseCase(
+		c.UserStatsRepository,
+	)
 }

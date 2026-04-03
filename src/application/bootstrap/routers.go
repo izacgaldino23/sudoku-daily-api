@@ -18,7 +18,7 @@ func (c *Container) BuildRouters(app fiber.Router) {
 	// sudoku router
 	sudokuGroup := app.Group("/sudoku")
 	sudokuGroup.Get("/", c.Middlewares.Session, c.Middlewares.OptionalJWT, c.SudokuHandler.GetDailySudoku)
-	sudokuGroup.Post("/generate", c.SudokuHandler.CreateSudoku)
+	sudokuGroup.Post("/generate", c.Middlewares.AuthOIDC, c.SudokuHandler.CreateSudoku)
 	sudokuGroup.Post("/submit", c.Middlewares.Session, c.Middlewares.OptionalJWT, c.Middlewares.AuthMinimum, c.SudokuHandler.VerifySolution)
 
 	// auth router
@@ -35,6 +35,7 @@ func (c *Container) BuildRouters(app fiber.Router) {
 	// leaderboard router
 	leaderboardGroup := app.Group("/leaderboard")
 	leaderboardGroup.Get("/", c.LeaderboardHandler.GetLeaderboard)
+	leaderboardGroup.Post("/reset", c.Middlewares.AuthOIDC, c.LeaderboardHandler.ResetStrikes)
 }
 
 func applyMiddlewares(app fiber.Router, container *Container) {

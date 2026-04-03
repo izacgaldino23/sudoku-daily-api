@@ -19,4 +19,5 @@ type UserStatsRepository interface {
 	Update(ctx context.Context, stats *entities.UserStats) error
 	GetTotalSolvesLeaderboard(ctx context.Context, limit int, offset int) ([]entities.UserStats, bool, error)
 	GetBestStreakLeaderboard(ctx context.Context, limit int, offset int, filterDate time.Time) ([]entities.UserStats, bool, error)
+	ResetStrikes(ctx context.Context, date time.Time) (count int64, err error)
 }

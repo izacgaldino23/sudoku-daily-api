@@ -12,16 +12,19 @@ import (
 type (
 	LeaderboardHandler interface {
 		GetLeaderboard(c fiber.Ctx) error
+		ResetStrikes(c fiber.Ctx) error
 	}
 
 	leaderboardHandler struct {
 		leaderboardUsecase usecase.GetLeaderboard
+		resetStrikesUseCase usecase.ResetStrikesUseCase
 	}
 )
 
-func NewLeaderboardHandler(leaderboardUsecase usecase.GetLeaderboard) LeaderboardHandler {
+func NewLeaderboardHandler(leaderboardUsecase usecase.GetLeaderboard, resetStrikesUseCase usecase.ResetStrikesUseCase) LeaderboardHandler {
 	return &leaderboardHandler{
 		leaderboardUsecase: leaderboardUsecase,
+		resetStrikesUseCase: resetStrikesUseCase,
 	}
 }
 
@@ -62,4 +65,27 @@ func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 	return c.
 		Status(http.StatusOK).
 		JSON(response)
+}
+
+func (h *leaderboardHandler) ResetStrikes(c fiber.Ctx) error {
+	var (
+		req ResetStrikesRequest
+		err    error
+		reqCtx = c.Context()
+	)
+
+	if err = c.Bind().Body(&req); err != nil {
+		return pkg.JsonError(c, pkg.ErrBodyInvalid)
+	}
+
+	if err = pkg.ValidateStruct(req); err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	err = h.resetStrikesUseCase.Execute(reqCtx, req.Date)
+	if err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	return c.SendStatus(http.StatusNoContent)
 }
