@@ -2,6 +2,7 @@ package sudoku
 
 import (
 	"net/http"
+	"time"
 
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/application/usecase/sudoku"
@@ -114,6 +115,7 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 	var (
 		ctxReq  = c.Context()
+		now     = time.Now().UTC() // Now here to not waste time in the use case
 		err     error
 		request VerifySolutionRequest
 	)
@@ -129,7 +131,7 @@ func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 	userID := appContext.GetUserIDFromContext(ctxReq)
 	solve := request.ToDomain(userID)
 
-	_, err = sh.verifySolutionUseCase.Execute(ctxReq, solve, request.PlayToken)
+	_, err = sh.verifySolutionUseCase.Execute(ctxReq, solve, request.PlayToken, now)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}

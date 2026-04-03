@@ -25,6 +25,7 @@ var (
 	ErrInvalidLimit           = NewError("invalid limit: must be between 1 and 100")
 	ErrInvalidPage            = NewError("invalid page: must be greater than 0")
 	ErrInternalServerError    = NewError("internal server error")
+	ErrTooManyRequests        = NewError("too many requests, please try again later")
 )
 
 type (
@@ -75,6 +76,8 @@ func MapErrorToStatus(err error) int {
 		return http.StatusBadRequest
 	case ErrInvalidCredentials, ErrRefreshTokenExpired, ErrRefreshTokenRevoked, ErrInvalidToken, ErrInvalidEmail, ErrTokenExpired:
 		return http.StatusUnauthorized
+	case ErrTooManyRequests:
+		return http.StatusTooManyRequests
 	default:
 		return http.StatusInternalServerError
 	}

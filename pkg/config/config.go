@@ -20,8 +20,14 @@ type Config struct {
 	ApiPort  string   `mapstructure:"API_PORT"`
 	Database Database `mapstructure:"DATABASE"`
 	Auth     Auth     `mapstructure:"AUTH"`
+	Limits   Limits   `mapstructure:"LIMITS"`
 
 	Debug bool `mapstructure:"DEBUG"`
+}
+
+type Limits struct {
+	MaxRequestCountGlobal int `mapstructure:"MAX_REQUEST_COUNT_GLOBAL"`
+	MaxRequestCountUser   int `mapstructure:"MAX_REQUEST_COUNT_USER"`
 }
 
 type Auth struct {

@@ -64,6 +64,9 @@ func applyMiddlewares(app fiber.Router, container *Container) {
 		},
 	}))
 
+	app.Use(container.Middlewares.GlobalRateLimiter)
+	app.Use(container.Middlewares.UserRateLimiter)
+
 	app.Use(container.Middlewares.RequestID)
 	app.Use(container.Middlewares.ResponseHeaders)
 	app.Use(container.Middlewares.LogMiddleware)

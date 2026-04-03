@@ -17,7 +17,7 @@ import (
 
 type (
 	SudokuVerifySolutionUseCase interface {
-		Execute(ctx context.Context, sudoku *entities.Solve, sessionToken string) (bool, error)
+		Execute(ctx context.Context, sudoku *entities.Solve, sessionToken string, finished time.Time) (bool, error)
 	}
 
 	sudokuVerifySolutionUseCase struct {
@@ -45,7 +45,7 @@ func NewSudokuVerifySolutionUseCase(
 	}
 }
 
-func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entities.Solve, token string) (bool, error) {
+func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entities.Solve, token string, finished time.Time) (bool, error) {
 	// parse token
 	claims, err := s.tokenService.ParseToken(token)
 	if err != nil {
@@ -87,7 +87,7 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 			solve.ID = vo.NewUUID()
 			solve.SudokuID = sudoku.ID
 			solve.StartedAt = playToken.StartedAt
-			solve.Duration = int(time.Since(playToken.StartedAt).Seconds())
+			solve.Duration = int(finished.Sub(playToken.StartedAt).Seconds())
 
 			err = s.sudokuRepo.AddSolve(txCtx, solve)
 			if err != nil {

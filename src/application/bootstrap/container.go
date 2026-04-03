@@ -63,12 +63,14 @@ type Container struct {
 }
 
 type Middlewares struct {
-	RequireJWT      fiber.Handler
-	OptionalJWT     fiber.Handler
-	AuthMinimum     fiber.Handler
-	Session         fiber.Handler
-	LogMiddleware   fiber.Handler
-	RequestID       fiber.Handler
-	ResponseHeaders fiber.Handler
-	AuthOIDC        fiber.Handler
+	RequireJWT        fiber.Handler
+	OptionalJWT       fiber.Handler
+	AuthMinimum       fiber.Handler
+	Session           fiber.Handler
+	LogMiddleware     fiber.Handler
+	RequestID         fiber.Handler
+	ResponseHeaders   fiber.Handler
+	AuthOIDC          fiber.Handler
+	GlobalRateLimiter fiber.Handler
+	UserRateLimiter   fiber.Handler
 }

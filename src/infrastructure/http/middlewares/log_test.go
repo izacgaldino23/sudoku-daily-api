@@ -55,7 +55,7 @@ func TestLogMiddleware(t *testing.T) {
 			buf := &bytes.Buffer{}
 			logger := zerolog.New(buf)
 
-			app := setupTestApp(logger)
+			app := setupTestAppWithMiddlewares(middlewares.NewRequestIDMiddleware(), middlewares.LogMiddleware(logger))
 
 			handler := func(c fiber.Ctx) error {
 				if tt.errorToReturn != nil {
@@ -113,7 +113,7 @@ func TestLogMiddleware_GETNoError(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := zerolog.New(buf)
 
-	app := setupTestApp(logger)
+	app := setupTestAppWithMiddlewares(middlewares.NewRequestIDMiddleware(), middlewares.LogMiddleware(logger))
 	app.Get("/test", func(c fiber.Ctx) error {
 		return c.SendStatus(http.StatusOK)
 	})
@@ -134,7 +134,7 @@ func TestLogMiddleware_JsonErrorResponse(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := zerolog.New(buf)
 
-	app := setupTestApp(logger)
+	app := setupTestAppWithMiddlewares(middlewares.NewRequestIDMiddleware(), middlewares.LogMiddleware(logger))
 	app.Get("/error", func(c fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(pkg.Error{Message: "validation failed"})
 	})
@@ -155,7 +155,7 @@ func TestLogMiddleware_EmptyResponseBody(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := zerolog.New(buf)
 
-	app := setupTestApp(logger)
+	app := setupTestAppWithMiddlewares(middlewares.NewRequestIDMiddleware(), middlewares.LogMiddleware(logger))
 	app.Get("/empty", func(c fiber.Ctx) error {
 		return c.Status(http.StatusNoContent).Send(nil)
 	})
@@ -175,7 +175,7 @@ func TestLogMiddleware_RequestIDFromContext(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := zerolog.New(buf)
 
-	app := setupTestApp(logger)
+	app := setupTestAppWithMiddlewares(middlewares.NewRequestIDMiddleware(), middlewares.LogMiddleware(logger))
 	app.Post("/test", func(c fiber.Ctx) error {
 		return c.SendStatus(http.StatusOK)
 	})
@@ -197,7 +197,7 @@ func TestLogMiddleware_GlobalLoggerNotUsed(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := zerolog.New(buf)
 
-	app := setupTestApp(logger)
+	app := setupTestAppWithMiddlewares(middlewares.NewRequestIDMiddleware(), middlewares.LogMiddleware(logger))
 	app.Post("/test", func(c fiber.Ctx) error {
 		return c.SendStatus(http.StatusOK)
 	})
@@ -217,11 +217,14 @@ func TestLogMiddleware_GlobalLoggerNotUsed(t *testing.T) {
 	assert.Contains(t, buf.String(), "/test")
 }
 
-func setupTestApp(logger zerolog.Logger) *fiber.App {
+func setupTestAppWithMiddlewares(middlewaresList ...fiber.Handler) *fiber.App {
 	app := fiber.New()
-	app.Use(middlewares.NewRequestIDMiddleware())
-	middleware := middlewares.LogMiddleware(logger)
-	app.Use(middleware)
+	for _, middleware := range middlewaresList {
+		app.Use(middleware)
+	}
+	// app.Use(middlewares.NewRequestIDMiddleware())
+	// middleware := middlewares.LogMiddleware(logger)
+	// app.Use(middleware)
 
 	return app
 }
