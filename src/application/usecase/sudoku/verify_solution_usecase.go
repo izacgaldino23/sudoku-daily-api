@@ -2,6 +2,7 @@ package sudoku
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"sudoku-daily-api/pkg"
@@ -84,6 +85,17 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 
 		// if logged, save on db
 		if solve.UserID != "" {
+			solve, err := s.sudokuFetcher.GetSolveByIDAndUser(ctx, sudoku.ID, solve.UserID)
+			if err != nil {
+				if !errors.Is(err, pkg.ErrNotFound) {
+					return err
+				}
+
+				if solve != nil && !solve.ID.IsEmpty() {
+					return pkg.ErrAlreadyPlayed
+				}
+			}
+
 			solve.ID = vo.NewUUID()
 			solve.SudokuID = sudoku.ID
 			solve.StartedAt = playToken.StartedAt

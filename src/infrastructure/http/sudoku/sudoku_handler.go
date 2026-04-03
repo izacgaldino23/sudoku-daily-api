@@ -114,11 +114,13 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 // @Param request body VerifySolutionRequest true "Solution request"
 // @Success 200 {string} string "Solution verified successfully"
 // @Failure 400 {object} pkg.Error
+// @Failure 404 {object} pkg.Error
+// @Failure 409 {object} pkg.Error
 // @Router /api/sudoku/submit [post]
 func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 	var (
 		ctxReq  = c.Context()
-		now     = time.Now().UTC() // Now here to not waste time in the use case
+		now     = time.Now().UTC() // Get time here to not waste time in the use case
 		err     error
 		request VerifySolutionRequest
 	)

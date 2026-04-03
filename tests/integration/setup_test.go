@@ -48,7 +48,7 @@ func setupTestEnvironment() {
 	os.Setenv("AUTH_ACCESS_TOKEN_DURATION", "15")
 	os.Setenv("AUTH_REFRESH_TOKEN_DURATION", "60")
 	os.Setenv("LIMITS_MAX_REQUEST_COUNT_GLOBAL", "1000")
-	os.Setenv("LIMITS_MAX_REQUEST_COUNT_USER", "20")
+	os.Setenv("LIMITS_MAX_REQUEST_COUNT_USER", "100")
 
 	err := config.Load()
 	if err != nil {
