@@ -299,13 +299,17 @@ paths:
     get:
       consumes:
       - application/json
-      description: Returns the leaderboard with rankings for a given type and size
+      description: Returns the leaderboard with rankings for a given type and size.
+        For daily and all-time types, size is required. For streak and total types,
+        size should not be provided.
       parameters:
       - description: Leaderboard type (daily, all-time, streak, total)
         in: query
         name: type
+        required: true
         type: string
-      - description: Board size (four, six, nine)
+      - description: Board size (four, six, nine) - required for daily and all-time,
+          not allowed for streak and total
         in: query
         name: size
         type: string
@@ -356,6 +360,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/pkg.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/pkg.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/pkg.Error'
       summary: Get daily sudoku
       tags:
       - sudoku
@@ -395,6 +407,14 @@ paths:
             type: string
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/pkg.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/pkg.Error'
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/pkg.Error'
       security:

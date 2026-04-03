@@ -225,7 +225,7 @@ const docTemplate = `{
         },
         "/api/leaderboard": {
             "get": {
-                "description": "Returns the leaderboard with rankings for a given type and size",
+                "description": "Returns the leaderboard with rankings for a given type and size. For daily and all-time types, size is required. For streak and total types, size should not be provided.",
                 "consumes": [
                     "application/json"
                 ],
@@ -241,11 +241,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Leaderboard type (daily, all-time, streak, total)",
                         "name": "type",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Board size (four, six, nine)",
+                        "description": "Board size (four, six, nine) - required for daily and all-time, not allowed for streak and total",
                         "name": "size",
                         "in": "query"
                     },
@@ -316,6 +317,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.Error"
+                        }
                     }
                 }
             }
@@ -381,6 +394,18 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
