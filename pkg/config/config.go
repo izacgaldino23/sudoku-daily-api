@@ -3,14 +3,17 @@ package config
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 	"sync"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
 var (
 	configEnv *Config
+	loadMutex sync.Mutex
 )
 
 type Config struct {
@@ -31,6 +34,9 @@ type Auth struct {
 	SecretKey            string `mapstructure:"SECRET_KEY"`
 	AccessTokenDuration  int    `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration int    `mapstructure:"REFRESH_TOKEN_DURATION"`
+
+	OidcEnabled  bool   `mapstructure:"OIDC_ENABLED"`
+	OidcAudience string `mapstructure:"OIDC_AUDIENCE"`
 }
 
 type Database struct {
@@ -52,38 +58,52 @@ func (d *Database) DSNPostgres() string {
 	return fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v", d.Host, d.Username, d.Password, d.Name, d.Port, d.SSLMode)
 }
 
+func bindEnvs(v *viper.Viper, c reflect.Type, prefix []string) error {
+	tag := "mapstructure"
+	for i := range c.NumField() {
+		field := c.Field(i)
+
+		if tagValue, ok := field.Tag.Lookup(tag); ok {
+			if field.Type.Kind() == reflect.Struct {
+				err := bindEnvs(v, field.Type, append(prefix, tagValue))
+				if err != nil {
+					return err
+				}
+			} else {
+				current := append(prefix, tagValue)
+
+				err := v.BindEnv(strings.Join(current, "."), strings.Join(current, "_"))
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func viperInit() error {
 	v := viper.New()
 
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.SetConfigType("env")
 
-	v.SetDefault("DATABASE.SSL_MODE", "disable")
+	if envPath := os.Getenv("ENV_FILE"); envPath != "" {
+		if err := godotenv.Load(envPath); err != nil {
+			return fmt.Errorf("failed to load env file: %w", err)
+		}
+	}
 
 	v.AutomaticEnv()
 
-	_ = v.BindEnv("DATABASE.HOST", "DATABASE_HOST")
-	_ = v.BindEnv("DATABASE.PORT", "DATABASE_PORT")
-	_ = v.BindEnv("DATABASE.USERNAME", "DATABASE_USERNAME")
-	_ = v.BindEnv("DATABASE.PASSWORD", "DATABASE_PASSWORD")
-	_ = v.BindEnv("DATABASE.NAME", "DATABASE_NAME")
-	_ = v.BindEnv("DATABASE.SSL_MODE", "DATABASE_SSL_MODE")
-	_ = v.BindEnv("DATABASE.MIGRATIONS_PATH", "MIGRATIONS_PATH")
-
-	_ = v.BindEnv("DEBUG")
-	_ = v.BindEnv("API_PORT")
-	_ = v.BindEnv("AUTH.ITERATIONS", "AUTH_ITERATIONS")
-	_ = v.BindEnv("AUTH.MEMORY", "AUTH_MEMORY")
-	_ = v.BindEnv("AUTH.PARALLELISM", "AUTH_PARALLELISM")
-	_ = v.BindEnv("AUTH.KEY_LEN", "AUTH_KEY_LEN")
-	_ = v.BindEnv("AUTH.SALT_LEN", "AUTH_SALT_LEN")
-	_ = v.BindEnv("AUTH.SECRET_KEY", "AUTH_SECRET_KEY")
-	_ = v.BindEnv("AUTH.ACCESS_TOKEN_DURATION", "AUTH_ACCESS_TOKEN_DURATION")
-	_ = v.BindEnv("AUTH.REFRESH_TOKEN_DURATION", "AUTH_REFRESH_TOKEN_DURATION")
-
 	configEnv = &Config{}
+	err := bindEnvs(v, reflect.TypeOf(*configEnv), []string{})
+	if err != nil {
+		return err
+	}
 
-	err := v.Unmarshal(configEnv)
+	err = v.Unmarshal(configEnv)
 	if err != nil {
 		return err
 	}
@@ -97,15 +117,15 @@ func viperInit() error {
 	return nil
 }
 
-func Load() (err error) {
-	if configEnv == nil {
-		once := sync.Once{}
-		once.Do(func() {
-			err = viperInit()
-		})
+func Load() error {
+	loadMutex.Lock()
+	defer loadMutex.Unlock()
+
+	if configEnv != nil {
+		return nil
 	}
 
-	return
+	return viperInit()
 }
 
 func GetConfig() *Config {
