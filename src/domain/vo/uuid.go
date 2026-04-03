@@ -16,3 +16,7 @@ func (u UUID) IsValid() bool {
 	_, err := uuid.Parse(string(u))
 	return err == nil
 }
+
+func (u UUID) IsEmpty() bool {
+	return u == ""
+}

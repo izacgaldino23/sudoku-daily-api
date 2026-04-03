@@ -26,6 +26,7 @@ var (
 	ErrInvalidPage            = NewError("invalid page: must be greater than 0")
 	ErrInternalServerError    = NewError("internal server error")
 	ErrTooManyRequests        = NewError("too many requests, please try again later")
+	ErrAlreadyPlayed          = NewError("user has already played the game")
 )
 
 type (
@@ -78,6 +79,8 @@ func MapErrorToStatus(err error) int {
 		return http.StatusUnauthorized
 	case ErrTooManyRequests:
 		return http.StatusTooManyRequests
+	case ErrAlreadyPlayed:
+		return http.StatusConflict
 	default:
 		return http.StatusInternalServerError
 	}

@@ -46,6 +46,8 @@ func NewSudokuHandler(
 // @Param size query GetDailySudokuRequest true "Board size (four, six, or nine)"
 // @Success 200 {object} SudokuResponse
 // @Failure 400 {object} pkg.Error
+// @Failure 404 {object} pkg.Error
+// @Failure 409 {object} pkg.Error
 // @Router /api/sudoku [get]
 func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	var (
@@ -63,7 +65,8 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 
 	size := entities.BoardSizeFromName(request.Size)
 
-	dailySudoku, playToken, err := sh.getDailyUseCase.Execute(ctxReq, size)
+	userID := appContext.GetUserIDFromContext(ctxReq)
+	dailySudoku, playToken, err := sh.getDailyUseCase.Execute(ctxReq, size, userID)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}

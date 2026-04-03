@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain/entities"
 	repository "sudoku-daily-api/src/domain/repository"
 	"sudoku-daily-api/src/domain/vo"
@@ -69,6 +70,24 @@ func (r *sudokuRepository) AddSolve(ctx context.Context, solve *entities.Solve) 
 
 	_, err = result.RowsAffected()
 	return err
+}
+
+func (r *sudokuRepository) GetSolveByIDAndUser(ctx context.Context, userID vo.UUID, sudokuID vo.UUID) (*entities.Solve, error) {
+	var solve Solve
+
+	err := r.txManager.GetExecutor(ctx).
+		NewSelect().
+		Model(&solve).
+		Where("user_id = ? AND sudoku_id = ?", userID, sudokuID).
+		Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, pkg.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return solve.ToDomain(), nil
 }
 
 func (r *sudokuRepository) GetTotalSolvedByUser(ctx context.Context, userID vo.UUID) (map[entities.BoardSize]int, error) {

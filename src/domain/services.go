@@ -28,6 +28,7 @@ type (
 	SudokuDailyFetcher interface {
 		GetDaily(ctx context.Context, size entities.BoardSize) (*entities.Sudoku, error)
 		GetByDateAndSize(ctx context.Context, date time.Time, size entities.BoardSize) (*entities.Sudoku, error)
+		GetSolveByIDAndUser(ctx context.Context, sudokuID, userID vo.UUID) (*entities.Solve, error)
 	}
 
 	ResumeFetcher interface {

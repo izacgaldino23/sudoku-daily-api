@@ -5,11 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/repository"
-	"time"
+	"sudoku-daily-api/src/domain/vo"
 )
 
 type (
@@ -54,6 +56,10 @@ func (s *sudokuDailyFetcher) GetDaily(ctx context.Context, size entities.BoardSi
 
 func (s *sudokuDailyFetcher) GetByDateAndSize(ctx context.Context, date time.Time, size entities.BoardSize) (*entities.Sudoku, error) {
 	return s.sudokuRepository.GetByDateAndSize(ctx, date, size)
+}
+
+func (s *sudokuDailyFetcher) GetSolveByIDAndUser(ctx context.Context, sudokuID, userID vo.UUID) (*entities.Solve, error) {
+	return s.sudokuRepository.GetSolveByIDAndUser(ctx, sudokuID, userID)
 }
 
 func isSameDate(a, b time.Time) bool {

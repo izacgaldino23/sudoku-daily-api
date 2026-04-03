@@ -11,13 +11,14 @@ import (
 	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
+	"sudoku-daily-api/src/infrastructure/logging"
 
 	"github.com/rs/zerolog/log"
 )
 
 type (
 	ISudokuGetDailyUseCase interface {
-		Execute(ctx context.Context, size entities.BoardSize) (sudoku *entities.Sudoku, playToken string, err error)
+		Execute(ctx context.Context, size entities.BoardSize, userID vo.UUID) (sudoku *entities.Sudoku, playToken string, err error)
 	}
 
 	sudokuGetDailyUseCase struct {
@@ -36,14 +37,8 @@ func NewSudokuGetDailyUseCase(
 	}
 }
 
-func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.BoardSize) (*entities.Sudoku, string, error) {
+func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.BoardSize, userID vo.UUID) (*entities.Sudoku, string, error) {
 	boardSize := entities.BoardSize(size)
-
-	_, ok := entities.BoardSizes[boardSize]
-	if !ok {
-		log.Ctx(ctx).Error().Msgf("Invalid size: %d", size)
-		return nil, "", pkg.ErrQueryParamInvalid
-	}
 
 	sudoku, err := s.sudokuFetcher.GetDaily(ctx, boardSize)
 	if err != nil {
@@ -51,6 +46,16 @@ func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.Board
 			return nil, "", pkg.ErrNotFound
 		}
 		return nil, "", err
+	}
+
+	if !userID.IsEmpty() {
+		// validate if user has already played the game
+		if _, err = s.sudokuFetcher.GetSolveByIDAndUser(ctx, sudoku.ID, userID); err != nil {
+			logging.Log(ctx).Info().Err(err).Msg("user has already played the game")
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, "", pkg.ErrAlreadyPlayed
+			}
+		}
 	}
 
 	sessionID := app_context.GetSessionIDFromContext(ctx)
@@ -74,8 +79,6 @@ func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entitie
 		StartedAt: time.Now(),
 		ExpiresAt: tomorrow,
 	}
-
-	// seconds until tomorrow
 
 	secondsUntilTomorrow := int(time.Until(tomorrow).Seconds())
 	if secondsUntilTomorrow < 0 {
