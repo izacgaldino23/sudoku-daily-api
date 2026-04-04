@@ -1,4 +1,4 @@
-package integration
+package auth_test
 
 import (
 	"bytes"
@@ -7,13 +7,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"sudoku-daily-api/tests/integration/testhelpers"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthRegister(t *testing.T) {
 	t.Run("valid registration", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
 			"email":    "test@example.com",
@@ -29,8 +31,8 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("missing email", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
 			"username": "testuser",
@@ -45,8 +47,8 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("invalid email format", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
 			"email":    "invalid-email",
@@ -62,8 +64,8 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("missing username", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
 			"email":    "test@example.com",
@@ -78,8 +80,8 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("username too short", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
 			"email":    "test@example.com",
@@ -95,8 +97,8 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("missing password", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
 			"email":    "test@example.com",
@@ -111,8 +113,8 @@ func TestAuthRegister(t *testing.T) {
 	})
 
 	t.Run("password too short", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
 			"email":    "test@example.com",

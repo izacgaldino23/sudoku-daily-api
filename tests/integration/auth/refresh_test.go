@@ -1,4 +1,4 @@
-package integration
+package auth_test
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/infrastructure/http/auth"
+	"sudoku-daily-api/tests/integration/testhelpers"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
@@ -16,10 +17,10 @@ import (
 
 func TestAuthRefresh(t *testing.T) {
 	setupTokens := func() (string, string) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		tokens, err := RegisterAndLoginUserWithTokens(app, "test@example.com", "testuser", "password123")
+		tokens, err := testhelpers.RegisterAndLoginUserWithTokens(app, "test@example.com", "testuser", "password123")
 		assert.NoError(t, err)
 
 		return tokens.AccessToken, tokens.RefreshToken
@@ -27,7 +28,7 @@ func TestAuthRefresh(t *testing.T) {
 
 	t.Run("valid refresh", func(t *testing.T) {
 		accessToken, refreshToken := setupTokens()
-		app := SetupTestApp()
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{"refresh_token": refreshToken})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewReader(body))
@@ -46,7 +47,7 @@ func TestAuthRefresh(t *testing.T) {
 
 	t.Run("missing refresh token", func(t *testing.T) {
 		accessToken, _ := setupTokens()
-		app := SetupTestApp()
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewReader(body))
@@ -65,7 +66,7 @@ func TestAuthRefresh(t *testing.T) {
 
 	t.Run("invalid refresh token", func(t *testing.T) {
 		accessToken, _ := setupTokens()
-		app := SetupTestApp()
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{"refresh_token": "invalid-refresh-token"})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewReader(body))

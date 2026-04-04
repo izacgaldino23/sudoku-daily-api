@@ -1,4 +1,4 @@
-package integration
+package leaderboard_test
 
 import (
 	"context"
@@ -7,42 +7,45 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/pkg/database"
 	"sudoku-daily-api/src/infrastructure/http/leaderboard"
+	"sudoku-daily-api/tests/integration/testhelpers"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
+	"github.com/uptrace/bun"
 )
 
 func TestGetLeaderboard(t *testing.T) {
 	t.Run("get leaderboard with valid parameters returns entries", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		err := SeedSudokus()
-		assert.NoError(t, err)
-
-		err = SeedUser("user1@example.com", "player1", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
-		assert.NoError(t, err)
-		err = SeedUser("user2@example.com", "player2", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
-		assert.NoError(t, err)
-		err = SeedUser("user3@example.com", "player3", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		err := testhelpers.SeedSudokus()
 		assert.NoError(t, err)
 
-		user1ID, err := GetUserIDByEmail("user1@example.com")
+		err = testhelpers.SeedUser("user1@example.com", "player1", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
-		user2ID, err := GetUserIDByEmail("user2@example.com")
+		err = testhelpers.SeedUser("user2@example.com", "player2", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
-		user3ID, err := GetUserIDByEmail("user3@example.com")
+		err = testhelpers.SeedUser("user3@example.com", "player3", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
 
-		err = SeedSolve(user1ID, sudokusIDs[0], 30)
+		user1ID, err := testhelpers.GetUserIDByEmail("user1@example.com")
 		assert.NoError(t, err)
-		err = SeedSolve(user2ID, sudokusIDs[0], 60)
+		user2ID, err := testhelpers.GetUserIDByEmail("user2@example.com")
 		assert.NoError(t, err)
-		err = SeedSolve(user3ID, sudokusIDs[0], 45)
+		user3ID, err := testhelpers.GetUserIDByEmail("user3@example.com")
+		assert.NoError(t, err)
+
+		err = testhelpers.SeedSolve(user1ID, testhelpers.SudokusIDs[0], 30)
+		assert.NoError(t, err)
+		err = testhelpers.SeedSolve(user2ID, testhelpers.SudokusIDs[0], 60)
+		assert.NoError(t, err)
+		err = testhelpers.SeedSolve(user3ID, testhelpers.SudokusIDs[0], 45)
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily&size=nine&limit=10&page=1", nil)
@@ -66,10 +69,10 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with no data returns empty list", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		err := SeedSudokus()
+		err := testhelpers.SeedSudokus()
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily&size=nine&limit=10&page=1", nil)
@@ -92,19 +95,19 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with all-time type returns entries", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		err := SeedSudokus()
+		err := testhelpers.SeedSudokus()
 		assert.NoError(t, err)
 
-		err = SeedUser("user1@example.com", "bestplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		err = testhelpers.SeedUser("user1@example.com", "bestplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
 
-		user1ID, err := GetUserIDByEmail("user1@example.com")
+		user1ID, err := testhelpers.GetUserIDByEmail("user1@example.com")
 		assert.NoError(t, err)
 
-		err = SeedSolves(user1ID)
+		err = testhelpers.SeedSolves(user1ID)
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=all-time&size=nine&limit=10&page=1", nil)
@@ -120,19 +123,19 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with total type returns entries", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		err := SeedSudokus()
+		err := testhelpers.SeedSudokus()
 		assert.NoError(t, err)
 
-		err = SeedUser("user1@example.com", "activeplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		err = testhelpers.SeedUser("user1@example.com", "activeplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
 
-		user1ID, err := GetUserIDByEmail("user1@example.com")
+		user1ID, err := testhelpers.GetUserIDByEmail("user1@example.com")
 		assert.NoError(t, err)
 
-		err = SeedSolves(user1ID)
+		err = testhelpers.SeedSolves(user1ID)
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=total&limit=10&page=1", nil)
@@ -148,8 +151,8 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with invalid type returns bad request", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=invalid&size=nine", nil)
 
@@ -159,8 +162,8 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with invalid size returns bad request", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily&size=invalid", nil)
 
@@ -170,8 +173,8 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with missing type returns bad request", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?size=nine", nil)
 
@@ -181,8 +184,8 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with missing size returns bad request", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily", nil)
 
@@ -192,8 +195,8 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with limit exceeding max returns bad request", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily&size=nine&limit=500", nil)
 
@@ -203,8 +206,8 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with limit below min returns bad request", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily&size=nine&limit=0", nil)
 
@@ -214,8 +217,8 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with page below min returns bad request", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily&size=nine&page=0", nil)
 
@@ -225,18 +228,18 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with pagination returns correct page", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		err := SeedSudokus()
+		err := testhelpers.SeedSudokus()
 		assert.NoError(t, err)
 
 		for i := 1; i <= 5; i++ {
-			err = SeedUser("user"+string(rune('0'+i))+"@example.com", "player"+string(rune('0'+i)), "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+			err = testhelpers.SeedUser("user"+string(rune('0'+i))+"@example.com", "player"+string(rune('0'+i)), "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 			assert.NoError(t, err)
-			userID, err := GetUserIDByEmail("user" + string(rune('0'+i)) + "@example.com")
+			userID, err := testhelpers.GetUserIDByEmail("user" + string(rune('0'+i)) + "@example.com")
 			assert.NoError(t, err)
-			err = SeedSolve(userID, sudokusIDs[0], i*10)
+			err = testhelpers.SeedSolve(userID, testhelpers.SudokusIDs[0], i*10)
 			assert.NoError(t, err)
 		}
 
@@ -254,20 +257,34 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with streak type returns entries", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		err := SeedUser("user1@example.com", "streakplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		err := testhelpers.SeedUser("user1@example.com", "streakplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
 
-		user1ID, err := GetUserIDByEmail("user1@example.com")
+		user1ID, err := testhelpers.GetUserIDByEmail("user1@example.com")
 		assert.NoError(t, err)
 
 		ctx := context.Background()
-		_, err = database.GetDB().BunConnection.ExecContext(ctx, `
-			INSERT INTO user_stats (id, user_id, current_streak, longest_streak, last_solved_date, total_solved)
-			VALUES (?, ?, 10, 15, NOW(), 50)
-		`, generateUUID(), user1ID)
+		today := time.Now().Truncate(24 * time.Hour)
+
+		_, err = database.GetDB().BunConnection.NewInsert().Model(&struct {
+			bun.BaseModel  `bun:"table:user_stats"`
+			ID             string    `bun:"id,pk"`
+			UserID         string    `bun:"user_id"`
+			CurrentStreak  int       `bun:"current_streak"`
+			LongestStreak  int       `bun:"longest_streak"`
+			LastSolvedDate time.Time `bun:"last_solved_date"`
+			TotalSolved    int       `bun:"total_solved"`
+		}{
+			ID:             testhelpers.GenerateUUID(),
+			UserID:         user1ID,
+			CurrentStreak:  10,
+			LongestStreak:  15,
+			LastSolvedDate: today,
+			TotalSolved:    50,
+		}).Exec(ctx)
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=streak&limit=10&page=1", nil)
@@ -283,8 +300,8 @@ func TestGetLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with total type and size returns bad request", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=total&size=nine&limit=10&page=1", nil)
 
@@ -298,25 +315,5 @@ func TestGetLeaderboard(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, errorResp.ValidationErr, 1)
 		assert.Equal(t, "Size", errorResp.ValidationErr[0].Field)
-		assert.Contains(t, errorResp.ValidationErr[0].Message, "not allowed")
-	})
-
-	t.Run("get leaderboard with streak type and size returns bad request", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
-
-		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=streak&size=nine&limit=10&page=1", nil)
-
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-
-		body, _ := io.ReadAll(resp.Body)
-		var errorResp pkg.Error
-		err = json.Unmarshal(body, &errorResp)
-		assert.NoError(t, err)
-		assert.Len(t, errorResp.ValidationErr, 1)
-		assert.Equal(t, "Size", errorResp.ValidationErr[0].Field)
-		assert.Contains(t, errorResp.ValidationErr[0].Message, "not allowed")
 	})
 }

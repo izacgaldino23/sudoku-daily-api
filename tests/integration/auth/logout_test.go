@@ -1,4 +1,4 @@
-package integration
+package auth_test
 
 import (
 	"bytes"
@@ -7,15 +7,17 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"sudoku-daily-api/tests/integration/testhelpers"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthLogout(t *testing.T) {
 	setupTokens := func() (string, string) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		tokens, err := RegisterAndLoginUserWithTokens(app, "test@example.com", "testuser", "password123")
+		tokens, err := testhelpers.RegisterAndLoginUserWithTokens(app, "test@example.com", "testuser", "password123")
 		assert.NoError(t, err)
 
 		return tokens.AccessToken, tokens.RefreshToken
@@ -23,7 +25,7 @@ func TestAuthLogout(t *testing.T) {
 
 	t.Run("valid logout", func(t *testing.T) {
 		accessToken, refreshToken := setupTokens()
-		app := SetupTestApp()
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{"refresh_token": refreshToken})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/logout", bytes.NewReader(body))
@@ -37,7 +39,7 @@ func TestAuthLogout(t *testing.T) {
 
 	t.Run("missing authorization header", func(t *testing.T) {
 		_, refreshToken := setupTokens()
-		app := SetupTestApp()
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{"refresh_token": refreshToken})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/logout", bytes.NewReader(body))
@@ -50,7 +52,7 @@ func TestAuthLogout(t *testing.T) {
 
 	t.Run("invalid access token", func(t *testing.T) {
 		_, refreshToken := setupTokens()
-		app := SetupTestApp()
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{"refresh_token": refreshToken})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/logout", bytes.NewReader(body))
@@ -64,7 +66,7 @@ func TestAuthLogout(t *testing.T) {
 
 	t.Run("missing refresh token", func(t *testing.T) {
 		accessToken, _ := setupTokens()
-		app := SetupTestApp()
+		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/logout", bytes.NewReader(body))

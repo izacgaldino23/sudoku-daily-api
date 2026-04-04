@@ -1,4 +1,4 @@
-package integration
+package auth_test
 
 import (
 	"bytes"
@@ -8,23 +8,18 @@ import (
 	"testing"
 
 	"sudoku-daily-api/src/infrastructure/http/auth"
+	"sudoku-daily-api/tests/integration/testhelpers"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthLogin(t *testing.T) {
 	t.Run("valid login", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		registerBody, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
-			"username": "testuser",
-			"password": "password123",
-		})
-		registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
-		registerReq.Header.Set("Content-Type", "application/json")
-		_, _ = app.Test(registerReq)
+		_, err := testhelpers.RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
+		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{
 			"email":    "test@example.com",
@@ -47,17 +42,11 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("wrong password", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		registerBody, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
-			"username": "testuser",
-			"password": "password123",
-		})
-		registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
-		registerReq.Header.Set("Content-Type", "application/json")
-		_, _ = app.Test(registerReq)
+		_, err := testhelpers.RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
+		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{
 			"email":    "test@example.com",
@@ -72,8 +61,8 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("user not found", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
 		loginBody, _ := json.Marshal(map[string]string{
 			"email":    "nonexistent@example.com",
@@ -88,17 +77,11 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("missing email", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		registerBody, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
-			"username": "testuser",
-			"password": "password123",
-		})
-		registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
-		registerReq.Header.Set("Content-Type", "application/json")
-		_, _ = app.Test(registerReq)
+		_, err := testhelpers.RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
+		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{
 			"password": "password123",
@@ -112,17 +95,11 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("missing password", func(t *testing.T) {
-		t.Cleanup(TruncateTables)
-		app := SetupTestApp()
+		t.Cleanup(testhelpers.TruncateTables)
+		app := testhelpers.SetupTestApp()
 
-		registerBody, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
-			"username": "testuser",
-			"password": "password123",
-		})
-		registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
-		registerReq.Header.Set("Content-Type", "application/json")
-		_, _ = app.Test(registerReq)
+		_, err := testhelpers.RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
+		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{
 			"email": "test@example.com",

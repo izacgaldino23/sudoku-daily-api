@@ -1,34 +1,34 @@
-package integration
+package auth_test
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"sudoku-daily-api/src/infrastructure/http/auth"
+	"sudoku-daily-api/tests/integration/testhelpers"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthResume(t *testing.T) {
-	app := SetupTestApp()
-	t.Cleanup(TruncateTables)
+	app := testhelpers.SetupTestApp()
+	t.Cleanup(testhelpers.TruncateTables)
 
 	setupAuthenticatedUser := func(t *testing.T, withSolves bool) string {
-		t.Cleanup(TruncateTables)
+		t.Cleanup(testhelpers.TruncateTables)
 
-		token, err := RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
+		token, err := testhelpers.RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
 		assert.NoError(t, err)
 
 		if withSolves {
-			userID, _ := GetUserIDByEmail("test@example.com")
-			err := SeedSudokus()
+			userID, _ := testhelpers.GetUserIDByEmail("test@example.com")
+			err := testhelpers.SeedSudokus()
 			assert.NoError(t, err)
 
-			err = SeedSolves(userID)
+			err = testhelpers.SeedSolves(userID)
 			assert.NoError(t, err)
 		}
 
@@ -110,39 +110,21 @@ func TestAuthResume(t *testing.T) {
 }
 
 func TestAuthResume_VerifyDataAccuracy(t *testing.T) {
-	t.Cleanup(TruncateTables)
-	app := SetupTestApp()
+	t.Cleanup(testhelpers.TruncateTables)
+	app := testhelpers.SetupTestApp()
 
-	registerBody, _ := json.Marshal(map[string]string{
-		"email":    "test@example.com",
-		"username": "testuser",
-		"password": "password123",
-	})
-	registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
-	registerReq.Header.Set("Content-Type", "application/json")
-	_, _ = app.Test(registerReq)
-
-	loginBody, _ := json.Marshal(map[string]string{
-		"email":    "test@example.com",
-		"password": "password123",
-	})
-	loginReq := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))
-	loginReq.Header.Set("Content-Type", "application/json")
-	loginResp, _ := app.Test(loginReq)
-
-	var loginResult auth.LoginResponse
-	err := json.NewDecoder(loginResp.Body).Decode(&loginResult)
+	tokens, err := testhelpers.RegisterAndLoginUserWithTokens(app, "test@example.com", "testuser", "password123")
 	assert.NoError(t, err)
 
-	userID, err := GetUserIDByEmail("test@example.com")
+	userID, err := testhelpers.GetUserIDByEmail("test@example.com")
 	assert.NoError(t, err)
 
-	_ = SeedSudokus()
-	_ = SeedSolves(userID)
+	_ = testhelpers.SeedSudokus()
+	_ = testhelpers.SeedSolves(userID)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/auth/resume", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+loginResult.AccessToken)
+	req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 
 	resp, err := app.Test(req)
 	assert.NoError(t, err)
@@ -182,75 +164,50 @@ func TestAuthResume_VerifyDataAccuracy(t *testing.T) {
 }
 
 func TestAuthResume_MultipleUsers(t *testing.T) {
-	t.Cleanup(TruncateTables)
-	app := SetupTestApp()
+	t.Cleanup(testhelpers.TruncateTables)
+	app := testhelpers.SetupTestApp()
 
-	registerBody1, _ := json.Marshal(map[string]string{
-		"email":    "user1@example.com",
-		"username": "user1",
-		"password": "password123",
-	})
-	registerReq1 := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody1))
-	registerReq1.Header.Set("Content-Type", "application/json")
-	_, _ = app.Test(registerReq1)
+	tokens1, err := testhelpers.RegisterAndLoginUserWithTokens(app, "user1@example.com", "user1", "password123")
+	assert.NoError(t, err)
 
-	registerBody2, _ := json.Marshal(map[string]string{
-		"email":    "user2@example.com",
-		"username": "user2",
-		"password": "password123",
-	})
-	registerReq2 := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody2))
-	registerReq2.Header.Set("Content-Type", "application/json")
-	_, _ = app.Test(registerReq2)
+	tokens2, err := testhelpers.RegisterAndLoginUserWithTokens(app, "user2@example.com", "user2", "password123")
+	assert.NoError(t, err)
 
-	loginBody1, _ := json.Marshal(map[string]string{
-		"email":    "user1@example.com",
-		"password": "password123",
-	})
-	loginReq1 := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody1))
-	loginReq1.Header.Set("Content-Type", "application/json")
-	loginResp1, _ := app.Test(loginReq1)
+	user1ID, err := testhelpers.GetUserIDByEmail("user1@example.com")
+	assert.NoError(t, err)
 
-	loginBody2, _ := json.Marshal(map[string]string{
-		"email":    "user2@example.com",
-		"password": "password123",
-	})
-	loginReq2 := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody2))
-	loginReq2.Header.Set("Content-Type", "application/json")
-	loginResp2, _ := app.Test(loginReq2)
+	user2ID, err := testhelpers.GetUserIDByEmail("user2@example.com")
+	assert.NoError(t, err)
 
-	var loginResult1, loginResult2 auth.LoginResponse
-	_ = json.NewDecoder(loginResp1.Body).Decode(&loginResult1)
-	_ = json.NewDecoder(loginResp2.Body).Decode(&loginResult2)
-
-	_ = SeedSudokus()
-
-	user1ID, _ := GetUserIDByEmail("user1@example.com")
-	user2ID, _ := GetUserIDByEmail("user2@example.com")
-
-	_ = SeedSolves(user1ID)
-	_ = SeedSolves(user2ID)
+	_ = testhelpers.SeedSudokus()
+	_ = testhelpers.SeedSolves(user1ID)
+	_ = testhelpers.SeedSolves(user2ID)
 
 	req1 := httptest.NewRequest(http.MethodGet, "/api/auth/resume", nil)
 	req1.Header.Set("Content-Type", "application/json")
-	req1.Header.Set("Authorization", "Bearer "+loginResult1.AccessToken)
+	req1.Header.Set("Authorization", "Bearer "+tokens1.AccessToken)
+
+	resp1, err := app.Test(req1)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp1.StatusCode)
+
+	var resumeResp1 auth.ResumeResponse
+	err = json.NewDecoder(resp1.Body).Decode(&resumeResp1)
+	assert.NoError(t, err)
 
 	req2 := httptest.NewRequest(http.MethodGet, "/api/auth/resume", nil)
 	req2.Header.Set("Content-Type", "application/json")
-	req2.Header.Set("Authorization", "Bearer "+loginResult2.AccessToken)
+	req2.Header.Set("Authorization", "Bearer "+tokens2.AccessToken)
 
-	resp1, _ := app.Test(req1)
-	resp2, _ := app.Test(req2)
-
-	assert.Equal(t, http.StatusOK, resp1.StatusCode)
+	resp2, err := app.Test(req2)
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp2.StatusCode)
 
-	var resumeResp1, resumeResp2 auth.ResumeResponse
-	_ = json.NewDecoder(resp1.Body).Decode(&resumeResp1)
-	_ = json.NewDecoder(resp2.Body).Decode(&resumeResp2)
+	var resumeResp2 auth.ResumeResponse
+	err = json.NewDecoder(resp2.Body).Decode(&resumeResp2)
+	assert.NoError(t, err)
 
 	assert.Equal(t, resumeResp1.TotalGames, resumeResp2.TotalGames)
-
-	assert.Len(t, resumeResp1.TodayGames, 3)
-	assert.Len(t, resumeResp2.TodayGames, 3)
+	assert.Equal(t, resumeResp1.TodayGames, resumeResp2.TodayGames)
+	assert.Equal(t, resumeResp1.BestTimes, resumeResp2.BestTimes)
 }
