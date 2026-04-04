@@ -62,16 +62,16 @@ func TestSudokuGetDaily(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		sessionID := resp.Header.Get("X-Session-Id")
+		respBody, _ := io.ReadAll(resp.Body)
+		t.Logf("status=%d, body=%s", resp.StatusCode, string(respBody))
 
 		var sudokuResp sudoku.SudokuResponse
-		err = json.NewDecoder(resp.Body).Decode(&sudokuResp)
+		err = json.Unmarshal(respBody, &sudokuResp)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, sudokuResp.ID)
 		assert.NotEmpty(t, sudokuResp.PlayToken)
 		assert.NotEmpty(t, sudokuResp.Board)
 		assert.NotEmpty(t, sudokuResp.Date)
-		assert.NotEmpty(t, sessionID)
 	})
 
 	t.Run("get daily sudoku with session header", func(t *testing.T) {

@@ -52,7 +52,7 @@ func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.Board
 		// validate if user has already played the game
 		if _, err = s.sudokuFetcher.GetSolveByIDAndUser(ctx, sudoku.ID, userID); err != nil {
 			logging.Log(ctx).Info().Err(err).Msg("user has already played the game")
-			if errors.Is(err, sql.ErrNoRows) {
+			if errors.Is(err, pkg.ErrNotFound) {
 				return nil, "", pkg.ErrAlreadyPlayed
 			}
 		}
