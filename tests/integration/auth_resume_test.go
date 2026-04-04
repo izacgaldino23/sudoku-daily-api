@@ -20,25 +20,8 @@ func TestAuthResume(t *testing.T) {
 	setupAuthenticatedUser := func(t *testing.T, withSolves bool) string {
 		t.Cleanup(TruncateTables)
 
-		registerBody, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
-			"username": "testuser",
-			"password": "password123",
-		})
-		registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
-		registerReq.Header.Set("Content-Type", "application/json")
-		_, _ = app.Test(registerReq)
-
-		loginBody, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
-			"password": "password123",
-		})
-		loginReq := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))
-		loginReq.Header.Set("Content-Type", "application/json")
-		loginResp, _ := app.Test(loginReq)
-
-		var loginResult auth.LoginResponse
-		_ = json.NewDecoder(loginResp.Body).Decode(&loginResult)
+		token, err := RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
+		assert.NoError(t, err)
 
 		if withSolves {
 			userID, _ := GetUserIDByEmail("test@example.com")
@@ -49,7 +32,7 @@ func TestAuthResume(t *testing.T) {
 			assert.NoError(t, err)
 		}
 
-		return loginResult.AccessToken
+		return token
 	}
 
 	t.Run("valid resume without solves", func(t *testing.T) {

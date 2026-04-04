@@ -1,9 +1,13 @@
 package integration
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
+	"net/http"
+	"net/http/httptest"
 	"time"
 
 	"sudoku-daily-api/pkg/database"
@@ -11,6 +15,7 @@ import (
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
 
+	"github.com/gofiber/fiber/v3"
 	"github.com/uptrace/bun"
 )
 
@@ -216,4 +221,60 @@ func SeedUser(email, username, passwordHash string) error {
 
 func generateUUID() string {
 	return vo.NewUUID().String()
+}
+
+// LoginTokens holds both access and refresh tokens
+type LoginTokens struct {
+	AccessToken  string
+	RefreshToken string
+}
+
+// RegisterAndLoginUser registers a new user and returns their access token
+func RegisterAndLoginUser(app *fiber.App, email, username, password string) (string, error) {
+	tokens, err := RegisterAndLoginUserWithTokens(app, email, username, password)
+	if err != nil {
+		return "", err
+	}
+	return tokens.AccessToken, nil
+}
+
+// RegisterAndLoginUserWithTokens registers a new user and returns both access and refresh tokens
+func RegisterAndLoginUserWithTokens(app *fiber.App, email, username, password string) (LoginTokens, error) {
+	registerBody, _ := json.Marshal(map[string]string{
+		"email":    email,
+		"username": username,
+		"password": password,
+	})
+
+	registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
+	registerReq.Header.Set("Content-Type", "application/json")
+	_, err := app.Test(registerReq)
+	if err != nil {
+		return LoginTokens{}, err
+	}
+
+	creds, _ := json.Marshal(map[string]string{
+		"email":    email,
+		"password": password,
+	})
+
+	loginReq := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(creds))
+	loginReq.Header.Set("Content-Type", "application/json")
+	loginResp, err := app.Test(loginReq)
+	if err != nil {
+		return LoginTokens{}, err
+	}
+
+	var loginRespBody struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+	}
+	if err := json.NewDecoder(loginResp.Body).Decode(&loginRespBody); err != nil {
+		return LoginTokens{}, err
+	}
+
+	return LoginTokens{
+		AccessToken:  loginRespBody.AccessToken,
+		RefreshToken: loginRespBody.RefreshToken,
+	}, nil
 }

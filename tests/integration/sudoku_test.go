@@ -134,14 +134,9 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 		err := SeedSudokus()
 		assert.NoError(t, err)
 
-		registerBody, _ := json.Marshal(map[string]string{
-			"email":    "user_me@example.com",
-			"username": "testuser",
-			"password": "password123",
-		})
-		registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
-		registerReq.Header.Set("Content-Type", "application/json")
-		_, _ = app.Test(registerReq)
+		token, err := RegisterAndLoginUser(app, "user_me@example.com", "testuser", "password123")
+		assert.NoError(t, err)
+		assert.NotEmpty(t, token)
 
 		userID, err := GetUserIDByEmail("user_me@example.com")
 		assert.NoError(t, err)
@@ -149,21 +144,8 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 		err = SeedSolve(userID, sudokusIDs[0], 60)
 		assert.NoError(t, err)
 
-		creds := `{"email":"user_me@example.com","password":"password123"}`
-		loginReq := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader([]byte(creds)))
-		loginReq.Header.Set("Content-Type", "application/json")
-		loginResp, err := app.Test(loginReq)
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusOK, loginResp.StatusCode)
-
-		var loginRespBody struct {
-			AccessToken string `json:"access_token"`
-		}
-		_ = json.NewDecoder(loginResp.Body).Decode(&loginRespBody)
-		assert.NotEmpty(t, loginRespBody.AccessToken)
-
 		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/me", nil)
-		req.Header.Set("Authorization", "Bearer "+loginRespBody.AccessToken)
+		req.Header.Set("Authorization", "Bearer "+token)
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
 		assert.NoError(t, err)
@@ -181,30 +163,12 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
-		registerBody, _ := json.Marshal(map[string]string{
-			"email":    "user_empty@example.com",
-			"username": "emptyuser",
-			"password": "password123",
-		})
-		registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
-		registerReq.Header.Set("Content-Type", "application/json")
-		_, _ = app.Test(registerReq)
-
-		creds := `{"email":"user_empty@example.com","password":"password123"}`
-		loginReq := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader([]byte(creds)))
-		loginReq.Header.Set("Content-Type", "application/json")
-		loginResp, err := app.Test(loginReq)
+		token, err := RegisterAndLoginUser(app, "user_empty@example.com", "emptyuser", "password123")
 		assert.NoError(t, err)
-		assert.Equal(t, http.StatusOK, loginResp.StatusCode)
-
-		var loginRespBody struct {
-			AccessToken string `json:"access_token"`
-		}
-		_ = json.NewDecoder(loginResp.Body).Decode(&loginRespBody)
-		assert.NotEmpty(t, loginRespBody.AccessToken)
+		assert.NotEmpty(t, token)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/me", nil)
-		req.Header.Set("Authorization", "Bearer "+loginRespBody.AccessToken)
+		req.Header.Set("Authorization", "Bearer "+token)
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
 		assert.NoError(t, err)
@@ -247,14 +211,8 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 		err := SeedSudokus()
 		assert.NoError(t, err)
 
-		registerBody, _ := json.Marshal(map[string]string{
-			"email":    "user_yesterday@example.com",
-			"username": "yesterdayuser",
-			"password": "password123",
-		})
-		registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
-		registerReq.Header.Set("Content-Type", "application/json")
-		_, _ = app.Test(registerReq)
+		token, err := RegisterAndLoginUser(app, "user_yesterday@example.com", "yesterdayuser", "password123")
+		assert.NoError(t, err)
 
 		userID, err := GetUserIDByEmail("user_yesterday@example.com")
 		assert.NoError(t, err)
@@ -271,19 +229,8 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 		_, err = database.GetDB().BunConnection.NewInsert().Model(&solve).Exec(ctx)
 		assert.NoError(t, err)
 
-		creds := `{"email":"user_yesterday@example.com","password":"password123"}`
-		loginReq := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader([]byte(creds)))
-		loginReq.Header.Set("Content-Type", "application/json")
-		loginResp, err := app.Test(loginReq)
-		assert.NoError(t, err)
-
-		var loginRespBody struct {
-			AccessToken string `json:"access_token"`
-		}
-		_ = json.NewDecoder(loginResp.Body).Decode(&loginRespBody)
-
 		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/me", nil)
-		req.Header.Set("Authorization", "Bearer "+loginRespBody.AccessToken)
+		req.Header.Set("Authorization", "Bearer "+token)
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
 		assert.NoError(t, err)

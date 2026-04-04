@@ -19,27 +19,10 @@ func TestAuthRefresh(t *testing.T) {
 		t.Cleanup(TruncateTables)
 		app := SetupTestApp()
 
-		registerBody, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
-			"username": "testuser",
-			"password": "password123",
-		})
-		registerReq := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(registerBody))
-		registerReq.Header.Set("Content-Type", "application/json")
-		_, _ = app.Test(registerReq)
+		tokens, err := RegisterAndLoginUserWithTokens(app, "test@example.com", "testuser", "password123")
+		assert.NoError(t, err)
 
-		loginBody, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
-			"password": "password123",
-		})
-		loginReq := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))
-		loginReq.Header.Set("Content-Type", "application/json")
-		loginResp, _ := app.Test(loginReq)
-
-		var loginResult auth.LoginResponse
-		_ = json.NewDecoder(loginResp.Body).Decode(&loginResult)
-
-		return loginResult.AccessToken, loginResult.RefreshToken
+		return tokens.AccessToken, tokens.RefreshToken
 	}
 
 	t.Run("valid refresh", func(t *testing.T) {
