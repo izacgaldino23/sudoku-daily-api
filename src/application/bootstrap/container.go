@@ -42,6 +42,7 @@ type Container struct {
 	GetDailySudoku       sudokuUsecase.ISudokuGetDailyUseCase
 	GenerateDailySudokus sudokuUsecase.SudokuGenerateDailyUseCase
 	VerifySolution       sudokuUsecase.SudokuVerifySolutionUseCase
+	GetUserSolvesUseCase sudokuUsecase.SudokuGetUserSolvesUseCase
 
 	UserRegister     userUsecase.UserRegisterUseCase
 	UserLogin        userUsecase.UserLoginUseCase

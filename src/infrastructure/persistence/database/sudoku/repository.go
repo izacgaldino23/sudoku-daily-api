@@ -90,6 +90,29 @@ func (r *sudokuRepository) GetSolveByIDAndUser(ctx context.Context, userID vo.UU
 	return solve.ToDomain(), nil
 }
 
+func (r *sudokuRepository) GetSolvesByUserAndDate(ctx context.Context, userID vo.UUID, date time.Time) ([]entities.Solve, error) {
+	var solves []Solve
+
+	err := r.txManager.GetExecutor(ctx).
+		NewSelect().
+		Model(&solves).
+		Where("user_id = ? AND started_at >= ? AND started_at < ?", userID, date, date.Add(24*time.Hour)).
+		Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	result := make([]entities.Solve, len(solves))
+	for i, solve := range solves {
+		result[i] = *solve.ToDomain()
+	}
+
+	return result, nil
+}
+
 func (r *sudokuRepository) GetTotalSolvedByUser(ctx context.Context, userID vo.UUID) (map[entities.BoardSize]int, error) {
 	var results []sizeCount
 

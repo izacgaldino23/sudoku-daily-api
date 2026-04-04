@@ -37,6 +37,19 @@ type (
 		StartedAt  int  `json:"started_at"`
 		FinishedAt int  `json:"finished_at"`
 	}
+
+	MySolvesResponse struct {
+		Solves []Solve `json:"solves"`
+	}
+
+	Solve struct {
+		ID        vo.UUID   `json:"id"`
+		SudokuID  vo.UUID   `json:"sudoku_id"`
+		UserID    vo.UUID   `json:"user_id"`
+		Duration  int       `json:"duration"`
+		StartedAt time.Time `json:"started_at"`
+		Size      int       `json:"size"`
+	}
 )
 
 func (g *SudokuResponse) FromDomain(s *entities.Sudoku, playToken string) {
@@ -71,5 +84,20 @@ func (s *VerifySolutionRequest) ToDomain(userID vo.UUID) *entities.Solve {
 	return &entities.Solve{
 		Solution: s.Solution,
 		UserID:   userID,
+	}
+}
+
+func (m *MySolvesResponse) FromDomain(solves []entities.Solve) {
+	m.Solves = make([]Solve, 0)
+
+	for _, solve := range solves {
+		m.Solves = append(m.Solves, Solve{
+			ID:        solve.ID,
+			SudokuID:  solve.SudokuID,
+			UserID:    solve.UserID,
+			Duration:  solve.Duration,
+			StartedAt: solve.StartedAt,
+			Size:      solve.Size,
+		})
 	}
 }

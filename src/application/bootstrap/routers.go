@@ -20,6 +20,7 @@ func (c *Container) BuildRouters(app fiber.Router) {
 	sudokuGroup.Get("/", c.Middlewares.Session, c.Middlewares.OptionalJWT, c.SudokuHandler.GetDailySudoku)
 	sudokuGroup.Post("/generate", c.Middlewares.AuthOIDC, c.SudokuHandler.CreateSudoku)
 	sudokuGroup.Post("/submit", c.Middlewares.Session, c.Middlewares.OptionalJWT, c.Middlewares.AuthMinimum, c.SudokuHandler.VerifySolution)
+	sudokuGroup.Get("/me", c.Middlewares.RequireJWT, c.SudokuHandler.GetMyDailySudoku)
 
 	// auth router
 	authGroup := app.Group("/auth")

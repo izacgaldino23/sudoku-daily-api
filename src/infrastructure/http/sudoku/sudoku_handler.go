@@ -17,12 +17,14 @@ type (
 		GetDailySudoku(c fiber.Ctx) error
 		CreateSudoku(c fiber.Ctx) error
 		VerifySolution(c fiber.Ctx) error
+		GetMyDailySudoku(c fiber.Ctx) error
 	}
 
 	sudokuHandler struct {
 		getDailyUseCase       sudoku.ISudokuGetDailyUseCase
 		createSudokuUseCase   sudoku.SudokuGenerateDailyUseCase
 		verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase
+		getUserSolvesUseCase  sudoku.SudokuGetUserSolvesUseCase
 	}
 )
 
@@ -30,11 +32,13 @@ func NewSudokuHandler(
 	getDailyUseCase sudoku.ISudokuGetDailyUseCase,
 	createSudokuUseCase sudoku.SudokuGenerateDailyUseCase,
 	verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase,
+	getUserSolvesUseCase  sudoku.SudokuGetUserSolvesUseCase,
 ) SudokuHandler {
 	return &sudokuHandler{
 		getDailyUseCase:       getDailyUseCase,
 		createSudokuUseCase:   createSudokuUseCase,
 		verifySolutionUseCase: verifySolutionUseCase,
+		getUserSolvesUseCase:  getUserSolvesUseCase,
 	}
 }
 
@@ -110,7 +114,7 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 // @Tags sudoku
 // @Accept json
 // @Produce json
-// @Security BearerAuth
+// @Security BearerAuth  // optional
 // @Param request body VerifySolutionRequest true "Solution request"
 // @Success 200 {string} string "Solution verified successfully"
 // @Failure 400 {object} pkg.Error
@@ -142,4 +146,30 @@ func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 	}
 
 	return c.SendStatus(http.StatusOK)
+}
+
+// @Summary Get my daily sudoku solves
+// @Description Returns the daily sudoku solves for a given user
+// @Tags sudoku
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} MySolvesResponse
+// @Failure 401 {object} pkg.Error
+// @Router /api/sudoku/me [get]
+func (sh *sudokuHandler) GetMyDailySudoku(c fiber.Ctx) error {
+	var (
+		ctxReq = c.Context()
+		err    error
+	)
+
+	userID := appContext.GetUserIDFromContext(ctxReq)
+	solves, err := sh.getUserSolvesUseCase.Execute(ctxReq, userID)
+	if err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	var response MySolvesResponse
+	response.FromDomain(solves)
+
+	return c.Status(http.StatusOK).JSON(response)
 }

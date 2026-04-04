@@ -29,6 +29,10 @@ func (c *Container) BuildUseCases() {
 		c.TxManager,
 	)
 
+	c.GetUserSolvesUseCase = sudokuUsecase.NewSudokuGetUserSolvesUseCase(
+		c.SudokuRepository,
+	)
+
 	c.UserRegister = userUsecase.NewUserRegisterUseCase(
 		c.UserRepository,
 		c.PasswordHasher,
