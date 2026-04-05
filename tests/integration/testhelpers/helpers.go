@@ -12,6 +12,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"sudoku-daily-api/migrations"
@@ -28,6 +29,8 @@ import (
 
 var Container *bootstrap.Container
 
+var emailCounter atomic.Int64
+
 var SudokusIDs = []string{
 	"00000000-0000-0000-0000-000000000001",
 	"00000000-0000-0000-0000-000000000002",
@@ -38,6 +41,7 @@ var (
 	setupOnce    sync.Once
 	teardownOnce sync.Once
 	appMutex     sync.Mutex
+	truncateMu   sync.Mutex
 )
 
 // SetupTestEnvironment initializes the test environment (config, DB, migrations).
@@ -123,6 +127,9 @@ func waitForDB(maxRetries int, delay time.Duration) error {
 }
 
 func TruncateTables() {
+	truncateMu.Lock()
+	defer truncateMu.Unlock()
+
 	dbConn := database.GetDB()
 	if dbConn.BunConnection == nil {
 		return
@@ -161,23 +168,27 @@ func SetupTestApp() *fiber.App {
 	return app
 }
 
-// LoginTokens holds both access and refresh tokens
-type LoginTokens struct {
+// UserData holds user access and refresh tokens and data
+type UserData struct {
+	Email        string
+	Username     string
 	AccessToken  string
 	RefreshToken string
 }
 
 // RegisterAndLoginUser registers a new user and returns their access token
-func RegisterAndLoginUser(app *fiber.App, email, username, password string) (string, error) {
-	tokens, err := RegisterAndLoginUserWithTokens(app, email, username, password)
+func RegisterAndLoginUser(app *fiber.App, password string) (UserData, error) {
+	email := GenerateUniqueEmail("test_mail")
+	username := GenerateUniqueUsername("test_username")
+	userData, err := RegisterAndLoginUserWithTokens(app, email, username, password)
 	if err != nil {
-		return "", err
+		return UserData{}, err
 	}
-	return tokens.AccessToken, nil
+	return userData, nil
 }
 
 // RegisterAndLoginUserWithTokens registers a new user and returns both access and refresh tokens
-func RegisterAndLoginUserWithTokens(app *fiber.App, email, username, password string) (LoginTokens, error) {
+func RegisterAndLoginUserWithTokens(app *fiber.App, email, username, password string) (UserData, error) {
 	registerBody, _ := json.Marshal(map[string]string{
 		"email":    email,
 		"username": username,
@@ -188,7 +199,7 @@ func RegisterAndLoginUserWithTokens(app *fiber.App, email, username, password st
 	registerReq.Header.Set("Content-Type", "application/json")
 	_, err := app.Test(registerReq)
 	if err != nil {
-		return LoginTokens{}, err
+		return UserData{}, err
 	}
 
 	creds, _ := json.Marshal(map[string]string{
@@ -200,7 +211,7 @@ func RegisterAndLoginUserWithTokens(app *fiber.App, email, username, password st
 	loginReq.Header.Set("Content-Type", "application/json")
 	loginResp, err := app.Test(loginReq)
 	if err != nil {
-		return LoginTokens{}, err
+		return UserData{}, err
 	}
 
 	var loginRespBody struct {
@@ -208,12 +219,14 @@ func RegisterAndLoginUserWithTokens(app *fiber.App, email, username, password st
 		RefreshToken string `json:"refresh_token"`
 	}
 	if err := json.NewDecoder(loginResp.Body).Decode(&loginRespBody); err != nil {
-		return LoginTokens{}, err
+		return UserData{}, err
 	}
 
-	return LoginTokens{
+	return UserData{
 		AccessToken:  loginRespBody.AccessToken,
 		RefreshToken: loginRespBody.RefreshToken,
+		Email:        email,
+		Username:     username,
 	}, nil
 }
 
@@ -409,4 +422,18 @@ func SeedUser(email, username, passwordHash string) error {
 
 func GenerateUUID() string {
 	return vo.NewUUID().String()
+}
+
+// GenerateUniqueEmail returns a unique email address for testing.
+// Uses an atomic counter to ensure uniqueness across parallel test runs.
+func GenerateUniqueEmail(prefix string) string {
+	count := emailCounter.Add(1)
+	return fmt.Sprintf("%s-%d@example.com", prefix, count)
+}
+
+// GenerateUniqueUsername returns a unique username for testing.
+// Uses the same atomic counter as GenerateUniqueEmail to ensure uniqueness.
+func GenerateUniqueUsername(prefix string) string {
+	count := emailCounter.Add(1)
+	return fmt.Sprintf("%s-%d", prefix, count)
 }

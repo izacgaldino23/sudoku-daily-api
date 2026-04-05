@@ -18,11 +18,11 @@ func TestAuthLogin(t *testing.T) {
 		t.Cleanup(testhelpers.TruncateTables)
 		app := testhelpers.SetupTestApp()
 
-		_, err := testhelpers.RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
+		userData, err := testhelpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
+			"email":    userData.Email,
 			"password": "password123",
 		})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))
@@ -37,19 +37,19 @@ func TestAuthLogin(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEmpty(t, loginResp.AccessToken)
 		assert.NotEmpty(t, loginResp.RefreshToken)
-		assert.Equal(t, "testuser", loginResp.UserName)
-		assert.Equal(t, "test@example.com", loginResp.Email)
+		assert.Equal(t, userData.Username, loginResp.UserName)
+		assert.Equal(t, userData.Email, loginResp.Email)
 	})
 
 	t.Run("wrong password", func(t *testing.T) {
 		t.Cleanup(testhelpers.TruncateTables)
 		app := testhelpers.SetupTestApp()
 
-		_, err := testhelpers.RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
+		userData, err := testhelpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
+			"email":    userData.Email,
 			"password": "wrongpassword",
 		})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))
@@ -80,7 +80,7 @@ func TestAuthLogin(t *testing.T) {
 		t.Cleanup(testhelpers.TruncateTables)
 		app := testhelpers.SetupTestApp()
 
-		_, err := testhelpers.RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
+		_, err := testhelpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{
@@ -98,11 +98,12 @@ func TestAuthLogin(t *testing.T) {
 		t.Cleanup(testhelpers.TruncateTables)
 		app := testhelpers.SetupTestApp()
 
-		_, err := testhelpers.RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
+		email := testhelpers.GenerateUniqueEmail("test")
+		_, err := testhelpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{
-			"email": "test@example.com",
+			"email": email,
 		})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))
 		req.Header.Set("Content-Type", "application/json")

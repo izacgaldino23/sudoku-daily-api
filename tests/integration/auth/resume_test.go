@@ -20,11 +20,11 @@ func TestAuthResume(t *testing.T) {
 	setupAuthenticatedUser := func(t *testing.T, withSolves bool) string {
 		t.Cleanup(testhelpers.TruncateTables)
 
-		token, err := testhelpers.RegisterAndLoginUser(app, "test@example.com", "testuser", "password123")
+		userData, err := testhelpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 
 		if withSolves {
-			userID, _ := testhelpers.GetUserIDByEmail("test@example.com")
+			userID, _ := testhelpers.GetUserIDByEmail(userData.Email)
 			err := testhelpers.SeedSudokus()
 			assert.NoError(t, err)
 
@@ -32,7 +32,7 @@ func TestAuthResume(t *testing.T) {
 			assert.NoError(t, err)
 		}
 
-		return token
+		return userData.AccessToken
 	}
 
 	t.Run("valid resume without solves", func(t *testing.T) {
@@ -113,10 +113,11 @@ func TestAuthResume_VerifyDataAccuracy(t *testing.T) {
 	t.Cleanup(testhelpers.TruncateTables)
 	app := testhelpers.SetupTestApp()
 
-	tokens, err := testhelpers.RegisterAndLoginUserWithTokens(app, "test@example.com", "testuser", "password123")
+	email := testhelpers.GenerateUniqueEmail("test")
+	tokens, err := testhelpers.RegisterAndLoginUserWithTokens(app, email, "testuser", "password123")
 	assert.NoError(t, err)
 
-	userID, err := testhelpers.GetUserIDByEmail("test@example.com")
+	userID, err := testhelpers.GetUserIDByEmail(email)
 	assert.NoError(t, err)
 
 	_ = testhelpers.SeedSudokus()

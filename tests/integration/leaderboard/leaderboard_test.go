@@ -27,18 +27,22 @@ func TestGetLeaderboard(t *testing.T) {
 		err := testhelpers.SeedSudokus()
 		assert.NoError(t, err)
 
-		err = testhelpers.SeedUser("user1@example.com", "player1", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		email1 := testhelpers.GenerateUniqueEmail("user1")
+		email2 := testhelpers.GenerateUniqueEmail("user2")
+		email3 := testhelpers.GenerateUniqueEmail("user3")
+
+		err = testhelpers.SeedUser(email1, "player1", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
-		err = testhelpers.SeedUser("user2@example.com", "player2", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		err = testhelpers.SeedUser(email2, "player2", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
-		err = testhelpers.SeedUser("user3@example.com", "player3", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		err = testhelpers.SeedUser(email3, "player3", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
 
-		user1ID, err := testhelpers.GetUserIDByEmail("user1@example.com")
+		user1ID, err := testhelpers.GetUserIDByEmail(email1)
 		assert.NoError(t, err)
-		user2ID, err := testhelpers.GetUserIDByEmail("user2@example.com")
+		user2ID, err := testhelpers.GetUserIDByEmail(email2)
 		assert.NoError(t, err)
-		user3ID, err := testhelpers.GetUserIDByEmail("user3@example.com")
+		user3ID, err := testhelpers.GetUserIDByEmail(email3)
 		assert.NoError(t, err)
 
 		err = testhelpers.SeedSolve(user1ID, testhelpers.SudokusIDs[0], 30)
@@ -101,10 +105,11 @@ func TestGetLeaderboard(t *testing.T) {
 		err := testhelpers.SeedSudokus()
 		assert.NoError(t, err)
 
-		err = testhelpers.SeedUser("user1@example.com", "bestplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		email := testhelpers.GenerateUniqueEmail("user1")
+		err = testhelpers.SeedUser(email, "bestplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
 
-		user1ID, err := testhelpers.GetUserIDByEmail("user1@example.com")
+		user1ID, err := testhelpers.GetUserIDByEmail(email)
 		assert.NoError(t, err)
 
 		err = testhelpers.SeedSolves(user1ID)
@@ -129,10 +134,11 @@ func TestGetLeaderboard(t *testing.T) {
 		err := testhelpers.SeedSudokus()
 		assert.NoError(t, err)
 
-		err = testhelpers.SeedUser("user1@example.com", "activeplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		email := testhelpers.GenerateUniqueEmail("user1")
+		err = testhelpers.SeedUser(email, "activeplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
 
-		user1ID, err := testhelpers.GetUserIDByEmail("user1@example.com")
+		user1ID, err := testhelpers.GetUserIDByEmail(email)
 		assert.NoError(t, err)
 
 		err = testhelpers.SeedSolves(user1ID)
@@ -235,9 +241,10 @@ func TestGetLeaderboard(t *testing.T) {
 		assert.NoError(t, err)
 
 		for i := 1; i <= 5; i++ {
-			err = testhelpers.SeedUser("user"+string(rune('0'+i))+"@example.com", "player"+string(rune('0'+i)), "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+			email := testhelpers.GenerateUniqueEmail("user")
+			err = testhelpers.SeedUser(email, "player"+string(rune('0'+i)), "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 			assert.NoError(t, err)
-			userID, err := testhelpers.GetUserIDByEmail("user" + string(rune('0'+i)) + "@example.com")
+			userID, err := testhelpers.GetUserIDByEmail(email)
 			assert.NoError(t, err)
 			err = testhelpers.SeedSolve(userID, testhelpers.SudokusIDs[0], i*10)
 			assert.NoError(t, err)
@@ -260,10 +267,11 @@ func TestGetLeaderboard(t *testing.T) {
 		t.Cleanup(testhelpers.TruncateTables)
 		app := testhelpers.SetupTestApp()
 
-		err := testhelpers.SeedUser("user1@example.com", "streakplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		email := testhelpers.GenerateUniqueEmail("streak")
+		err := testhelpers.SeedUser(email, "streakplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
 
-		user1ID, err := testhelpers.GetUserIDByEmail("user1@example.com")
+		user1ID, err := testhelpers.GetUserIDByEmail(email)
 		assert.NoError(t, err)
 
 		ctx := context.Background()

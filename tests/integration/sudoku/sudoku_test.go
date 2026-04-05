@@ -135,18 +135,18 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 		err := testhelpers.SeedSudokus()
 		assert.NoError(t, err)
 
-		token, err := testhelpers.RegisterAndLoginUser(app, "user_me@example.com", "testuser", "password123")
+		userData, err := testhelpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
-		assert.NotEmpty(t, token)
+		assert.NotEmpty(t, userData.AccessToken)
 
-		userID, err := testhelpers.GetUserIDByEmail("user_me@example.com")
+		userID, err := testhelpers.GetUserIDByEmail(userData.Email)
 		assert.NoError(t, err)
 
 		err = testhelpers.SeedSolve(userID, testhelpers.SudokusIDs[0], 60)
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/me", nil)
-		req.Header.Set("Authorization", "Bearer "+token)
+		req.Header.Set("Authorization", "Bearer "+userData.AccessToken)
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
 		assert.NoError(t, err)
@@ -164,12 +164,12 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 		t.Cleanup(testhelpers.TruncateTables)
 		app := testhelpers.SetupTestApp()
 
-		token, err := testhelpers.RegisterAndLoginUser(app, "user_empty@example.com", "emptyuser", "password123")
+		userData, err := testhelpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
-		assert.NotEmpty(t, token)
+		assert.NotEmpty(t, userData.AccessToken)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/me", nil)
-		req.Header.Set("Authorization", "Bearer "+token)
+		req.Header.Set("Authorization", "Bearer "+userData.AccessToken)
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
 		assert.NoError(t, err)
@@ -212,10 +212,10 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 		err := testhelpers.SeedSudokus()
 		assert.NoError(t, err)
 
-		token, err := testhelpers.RegisterAndLoginUser(app, "user_yesterday@example.com", "yesterdayuser", "password123")
+		userData, err := testhelpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 
-		userID, err := testhelpers.GetUserIDByEmail("user_yesterday@example.com")
+		userID, err := testhelpers.GetUserIDByEmail(userData.Email)
 		assert.NoError(t, err)
 
 		solve := testhelpers.SolveSeed{
@@ -231,7 +231,7 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/me", nil)
-		req.Header.Set("Authorization", "Bearer "+token)
+		req.Header.Set("Authorization", "Bearer "+userData.AccessToken)
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
 		assert.NoError(t, err)

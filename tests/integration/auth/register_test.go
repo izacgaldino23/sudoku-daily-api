@@ -18,7 +18,7 @@ func TestAuthRegister(t *testing.T) {
 		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
+			"email":    testhelpers.GenerateUniqueEmail("test"),
 			"username": "testuser",
 			"password": "password123",
 		})
@@ -68,7 +68,7 @@ func TestAuthRegister(t *testing.T) {
 		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
+			"email":    testhelpers.GenerateUniqueEmail("test"),
 			"password": "password123",
 		})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(body))
@@ -84,7 +84,7 @@ func TestAuthRegister(t *testing.T) {
 		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
+			"email":    testhelpers.GenerateUniqueEmail("test"),
 			"username": "ab",
 			"password": "password123",
 		})
@@ -101,7 +101,7 @@ func TestAuthRegister(t *testing.T) {
 		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
+			"email":    testhelpers.GenerateUniqueEmail("test"),
 			"username": "testuser",
 		})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/register", bytes.NewReader(body))
@@ -117,7 +117,7 @@ func TestAuthRegister(t *testing.T) {
 		app := testhelpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{
-			"email":    "test@example.com",
+			"email":    testhelpers.GenerateUniqueEmail("test"),
 			"username": "testuser",
 			"password": "123",
 		})

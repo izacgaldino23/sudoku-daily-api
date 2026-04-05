@@ -17,7 +17,8 @@ func TestAuthLogout(t *testing.T) {
 		t.Cleanup(testhelpers.TruncateTables)
 		app := testhelpers.SetupTestApp()
 
-		tokens, err := testhelpers.RegisterAndLoginUserWithTokens(app, "test@example.com", "testuser", "password123")
+		email := testhelpers.GenerateUniqueEmail("test")
+		tokens, err := testhelpers.RegisterAndLoginUserWithTokens(app, email, "testuser", "password123")
 		assert.NoError(t, err)
 
 		return tokens.AccessToken, tokens.RefreshToken
