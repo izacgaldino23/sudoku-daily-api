@@ -16,7 +16,7 @@ run-migrations:
 
 test-integration:
 	docker-compose -f tests/docker-compose.test.yaml up -d
-	go test ./tests/integration/... -v
+	go test ./tests/integration/... -p=1
 	docker-compose -f tests/docker-compose.test.yaml down
 
 generate-docs:
