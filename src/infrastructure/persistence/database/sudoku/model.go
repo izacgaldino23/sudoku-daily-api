@@ -69,6 +69,7 @@ func (s *Solve) FromDomain(solve *entities.Solve) {
 	s.StartedAt = solve.StartedAt
 	s.Duration = solve.Duration
 	s.CreatedAt = solve.CreatedAt
+	s.Size = solve.Size
 }
 
 func (s *Solve) ToDomain() *entities.Solve {

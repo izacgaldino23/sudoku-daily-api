@@ -57,10 +57,10 @@ func (r *userStatsRepository) GetOrCreate(ctx context.Context, userID vo.UUID) (
 	newStats := &Stats{
 		ID:             vo.NewUUID().String(),
 		UserID:         userID.String(),
-		CurrentStreak:  1,
-		LongestStreak:  1,
+		CurrentStreak:  0,
+		LongestStreak:  0,
 		LastSolvedDate: time.Now(),
-		TotalSolved:    1,
+		TotalSolved:    0,
 	}
 
 	result, err := r.txManager.GetExecutor(ctx).

@@ -56,7 +56,7 @@ func SetupTestEnvironment() {
 		os.Setenv("DATABASE_NAME", "sudoku_test")
 		os.Setenv("DATABASE_SSL_MODE", "disable")
 		os.Setenv("API_PORT", "8081")
-		os.Setenv("DEBUG", "true")
+		os.Setenv("DEBUG", "false")
 
 		memory := 64
 		os.Setenv("AUTH_ITERATIONS", "3")
@@ -65,7 +65,7 @@ func SetupTestEnvironment() {
 		os.Setenv("AUTH_KEY_LEN", "32")
 		os.Setenv("AUTH_SALT_LEN", "16")
 		os.Setenv("AUTH_SECRET_KEY", "test-secret-key-for-integration-tests")
-		os.Setenv("AUTH_ACCESS_TOKEN_DURATION", "15")
+		os.Setenv("AUTH_ACCESS_TOKEN_DURATION", "900")
 		os.Setenv("AUTH_REFRESH_TOKEN_DURATION", "60")
 		os.Setenv("LIMITS_MAX_REQUEST_COUNT_GLOBAL", "1000")
 		os.Setenv("LIMITS_MAX_REQUEST_COUNT_USER", "100")

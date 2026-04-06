@@ -46,7 +46,7 @@ func NewSudokuVerifySolutionUseCase(
 	}
 }
 
-func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entities.Solve, token string, finished time.Time) (bool, error) {
+func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, input *entities.Solve, token string, finished time.Time) (bool, error) {
 	// parse token
 	claims, err := s.tokenService.ParseToken(token)
 	if err != nil {
@@ -79,27 +79,31 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, solve *entiti
 			return err
 		}
 
-		if !compareSolution(sudoku, solve) {
+		if !compareSolution(sudoku, input) {
 			return pkg.ErrInvalidSolution
 		}
 
 		// if logged, save on db
-		if solve.UserID != "" {
-			solve, err := s.sudokuFetcher.GetSolveByIDAndUser(ctx, sudoku.ID, solve.UserID)
+		if input.UserID != "" {
+			solve, err := s.sudokuFetcher.GetSolveByIDAndUser(ctx, sudoku.ID, input.UserID)
 			if err != nil {
 				if !errors.Is(err, pkg.ErrNotFound) {
 					return err
 				}
 
-				if solve != nil && !solve.ID.IsEmpty() {
-					return pkg.ErrAlreadyPlayed
-				}
 			}
 
-			solve.ID = vo.NewUUID()
-			solve.SudokuID = sudoku.ID
-			solve.StartedAt = playToken.StartedAt
-			solve.Duration = int(finished.Sub(playToken.StartedAt).Seconds())
+			if solve != nil && !solve.ID.IsEmpty() {
+				return pkg.ErrAlreadyPlayed
+			}
+			solve = &entities.Solve{
+				ID:       vo.NewUUID(),
+				SudokuID: sudoku.ID,
+				Size:     sudoku.GetSize(),
+				UserID:   input.UserID,
+				StartedAt: playToken.StartedAt,
+				Duration:  int(finished.Sub(playToken.StartedAt).Seconds()),
+			}
 
 			err = s.sudokuRepo.AddSolve(txCtx, solve)
 			if err != nil {

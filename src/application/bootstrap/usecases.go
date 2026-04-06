@@ -21,6 +21,10 @@ func (c *Container) BuildUseCases() {
 		c.SudokuFetcher,
 	)
 
+	c.UserStatsSolveAddStrike = user_stats_usecase.NewSolveAddStrikeUseCase(
+		c.UserStatsRepository,
+	)
+
 	c.VerifySolution = sudokuUsecase.NewSudokuVerifySolutionUseCase(
 		c.SudokuRepository,
 		c.TokenService,
@@ -57,10 +61,6 @@ func (c *Container) BuildUseCases() {
 
 	c.UserResume = userUsecase.NewUserResumeUseCase(
 		c.ResumeFetcher,
-	)
-
-	c.UserStatsSolveAddStrike = user_stats_usecase.NewSolveAddStrikeUseCase(
-		c.UserStatsRepository,
 	)
 
 	c.GetLeaderboardUseCase = leaderboard_usecase.NewLeaderboardUsecase(

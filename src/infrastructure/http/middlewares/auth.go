@@ -21,7 +21,7 @@ func RequireJWTMiddleware(tokenService domain.TokenService) fiber.Handler {
 		}
 
 		// Verify if token is present
-		header := c.Get(authorizationHeader)
+		header := string(c.Request().Header.Peek(authorizationHeader))
 
 		// Validate token and get userID
 		if len(header) == 0 {
