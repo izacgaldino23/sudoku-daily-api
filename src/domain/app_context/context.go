@@ -8,8 +8,8 @@ import (
 
 type (
 	contextUserIDKey struct{}
-	sessionIDKey struct{}
-	requestIDKey struct{}
+	sessionIDKey     struct{}
+	requestIDKey     struct{}
 )
 
 func SetUserIDOnContext(ctx context.Context, userID vo.UUID) context.Context {

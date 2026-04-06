@@ -38,30 +38,30 @@ func (s *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) bool {
 }
 
 func (s *hideBacktracking) solveRecursive(board *entities.Board, cells [][2]int, index int, hiddenCount int, target int) bool {
-    if hiddenCount >= target {
-        return true
-    }
+	if hiddenCount >= target {
+		return true
+	}
 
-    if index >= len(cells) {
-        return false
-    }
+	if index >= len(cells) {
+		return false
+	}
 
-    cell := cells[index]
-    row, col := cell[0], cell[1]
-    originalVal := board.GetCell(row, col)
+	cell := cells[index]
+	row, col := cell[0], cell[1]
+	originalVal := board.GetCell(row, col)
 
-    board.SetCell(row, col, 0)
+	board.SetCell(row, col, 0)
 
-    if s.solver.Execute(board) == 1 {
-        if s.solveRecursive(board, cells, index+1, hiddenCount+1, target) {
-            return true
-        }
-    }
+	if s.solver.Execute(board) == 1 {
+		if s.solveRecursive(board, cells, index+1, hiddenCount+1, target) {
+			return true
+		}
+	}
 
-    board.SetCell(row, col, originalVal)
+	board.SetCell(row, col, originalVal)
 
-    // Tenta esconder as próximas SEM esconder esta atual
-    return s.solveRecursive(board, cells, index+1, hiddenCount, target)
+	// Tenta esconder as próximas SEM esconder esta atual
+	return s.solveRecursive(board, cells, index+1, hiddenCount, target)
 }
 
 func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Rand) int {

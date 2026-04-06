@@ -46,7 +46,7 @@ func (s *solveAddStrikeUseCase) Execute(ctx context.Context, userID vo.UUID, sol
 	if stats.CurrentStreak > stats.LongestStreak {
 		stats.LongestStreak = stats.CurrentStreak
 	}
-	
+
 	stats.LastSolvedDate = solveDateOnly
 	stats.TotalSolved++
 

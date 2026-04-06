@@ -97,10 +97,10 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, input *entiti
 				return pkg.ErrAlreadyPlayed
 			}
 			solve = &entities.Solve{
-				ID:       vo.NewUUID(),
-				SudokuID: sudoku.ID,
-				Size:     sudoku.GetSize(),
-				UserID:   input.UserID,
+				ID:        vo.NewUUID(),
+				SudokuID:  sudoku.ID,
+				Size:      sudoku.GetSize(),
+				UserID:    input.UserID,
 				StartedAt: playToken.StartedAt,
 				Duration:  int(finished.Sub(playToken.StartedAt).Seconds()),
 			}

@@ -11,7 +11,7 @@ import (
 
 func NewGlobalRateLimiterMiddleware(limit int) fiber.Handler {
 	return limiter.New(limiter.Config{
-		Max: limit,
+		Max:        limit,
 		Expiration: 1 * time.Minute,
 		KeyGenerator: func(c fiber.Ctx) string {
 			return "global"
@@ -24,7 +24,7 @@ func NewGlobalRateLimiterMiddleware(limit int) fiber.Handler {
 
 func NewUserRateLimitMiddleware(limit int) fiber.Handler {
 	return limiter.New(limiter.Config{
-		Max: limit,
+		Max:        limit,
 		Expiration: 1 * time.Minute,
 		KeyGenerator: func(c fiber.Ctx) string {
 			return c.IP()

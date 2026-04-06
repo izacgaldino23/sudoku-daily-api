@@ -163,7 +163,7 @@ func (r *userStatsRepository) GetTotalSolvesLeaderboard(ctx context.Context, lim
 }
 
 func (r *userStatsRepository) ResetStrikes(ctx context.Context, today time.Time) (count int64, err error) {
-	dayBeforeYesterday := today.Truncate(24 * time.Hour).AddDate(0, 0, -2)
+	dayBeforeYesterday := today.Truncate(24*time.Hour).AddDate(0, 0, -2)
 
 	result, err := r.txManager.GetExecutor(ctx).
 		NewUpdate().

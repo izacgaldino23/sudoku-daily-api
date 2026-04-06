@@ -16,14 +16,14 @@ type (
 	}
 
 	leaderboardHandler struct {
-		leaderboardUsecase usecase.GetLeaderboard
+		leaderboardUsecase  usecase.GetLeaderboard
 		resetStrikesUseCase usecase.ResetStrikesUseCase
 	}
 )
 
 func NewLeaderboardHandler(leaderboardUsecase usecase.GetLeaderboard, resetStrikesUseCase usecase.ResetStrikesUseCase) LeaderboardHandler {
 	return &leaderboardHandler{
-		leaderboardUsecase: leaderboardUsecase,
+		leaderboardUsecase:  leaderboardUsecase,
 		resetStrikesUseCase: resetStrikesUseCase,
 	}
 }
@@ -69,7 +69,7 @@ func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 
 func (h *leaderboardHandler) ResetStrikes(c fiber.Ctx) error {
 	var (
-		req ResetStrikesRequest
+		req    ResetStrikesRequest
 		err    error
 		reqCtx = c.Context()
 	)

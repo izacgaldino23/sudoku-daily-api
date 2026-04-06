@@ -32,7 +32,7 @@ func NewSudokuHandler(
 	getDailyUseCase sudoku.ISudokuGetDailyUseCase,
 	createSudokuUseCase sudoku.SudokuGenerateDailyUseCase,
 	verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase,
-	getUserSolvesUseCase  sudoku.SudokuGetUserSolvesUseCase,
+	getUserSolvesUseCase sudoku.SudokuGetUserSolvesUseCase,
 ) SudokuHandler {
 	return &sudokuHandler{
 		getDailyUseCase:       getDailyUseCase,
