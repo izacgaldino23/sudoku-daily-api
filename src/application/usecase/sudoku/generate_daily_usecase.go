@@ -51,7 +51,7 @@ func (s *sudokuGenerateDailyUseCase) Execute(ctx context.Context) ([]entities.Su
 	if err := s.txManager.WithinTransaction(ctx, func(ctx context.Context) error {
 		for boardSize := range entities.BoardSizes {
 			todayPuzzle, err := s.sudokuFetcherService.GetDaily(ctx, boardSize)
-			if err != nil && !errors.Is(err, pkg.ErrNotFound) {
+			if err != nil && !errors.Is(err, pkg.ErrSudokuNotFound) {
 				return err
 			}
 

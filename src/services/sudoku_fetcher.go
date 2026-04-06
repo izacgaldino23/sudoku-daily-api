@@ -44,7 +44,7 @@ func (s *sudokuDailyFetcher) GetDaily(ctx context.Context, size entities.BoardSi
 	sudoku, err := s.sudokuRepository.GetByDateAndSize(ctx, today, size)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, pkg.ErrNotFound
+			return nil, pkg.ErrSudokuNotFound
 		}
 		return nil, err
 	}

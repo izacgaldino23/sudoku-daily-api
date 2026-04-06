@@ -26,7 +26,7 @@ func NewUserLogoutUseCase(refreshTokenRepo repository.RefreshTokenRepository) Us
 func (u *userLogoutUseCase) Execute(ctx context.Context, userID vo.UUID, token string) error {
 	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, token)
 	if err != nil {
-		if errors.Is(err, pkg.ErrNotFound) {
+		if errors.Is(err, pkg.ErrRefreshTokenNotFound) {
 			return nil
 		}
 		return err
@@ -40,7 +40,7 @@ func (u *userLogoutUseCase) Execute(ctx context.Context, userID vo.UUID, token s
 
 	err = u.refreshTokenRepo.Revoke(ctx, userID, refreshToken.Hash)
 	if err != nil {
-		if errors.Is(err, pkg.ErrNotFound) {
+		if errors.Is(err, pkg.ErrRefreshTokenNotFound) {
 			return nil
 		}
 		return err

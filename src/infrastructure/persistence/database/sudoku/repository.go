@@ -82,7 +82,7 @@ func (r *sudokuRepository) GetSolveByIDAndUser(ctx context.Context, userID vo.UU
 		Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, pkg.ErrNotFound
+			return nil, pkg.ErrSolutionNotFound
 		}
 		return nil, err
 	}

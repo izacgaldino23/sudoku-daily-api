@@ -34,7 +34,7 @@ func TestLogMiddleware(t *testing.T) {
 			method:        http.MethodPost,
 			body:          "",
 			statusCode:    http.StatusInternalServerError,
-			errorToReturn: pkg.ErrNotFound,
+			errorToReturn: pkg.ErrSudokuNotFound,
 		},
 		{
 			name:         "Should log error when status >= 300",

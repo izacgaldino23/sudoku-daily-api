@@ -34,7 +34,7 @@ func NewUserRefreshTokenUseCase(
 func (u *userRefreshTokenUseCase) Execute(ctx context.Context, tokenHash string) (string, error) {
 	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, tokenHash)
 	if err != nil {
-		if errors.Is(err, pkg.ErrNotFound) {
+		if errors.Is(err, pkg.ErrRefreshTokenNotFound) {
 			return "", pkg.ErrInvalidToken
 		}
 		return "", err

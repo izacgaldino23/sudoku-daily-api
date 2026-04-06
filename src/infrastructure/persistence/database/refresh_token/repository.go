@@ -58,7 +58,7 @@ func (r *refreshTokenRepository) GetByToken(ctx context.Context, token string) (
 		Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, pkg.ErrNotFound
+			return nil, pkg.ErrRefreshTokenNotFound
 		}
 		return nil, err
 	}

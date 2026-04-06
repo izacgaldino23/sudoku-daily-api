@@ -43,7 +43,7 @@ func (u *userLoginUseCase) Execute(ctx context.Context, loginData *entities.User
 	err = u.txManager.WithinTransaction(ctx, func(txCtx context.Context) error {
 		user, err = u.userRepo.GetByEmail(txCtx, loginData.Email.String())
 		if err != nil {
-			if errors.Is(err, pkg.ErrNotFound) {
+			if errors.Is(err, pkg.ErrUserNotFound) {
 				return pkg.ErrInvalidCredentials
 			}
 			return err

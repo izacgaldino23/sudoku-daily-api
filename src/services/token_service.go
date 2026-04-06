@@ -75,7 +75,7 @@ func (s *TokenService) ValidateAccessToken(token string) (vo.UUID, error) {
 	}
 
 	if claims["exp"].(float64) < float64(time.Now().Unix()) {
-		return "", pkg.ErrInvalidToken
+		return "", pkg.ErrTokenExpired
 	}
 
 	if claims["iat"].(float64) > float64(time.Now().Unix()) {

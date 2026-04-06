@@ -39,7 +39,7 @@ func (u *userRegisterUseCase) Execute(ctx context.Context, user *entities.User) 
 
 	// verify email is not already registered
 	existingUser, err := u.userRepo.GetByEmail(ctx, user.Email.String())
-	if err != nil && err != pkg.ErrNotFound {
+	if err != nil && err != pkg.ErrUserNotFound {
 		return nil, err
 	}
 	if existingUser != nil {

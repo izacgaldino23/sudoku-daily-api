@@ -7,46 +7,50 @@ import (
 )
 
 var (
-	ErrNotFound               = newError("not_found")
-	ErrQueryParamInvalid      = newError("invalid_query_param")
-	ErrInvalidEmail           = newError("invalid_email")
-	ErrInvalidToken           = newError("invalid_token")
-	ErrTokenExpired           = newError("token_expired")
-	ErrInvalidCredentials     = newError("invalid_credentials")
-	ErrEmailAlreadyRegistered = newError("email_already_registered")
-	ErrRefreshTokenExpired    = newError("refresh_token_expired")
-	ErrRefreshTokenRevoked    = newError("refresh_token_revoked")
-	ErrBodyInvalid            = newError("invalid_body")
-	ErrInvalidSolution        = newError("invalid_solution")
-	ErrInvalidLeaderboardType = newError("invalid_leaderboard_type")
-	ErrSizeRequired           = newError("size_required")
-	ErrSizeNotAllowed         = newError("size_not_allowed")
-	ErrInvalidSize            = newError("invalid_size")
-	ErrInvalidLimit           = newError("invalid_limit")
-	ErrInvalidPage            = newError("invalid_page")
-	ErrInternalServerError    = newError("internal_server_error")
-	ErrTooManyRequests        = newError("too_many_requests")
-	ErrAlreadyPlayed          = newError("already_played")
+	ErrQueryParamInvalid      = newError("invalid_query_param", "invalid query param", http.StatusBadRequest)
+	ErrInvalidEmail           = newError("invalid_email", "invalid email", http.StatusUnauthorized)
+	ErrInvalidToken           = newError("invalid_token", "invalid token", http.StatusUnauthorized)
+	ErrTokenExpired           = newError("token_expired", "token expired", http.StatusUnauthorized)
+	ErrInvalidCredentials     = newError("invalid_credentials", "invalid credentials", http.StatusUnauthorized)
+	ErrEmailAlreadyRegistered = newError("email_already_registered", "email already registered", http.StatusBadRequest)
+	ErrRefreshTokenExpired    = newError("refresh_token_expired", "refresh token expired", http.StatusUnauthorized)
+	ErrRefreshTokenRevoked    = newError("refresh_token_revoked", "refresh token revoked", http.StatusUnauthorized)
+	ErrBodyInvalid            = newError("invalid_body", "invalid body", http.StatusBadRequest)
+	ErrInvalidSolution        = newError("invalid_solution", "invalid solution", http.StatusBadRequest)
+	ErrInvalidLeaderboardType = newError("invalid_leaderboard_type", "invalid leaderboard type", http.StatusBadRequest)
+	ErrInternalServerError    = newError("internal_server_error", "internal server error", http.StatusInternalServerError)
+	ErrTooManyRequests        = newError("too_many_requests", "too many requests", http.StatusTooManyRequests)
+	ErrAlreadyPlayed          = newError("already_played", "user has already played", http.StatusConflict)
+
+	ErrUserNotFound         = newError("user_not_found", "user not found", http.StatusNotFound)
+	ErrSudokuNotFound       = newError("sudoku_not_found", "sudoku not found", http.StatusNotFound)
+	ErrRefreshTokenNotFound = newError("refresh_token_not_found", "refresh token not found", http.StatusNotFound)
+	ErrSolutionNotFound     = newError("solution_not_found", "solution not found", http.StatusNotFound)
 )
 
 type (
 	Error struct {
 		Code          string            `json:"code"`
 		Message       string            `json:"message"`
+		StatusCode    int               `json:"-"`
+		Err           error             `json:"-"`
 		ValidationErr []ValidationError `json:"validation_errors,omitempty"`
 	}
 )
 
 func (e *Error) Error() string {
+	if e.Err != nil {
+		return e.Code + ": " + e.Message + ": " + e.Err.Error()
+	}
 	return e.Code + ": " + e.Message
 }
 
-func newError(code string) *Error {
-	return &Error{Code: code, Message: code}
+func newError(code, message string, statusCode int) *Error {
+	return &Error{Code: code, Message: message, StatusCode: statusCode}
 }
 
 func NewError(message string) *Error {
-	return &Error{Code: "internal_server_error", Message: message}
+	return &Error{Code: "internal_server_error", Message: message, StatusCode: http.StatusInternalServerError}
 }
 
 func FromError(err error) *Error {
@@ -54,43 +58,27 @@ func FromError(err error) *Error {
 		return &Error{
 			Code:          "validation_error",
 			Message:       validationErrs.Error(),
+			StatusCode:    http.StatusBadRequest,
 			ValidationErr: validationErrs,
 		}
 	}
 	if e, ok := err.(*Error); ok {
 		return e
 	}
-	return &Error{Code: "internal_server_error", Message: err.Error()}
+	return &Error{Code: "internal_server_error", Message: err.Error(), StatusCode: http.StatusInternalServerError}
 }
 
 func JsonError(c fiber.Ctx, err error) error {
-	status := MapErrorToStatus(err)
-	err = FromError(err)
+	appErr := FromError(err)
+	if appErr.StatusCode == 0 {
+		appErr.StatusCode = http.StatusInternalServerError
+	}
 
-	return c.Status(status).JSON(err)
+	return c.Status(appErr.StatusCode).JSON(appErr)
 }
 
 func JsonErrorWithStatus(c fiber.Ctx, err error, status int) error {
-	return c.Status(status).JSON(FromError(err))
-}
-
-func MapErrorToStatus(err error) int {
-	if _, ok := err.(ValidationErrors); ok {
-		return http.StatusBadRequest
-	}
-
-	switch err {
-	case ErrNotFound:
-		return http.StatusNotFound
-	case ErrEmailAlreadyRegistered, ErrQueryParamInvalid, ErrBodyInvalid, ErrSizeRequired, ErrSizeNotAllowed, ErrInvalidSize, ErrInvalidLimit, ErrInvalidPage, ErrInvalidLeaderboardType:
-		return http.StatusBadRequest
-	case ErrInvalidCredentials, ErrRefreshTokenExpired, ErrRefreshTokenRevoked, ErrInvalidToken, ErrInvalidEmail, ErrTokenExpired:
-		return http.StatusUnauthorized
-	case ErrTooManyRequests:
-		return http.StatusTooManyRequests
-	case ErrAlreadyPlayed:
-		return http.StatusConflict
-	default:
-		return http.StatusInternalServerError
-	}
+	appErr := FromError(err)
+	appErr.StatusCode = status
+	return c.Status(status).JSON(appErr)
 }

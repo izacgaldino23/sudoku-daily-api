@@ -43,7 +43,7 @@ func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.Board
 	sudoku, err := s.sudokuFetcher.GetDaily(ctx, boardSize)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, "", pkg.ErrNotFound
+			return nil, "", pkg.ErrSudokuNotFound
 		}
 		return nil, "", err
 	}
@@ -52,7 +52,7 @@ func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.Board
 		// validate if user has already played the game
 		if _, err = s.sudokuFetcher.GetSolveByIDAndUser(ctx, sudoku.ID, userID); err != nil {
 			logging.Log(ctx).Info().Err(err).Msg("user has already played the game")
-			if errors.Is(err, pkg.ErrNotFound) {
+			if errors.Is(err, pkg.ErrSolutionNotFound) {
 				return nil, "", pkg.ErrAlreadyPlayed
 			}
 		}

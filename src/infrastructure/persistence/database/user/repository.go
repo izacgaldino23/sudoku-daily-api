@@ -48,7 +48,7 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*entitie
 	err := r.txManager.GetExecutor(ctx).NewSelect().Model(&userResp).Where("email = ?", email).Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, pkg.ErrNotFound
+			return nil, pkg.ErrUserNotFound
 		}
 		return nil, err
 	}

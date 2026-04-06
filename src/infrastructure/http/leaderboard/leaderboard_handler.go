@@ -75,7 +75,7 @@ func (h *leaderboardHandler) ResetStrikes(c fiber.Ctx) error {
 	)
 
 	if err = c.Bind().Body(&req); err != nil {
-		return pkg.JsonError(c, pkg.ErrBodyInvalid)
+		return pkg.ErrBodyInvalid
 	}
 
 	if err = pkg.ValidateStruct(req); err != nil {

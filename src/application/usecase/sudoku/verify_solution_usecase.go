@@ -87,7 +87,7 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, input *entiti
 		if input.UserID != "" {
 			solve, err := s.sudokuFetcher.GetSolveByIDAndUser(ctx, sudoku.ID, input.UserID)
 			if err != nil {
-				if !errors.Is(err, pkg.ErrNotFound) {
+				if !errors.Is(err, pkg.ErrSolutionNotFound) {
 					return err
 				}
 

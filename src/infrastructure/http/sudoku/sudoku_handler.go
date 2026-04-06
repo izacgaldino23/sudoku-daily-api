@@ -130,7 +130,7 @@ func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 	)
 
 	if err := c.Bind().Body(&request); err != nil {
-		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
+		return pkg.ErrBodyInvalid
 	}
 
 	if err := pkg.ValidateStruct(request); err != nil {
