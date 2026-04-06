@@ -8,17 +8,17 @@ import (
 	"testing"
 
 	"sudoku-daily-api/src/infrastructure/http/auth"
-	"sudoku-daily-api/tests/integration/testhelpers"
+	"sudoku-daily-api/tests/integration/helpers"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthLogin(t *testing.T) {
 	t.Run("valid login", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
-		userData, err := testhelpers.RegisterAndLoginUser(app, "password123")
+		userData, err := helpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{
@@ -42,10 +42,10 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("wrong password", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
-		userData, err := testhelpers.RegisterAndLoginUser(app, "password123")
+		userData, err := helpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{
@@ -61,8 +61,8 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("user not found", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		loginBody, _ := json.Marshal(map[string]string{
 			"email":    "nonexistent@example.com",
@@ -77,10 +77,10 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("missing email", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
-		_, err := testhelpers.RegisterAndLoginUser(app, "password123")
+		_, err := helpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{
@@ -95,11 +95,11 @@ func TestAuthLogin(t *testing.T) {
 	})
 
 	t.Run("missing password", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
-		email := testhelpers.GenerateUniqueEmail("test")
-		_, err := testhelpers.RegisterAndLoginUser(app, "password123")
+		email := helpers.GenerateUniqueEmail("test")
+		_, err := helpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 
 		loginBody, _ := json.Marshal(map[string]string{

@@ -10,7 +10,7 @@ import (
 
 	"sudoku-daily-api/pkg/database"
 	"sudoku-daily-api/src/infrastructure/http/leaderboard"
-	"sudoku-daily-api/tests/integration/testhelpers"
+	"sudoku-daily-api/tests/integration/helpers"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/uptrace/bun"
@@ -18,14 +18,14 @@ import (
 
 func TestGetStreakLeaderboard(t *testing.T) {
 	t.Run("get leaderboard with streak type returns entries", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
-		email := testhelpers.GenerateUniqueEmail("streak")
-		err := testhelpers.SeedUser(email, "streakplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		email := helpers.GenerateUniqueEmail("streak")
+		err := helpers.SeedUser(email, "streakplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
 
-		user1ID, err := testhelpers.GetUserIDByEmail(email)
+		user1ID, err := helpers.GetUserIDByEmail(email)
 		assert.NoError(t, err)
 
 		ctx := context.Background()
@@ -40,7 +40,7 @@ func TestGetStreakLeaderboard(t *testing.T) {
 			LastSolvedDate time.Time `bun:"last_solved_date"`
 			TotalSolved    int       `bun:"total_solved"`
 		}{
-			ID:             testhelpers.GenerateUUID(),
+			ID:             helpers.GenerateUUID(),
 			UserID:         user1ID,
 			CurrentStreak:  10,
 			LongestStreak:  15,

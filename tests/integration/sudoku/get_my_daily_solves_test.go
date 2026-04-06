@@ -13,25 +13,25 @@ import (
 
 	"sudoku-daily-api/pkg/database"
 	"sudoku-daily-api/src/infrastructure/http/sudoku"
-	"sudoku-daily-api/tests/integration/testhelpers"
+	"sudoku-daily-api/tests/integration/helpers"
 )
 
 func TestSudokuGetMyDailySolves(t *testing.T) {
 	t.Run("get solves for today with data returns entries", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
-		err := testhelpers.SeedSudokus()
+		err := helpers.SeedSudokus()
 		assert.NoError(t, err)
 
-		userData, err := testhelpers.RegisterAndLoginUser(app, "password123")
+		userData, err := helpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, userData.AccessToken)
 
-		userID, err := testhelpers.GetUserIDByEmail(userData.Email)
+		userID, err := helpers.GetUserIDByEmail(userData.Email)
 		assert.NoError(t, err)
 
-		err = testhelpers.SeedSolve(userID, testhelpers.SudokusIDs[0], 60)
+		err = helpers.SeedSolve(userID, helpers.SudokusIDs[0], 60)
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/me", nil)
@@ -50,10 +50,10 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 	})
 
 	t.Run("get solves for today with no data returns empty list", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
-		userData, err := testhelpers.RegisterAndLoginUser(app, "password123")
+		userData, err := helpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, userData.AccessToken)
 
@@ -71,8 +71,8 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 	})
 
 	t.Run("get solves without auth returns 401", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/me", nil)
 		req.Header.Set("Content-Type", "application/json")
@@ -83,8 +83,8 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 	})
 
 	t.Run("get solves with invalid token returns 401", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/me", nil)
 		req.Header.Set("Authorization", "Bearer invalid-token")
@@ -95,22 +95,22 @@ func TestSudokuGetMyDailySolves(t *testing.T) {
 	})
 
 	t.Run("get solves excludes yesterday's solves", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
-		err := testhelpers.SeedSudokus()
+		err := helpers.SeedSudokus()
 		assert.NoError(t, err)
 
-		userData, err := testhelpers.RegisterAndLoginUser(app, "password123")
+		userData, err := helpers.RegisterAndLoginUser(app, "password123")
 		assert.NoError(t, err)
 
-		userID, err := testhelpers.GetUserIDByEmail(userData.Email)
+		userID, err := helpers.GetUserIDByEmail(userData.Email)
 		assert.NoError(t, err)
 
-		solve := testhelpers.SolveSeed{
-			ID:        testhelpers.GenerateUUID(),
+		solve := helpers.SolveSeed{
+			ID:        helpers.GenerateUUID(),
 			UserID:    userID,
-			SudokuID:  testhelpers.SudokusIDs[0],
+			SudokuID:  helpers.SudokusIDs[0],
 			StartedAt: time.Now().Add(-26 * time.Hour),
 			Duration:  90,
 			Size:      9,

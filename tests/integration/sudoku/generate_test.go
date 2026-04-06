@@ -10,13 +10,13 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"sudoku-daily-api/src/infrastructure/http/sudoku"
-	"sudoku-daily-api/tests/integration/testhelpers"
+	"sudoku-daily-api/tests/integration/helpers"
 )
 
 func TestSudokuGenerate(t *testing.T) {
 	t.Run("generate daily sudoku", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate", nil)
 		req.Header.Set("Content-Type", "application/json")

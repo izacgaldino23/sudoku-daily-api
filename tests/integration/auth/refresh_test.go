@@ -9,7 +9,7 @@ import (
 
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/infrastructure/http/auth"
-	"sudoku-daily-api/tests/integration/testhelpers"
+	"sudoku-daily-api/tests/integration/helpers"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
@@ -17,11 +17,11 @@ import (
 
 func TestAuthRefresh(t *testing.T) {
 	setupTokens := func() (string, string) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
-		email := testhelpers.GenerateUniqueEmail("test")
-		tokens, err := testhelpers.RegisterAndLoginUserWithTokens(app, email, "testuser", "password123")
+		email := helpers.GenerateUniqueEmail("test")
+		tokens, err := helpers.RegisterAndLoginUserWithTokens(app, email, "testuser", "password123")
 		assert.NoError(t, err)
 
 		return tokens.AccessToken, tokens.RefreshToken
@@ -29,7 +29,7 @@ func TestAuthRefresh(t *testing.T) {
 
 	t.Run("valid refresh", func(t *testing.T) {
 		accessToken, refreshToken := setupTokens()
-		app := testhelpers.SetupTestApp()
+		app := helpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{"refresh_token": refreshToken})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewReader(body))
@@ -48,7 +48,7 @@ func TestAuthRefresh(t *testing.T) {
 
 	t.Run("missing refresh token", func(t *testing.T) {
 		accessToken, _ := setupTokens()
-		app := testhelpers.SetupTestApp()
+		app := helpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewReader(body))
@@ -67,7 +67,7 @@ func TestAuthRefresh(t *testing.T) {
 
 	t.Run("invalid refresh token", func(t *testing.T) {
 		accessToken, _ := setupTokens()
-		app := testhelpers.SetupTestApp()
+		app := helpers.SetupTestApp()
 
 		body, _ := json.Marshal(map[string]string{"refresh_token": "invalid-refresh-token"})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewReader(body))

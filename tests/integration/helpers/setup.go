@@ -1,4 +1,4 @@
-package testhelpers
+package helpers
 
 import (
 	"bytes"
@@ -56,7 +56,7 @@ func SetupTestEnvironment() {
 		os.Setenv("DATABASE_NAME", "sudoku_test")
 		os.Setenv("DATABASE_SSL_MODE", "disable")
 		os.Setenv("API_PORT", "8081")
-		os.Setenv("DEBUG", "false")
+		os.Setenv("DEBUG", "true")
 
 		memory := 64
 		os.Setenv("AUTH_ITERATIONS", "3")
@@ -169,10 +169,10 @@ func SetupTestApp() *fiber.App {
 
 // UserData holds user access and refresh tokens and data
 type UserData struct {
-	Email        string
-	Username     string
-	AccessToken  string
-	RefreshToken string
+	Email        string `json:"email"`
+	Username     string `json:"username"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 // RegisterAndLoginUser registers a new user and returns their access token
@@ -213,20 +213,12 @@ func RegisterAndLoginUserWithTokens(app *fiber.App, email, username, password st
 		return UserData{}, err
 	}
 
-	var loginRespBody struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
-	}
-	if err := json.NewDecoder(loginResp.Body).Decode(&loginRespBody); err != nil {
+	userData := UserData{}
+	if err := json.NewDecoder(loginResp.Body).Decode(&userData); err != nil {
 		return UserData{}, err
 	}
 
-	return UserData{
-		AccessToken:  loginRespBody.AccessToken,
-		RefreshToken: loginRespBody.RefreshToken,
-		Email:        email,
-		Username:     username,
-	}, nil
+	return userData, nil
 }
 
 func GetSudokuSolution(size entities.BoardSize) ([][]int, error) {
@@ -288,4 +280,20 @@ func GenerateUniqueEmail(prefix string) string {
 func GenerateUniqueUsername(prefix string) string {
 	count := emailCounter.Add(1)
 	return fmt.Sprintf("%s-%d", prefix, count)
+}
+
+func GetUserStats(userID string) (int, int, error) {
+	db := database.GetDB().BunConnection
+	ctx := context.Background()
+
+	var stats struct {
+		Solves int `bun:"total_solved"`
+		Streak int `bun:"current_streak"`
+	}
+	err := db.NewSelect().Model(&stats).Table("user_stats").Where("user_id = ?", userID).Scan(ctx)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return stats.Solves, stats.Streak, nil
 }

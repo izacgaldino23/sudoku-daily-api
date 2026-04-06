@@ -9,27 +9,27 @@ import (
 
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/infrastructure/http/leaderboard"
-	"sudoku-daily-api/tests/integration/testhelpers"
+	"sudoku-daily-api/tests/integration/helpers"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetTotalLeaderboard(t *testing.T) {
 	t.Run("get leaderboard with total type returns entries", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
-		err := testhelpers.SeedSudokus()
+		err := helpers.SeedSudokus()
 		assert.NoError(t, err)
 
-		email := testhelpers.GenerateUniqueEmail("user1")
-		err = testhelpers.SeedUser(email, "activeplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
+		email := helpers.GenerateUniqueEmail("user1")
+		err = helpers.SeedUser(email, "activeplayer", "$argon2id$v=19$m=65536,t=3,p=4$placeholder")
 		assert.NoError(t, err)
 
-		user1ID, err := testhelpers.GetUserIDByEmail(email)
+		user1ID, err := helpers.GetUserIDByEmail(email)
 		assert.NoError(t, err)
 
-		err = testhelpers.SeedSolves(user1ID)
+		err = helpers.SeedSolves(user1ID)
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=total&limit=10&page=1", nil)
@@ -45,8 +45,8 @@ func TestGetTotalLeaderboard(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with total type and size returns bad request", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=total&size=nine&limit=10&page=1", nil)
 

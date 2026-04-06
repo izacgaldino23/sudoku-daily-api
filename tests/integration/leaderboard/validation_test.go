@@ -5,15 +5,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"sudoku-daily-api/tests/integration/testhelpers"
+	"sudoku-daily-api/tests/integration/helpers"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestLeaderboardValidation(t *testing.T) {
 	t.Run("get leaderboard with invalid type returns bad request", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=invalid&size=nine", nil)
 
@@ -23,8 +23,8 @@ func TestLeaderboardValidation(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with invalid size returns bad request", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily&size=invalid", nil)
 
@@ -34,8 +34,8 @@ func TestLeaderboardValidation(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with missing type returns bad request", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?size=nine", nil)
 
@@ -45,8 +45,8 @@ func TestLeaderboardValidation(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with missing size returns bad request", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily", nil)
 
@@ -56,8 +56,8 @@ func TestLeaderboardValidation(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with limit exceeding max returns bad request", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily&size=nine&limit=500", nil)
 
@@ -67,8 +67,8 @@ func TestLeaderboardValidation(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with limit below min returns bad request", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily&size=nine&limit=0", nil)
 
@@ -78,8 +78,8 @@ func TestLeaderboardValidation(t *testing.T) {
 	})
 
 	t.Run("get leaderboard with page below min returns bad request", func(t *testing.T) {
-		t.Cleanup(testhelpers.TruncateTables)
-		app := testhelpers.SetupTestApp()
+		t.Cleanup(helpers.TruncateTables)
+		app := helpers.SetupTestApp()
 
 		req := httptest.NewRequest(http.MethodGet, "/api/leaderboard?type=daily&size=nine&page=0", nil)
 

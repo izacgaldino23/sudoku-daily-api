@@ -1,4 +1,4 @@
-package sudoku
+package sudoku_test
 
 import (
 	"bytes"
@@ -10,20 +10,20 @@ import (
 
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/infrastructure/http/sudoku"
-	"sudoku-daily-api/tests/integration/testhelpers"
+	"sudoku-daily-api/tests/integration/helpers"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSudokuSubmitWithoutLogin(t *testing.T) {
-	t.Cleanup(testhelpers.TruncateTables)
-	app := testhelpers.SetupTestApp()
+	t.Cleanup(helpers.TruncateTables)
+	app := helpers.SetupTestApp()
 
-	err := testhelpers.SeedSudokus()
+	err := helpers.SeedSudokus()
 	assert.NoError(t, err)
 
-	solution, err := testhelpers.GetSudokuSolution(entities.BoardSize9)
+	solution, err := helpers.GetSudokuSolution(entities.BoardSize9)
 	assert.NoError(t, err)
 
 	dailyReq := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=nine", nil)

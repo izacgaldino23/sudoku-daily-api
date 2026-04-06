@@ -4,11 +4,11 @@ import (
 	"os"
 	"testing"
 
-	"sudoku-daily-api/tests/integration/testhelpers"
+	"sudoku-daily-api/tests/integration/helpers"
 )
 
 func TestMain(m *testing.M) {
-	testhelpers.SetupTestEnvironment()
-	defer testhelpers.TeardownTestDB()
+	helpers.SetupTestEnvironment()
+	defer helpers.TeardownTestDB()
 	os.Exit(m.Run())
 }
