@@ -7,51 +7,60 @@ import (
 )
 
 var (
-	ErrNotFound               = NewError("not found")
-	ErrQueryParamInvalid      = NewError("invalid query param")
-	ErrInvalidEmail           = NewError("invalid email")
-	ErrInvalidToken           = NewError("invalid token")
-	ErrTokenExpired           = NewError("token expired")
-	ErrInvalidCredentials     = NewError("invalid credentials")
-	ErrEmailAlreadyRegistered = NewError("email already registered")
-	ErrRefreshTokenExpired    = NewError("refresh token expired")
-	ErrRefreshTokenRevoked    = NewError("refresh token revoked")
-	ErrBodyInvalid            = NewError("invalid body")
-	ErrInvalidSolution        = NewError("invalid solution")
-	ErrInvalidLeaderboardType = NewError("invalid leaderboard type: must be one of daily, all-time, streak, or total")
-	ErrSizeRequired           = NewError("size is required for daily and all-time leaderboards")
-	ErrSizeNotAllowed         = NewError("size is not allowed for streak and total leaderboards")
-	ErrInvalidSize            = NewError("invalid size: must be one of four, six, or nine")
-	ErrInvalidLimit           = NewError("invalid limit: must be between 1 and 100")
-	ErrInvalidPage            = NewError("invalid page: must be greater than 0")
-	ErrInternalServerError    = NewError("internal server error")
-	ErrTooManyRequests        = NewError("too many requests, please try again later")
-	ErrAlreadyPlayed          = NewError("user has already played the game")
+	ErrNotFound               = newError("not_found")
+	ErrQueryParamInvalid      = newError("invalid_query_param")
+	ErrInvalidEmail           = newError("invalid_email")
+	ErrInvalidToken           = newError("invalid_token")
+	ErrTokenExpired           = newError("token_expired")
+	ErrInvalidCredentials     = newError("invalid_credentials")
+	ErrEmailAlreadyRegistered = newError("email_already_registered")
+	ErrRefreshTokenExpired    = newError("refresh_token_expired")
+	ErrRefreshTokenRevoked    = newError("refresh_token_revoked")
+	ErrBodyInvalid            = newError("invalid_body")
+	ErrInvalidSolution        = newError("invalid_solution")
+	ErrInvalidLeaderboardType = newError("invalid_leaderboard_type")
+	ErrSizeRequired           = newError("size_required")
+	ErrSizeNotAllowed         = newError("size_not_allowed")
+	ErrInvalidSize            = newError("invalid_size")
+	ErrInvalidLimit           = newError("invalid_limit")
+	ErrInvalidPage            = newError("invalid_page")
+	ErrInternalServerError    = newError("internal_server_error")
+	ErrTooManyRequests        = newError("too_many_requests")
+	ErrAlreadyPlayed          = newError("already_played")
 )
 
 type (
 	Error struct {
+		Code          string            `json:"code"`
 		Message       string            `json:"message"`
 		ValidationErr []ValidationError `json:"validation_errors,omitempty"`
 	}
 )
 
 func (e *Error) Error() string {
-	return e.Message
+	return e.Code + ": " + e.Message
+}
+
+func newError(code string) *Error {
+	return &Error{Code: code, Message: code}
+}
+
+func NewError(message string) *Error {
+	return &Error{Code: "internal_server_error", Message: message}
 }
 
 func FromError(err error) *Error {
 	if validationErrs, ok := err.(ValidationErrors); ok {
 		return &Error{
+			Code:          "validation_error",
 			Message:       validationErrs.Error(),
 			ValidationErr: validationErrs,
 		}
 	}
-	return &Error{Message: err.Error()}
-}
-
-func NewError(message string) *Error {
-	return &Error{Message: message}
+	if e, ok := err.(*Error); ok {
+		return e
+	}
+	return &Error{Code: "internal_server_error", Message: err.Error()}
 }
 
 func JsonError(c fiber.Ctx, err error) error {
