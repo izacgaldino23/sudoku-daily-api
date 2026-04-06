@@ -104,6 +104,8 @@ definitions:
     type: object
   pkg.Error:
     properties:
+      code:
+        type: string
       message:
         type: string
       validation_errors:
@@ -118,6 +120,21 @@ definitions:
       message:
         type: string
     type: object
+  src_infrastructure_http_sudoku.Solve:
+    properties:
+      duration:
+        type: integer
+      id:
+        type: string
+      size:
+        type: integer
+      started_at:
+        type: string
+      sudoku_id:
+        type: string
+      user_id:
+        type: string
+    type: object
   sudoku.Cell:
     properties:
       col:
@@ -126,6 +143,13 @@ definitions:
         type: integer
       value:
         type: integer
+    type: object
+  sudoku.MySolvesResponse:
+    properties:
+      solves:
+        items:
+          $ref: '#/definitions/src_infrastructure_http_sudoku.Solve'
+        type: array
     type: object
   sudoku.SudokuResponse:
     properties:
@@ -181,11 +205,11 @@ paths:
           schema:
             $ref: '#/definitions/auth.LoginResponse'
         "400":
-          description: Bad Request
+          description: invalid_body
           schema:
             $ref: '#/definitions/pkg.Error'
         "401":
-          description: Unauthorized
+          description: invalid_credentials
           schema:
             $ref: '#/definitions/pkg.Error'
       summary: Login user
@@ -211,7 +235,7 @@ paths:
           schema:
             type: string
         "400":
-          description: Bad Request
+          description: invalid_body
           schema:
             $ref: '#/definitions/pkg.Error'
       security:
@@ -239,11 +263,11 @@ paths:
           schema:
             $ref: '#/definitions/auth.RefreshTokenResponse'
         "400":
-          description: Bad Request
+          description: invalid_body
           schema:
             $ref: '#/definitions/pkg.Error'
         "401":
-          description: Unauthorized
+          description: invalid_token, refresh_token_expired, refresh_token_revoked
           schema:
             $ref: '#/definitions/pkg.Error'
       summary: Refresh access token
@@ -269,11 +293,11 @@ paths:
           schema:
             type: string
         "400":
-          description: Bad Request
+          description: invalid_body, validation_error
           schema:
             $ref: '#/definitions/pkg.Error'
         "409":
-          description: Conflict
+          description: email_already_registered
           schema:
             $ref: '#/definitions/pkg.Error'
       summary: Register a new user
@@ -329,7 +353,8 @@ paths:
           schema:
             $ref: '#/definitions/leaderboard.LeaderboardResponse'
         "400":
-          description: Bad Request
+          description: invalid_leaderboard_type, invalid_size, invalid_limit, invalid_page,
+            size_required, size_not_allowed
           schema:
             $ref: '#/definitions/pkg.Error'
       summary: Get leaderboard
@@ -357,15 +382,15 @@ paths:
           schema:
             $ref: '#/definitions/sudoku.SudokuResponse'
         "400":
-          description: Bad Request
+          description: invalid_query_param, invalid_size
           schema:
             $ref: '#/definitions/pkg.Error'
         "404":
-          description: Not Found
+          description: sudoku_not_found
           schema:
             $ref: '#/definitions/pkg.Error'
         "409":
-          description: Conflict
+          description: already_played
           schema:
             $ref: '#/definitions/pkg.Error'
       summary: Get daily sudoku
@@ -384,6 +409,25 @@ paths:
               $ref: '#/definitions/sudoku.SudokuResponse'
             type: array
       summary: Generate sudoku
+      tags:
+      - sudoku
+  /api/sudoku/me:
+    get:
+      description: Returns the daily sudoku solves for a given user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sudoku.MySolvesResponse'
+        "401":
+          description: invalid_token
+          schema:
+            $ref: '#/definitions/pkg.Error'
+      security:
+      - BearerAuth: []
+      summary: Get my daily sudoku solves
       tags:
       - sudoku
   /api/sudoku/submit:
@@ -406,19 +450,23 @@ paths:
           schema:
             type: string
         "400":
-          description: Bad Request
+          description: invalid_body, invalid_solution
+          schema:
+            $ref: '#/definitions/pkg.Error'
+        "401":
+          description: invalid_token
           schema:
             $ref: '#/definitions/pkg.Error'
         "404":
-          description: Not Found
+          description: solution_not_found
           schema:
             $ref: '#/definitions/pkg.Error'
         "409":
-          description: Conflict
+          description: already_played
           schema:
             $ref: '#/definitions/pkg.Error'
       security:
-      - BearerAuth: []
+      - BearerAuth  // optional: []
       summary: Verify sudoku solution
       tags:
       - sudoku

@@ -49,9 +49,9 @@ func NewSudokuHandler(
 // @Produce json
 // @Param size query GetDailySudokuRequest true "Board size (four, six, or nine)"
 // @Success 200 {object} SudokuResponse
-// @Failure 400 {object} pkg.Error
-// @Failure 404 {object} pkg.Error
-// @Failure 409 {object} pkg.Error
+// @Failure 400 {object} pkg.Error "invalid_query_param, invalid_size"
+// @Failure 404 {object} pkg.Error "sudoku_not_found"
+// @Failure 409 {object} pkg.Error "already_played"
 // @Router /api/sudoku [get]
 func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	var (
@@ -117,9 +117,10 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 // @Security BearerAuth  // optional
 // @Param request body VerifySolutionRequest true "Solution request"
 // @Success 200 {string} string "Solution verified successfully"
-// @Failure 400 {object} pkg.Error
-// @Failure 404 {object} pkg.Error
-// @Failure 409 {object} pkg.Error
+// @Failure 400 {object} pkg.Error "invalid_body, invalid_solution"
+// @Failure 401 {object} pkg.Error "invalid_token"
+// @Failure 404 {object} pkg.Error "solution_not_found"
+// @Failure 409 {object} pkg.Error "already_played"
 // @Router /api/sudoku/submit [post]
 func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 	var (
@@ -154,7 +155,7 @@ func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} MySolvesResponse
-// @Failure 401 {object} pkg.Error
+// @Failure 401 {object} pkg.Error "invalid_token"
 // @Router /api/sudoku/me [get]
 func (sh *sudokuHandler) GetMyDailySudoku(c fiber.Ctx) error {
 	var (

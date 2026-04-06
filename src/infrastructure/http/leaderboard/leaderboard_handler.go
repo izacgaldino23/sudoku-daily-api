@@ -38,7 +38,7 @@ func NewLeaderboardHandler(leaderboardUsecase usecase.GetLeaderboard, resetStrik
 // @Param limit query int false "Number of entries to return (1-100)"
 // @Param page query int false "Page number"
 // @Success 200 {object} LeaderboardResponse
-// @Failure 400 {object} pkg.Error
+// @Failure 400 {object} pkg.Error "invalid_leaderboard_type, invalid_size, invalid_limit, invalid_page, size_required, size_not_allowed"
 // @Router /api/leaderboard [get]
 func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 	var (

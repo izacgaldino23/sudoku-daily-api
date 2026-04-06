@@ -52,8 +52,8 @@ func NewAuthHandler(
 // @Produce json
 // @Param request body RegisterRequest true "User registration request"
 // @Success 201 {string} string "User created"
-// @Failure 400 {object} pkg.Error
-// @Failure 409 {object} pkg.Error
+// @Failure 400 {object} pkg.Error "invalid_body, validation_error"
+// @Failure 409 {object} pkg.Error "email_already_registered"
 // @Router /api/auth/register [post]
 func (a *authHandler) Register(c fiber.Ctx) error {
 	var (
@@ -82,8 +82,8 @@ func (a *authHandler) Register(c fiber.Ctx) error {
 // @Produce json
 // @Param request body LoginRequest true "User login request"
 // @Success 200 {object} LoginResponse
-// @Failure 400 {object} pkg.Error
-// @Failure 401 {object} pkg.Error
+// @Failure 400 {object} pkg.Error "invalid_body"
+// @Failure 401 {object} pkg.Error "invalid_credentials"
 // @Router /api/auth/login [post]
 func (a *authHandler) Login(c fiber.Ctx) error {
 	var (
@@ -115,8 +115,8 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 // @Produce json
 // @Param request body RefreshTokenRequest true "Refresh token request"
 // @Success 200 {object} RefreshTokenResponse
-// @Failure 400 {object} pkg.Error
-// @Failure 401 {object} pkg.Error
+// @Failure 400 {object} pkg.Error "invalid_body"
+// @Failure 401 {object} pkg.Error "invalid_token, refresh_token_expired, refresh_token_revoked"
 // @Router /api/auth/refresh [post]
 func (a *authHandler) Refresh(c fiber.Ctx) error {
 	var (
@@ -150,7 +150,7 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 // @Security BearerAuth
 // @Param request body LogoutRequest true "Logout request"
 // @Success 200 {string} string "Logged out successfully"
-// @Failure 400 {object} pkg.Error
+// @Failure 400 {object} pkg.Error "invalid_body"
 // @Router /api/auth/logout [post]
 func (a *authHandler) Logout(c fiber.Ctx) error {
 	var (

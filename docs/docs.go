@@ -47,13 +47,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "invalid_credentials",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
@@ -98,7 +98,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
@@ -138,13 +138,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "invalid_token, refresh_token_expired, refresh_token_revoked",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
@@ -184,13 +184,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body, validation_error",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "email_already_registered",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
@@ -271,7 +271,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_leaderboard_type, invalid_size, invalid_limit, invalid_page, size_required, size_not_allowed",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
@@ -313,19 +313,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_query_param, invalid_size",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "sudoku_not_found",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "already_played",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
@@ -356,11 +356,42 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/sudoku/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the daily sudoku solves for a given user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sudoku"
+                ],
+                "summary": "Get my daily sudoku solves",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sudoku.MySolvesResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid_token",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/api/sudoku/submit": {
             "post": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "BearerAuth  // optional": []
                     }
                 ],
                 "description": "Verifies if the submitted solution is correct",
@@ -393,19 +424,25 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body, invalid_solution",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid_token",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "solution_not_found",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "already_played",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
@@ -573,6 +610,9 @@ const docTemplate = `{
         "pkg.Error": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "string"
+                },
                 "message": {
                     "type": "string"
                 },
@@ -595,6 +635,29 @@ const docTemplate = `{
                 }
             }
         },
+        "src_infrastructure_http_sudoku.Solve": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "sudoku_id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "sudoku.Cell": {
             "type": "object",
             "properties": {
@@ -606,6 +669,17 @@ const docTemplate = `{
                 },
                 "value": {
                     "type": "integer"
+                }
+            }
+        },
+        "sudoku.MySolvesResponse": {
+            "type": "object",
+            "properties": {
+                "solves": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/src_infrastructure_http_sudoku.Solve"
+                    }
                 }
             }
         },
