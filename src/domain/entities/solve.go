@@ -18,15 +18,16 @@ type (
 	}
 
 	Solve struct {
-		ID        vo.UUID
-		SudokuID  vo.UUID
-		Size      int
-		UserID    vo.UUID
-		Username  string
-		Solution  [][]int
-		StartedAt time.Time
-		Duration  int
-		CreatedAt time.Time
+		ID         vo.UUID
+		SudokuID   vo.UUID
+		SudokuDate time.Time
+		Size       int
+		UserID     vo.UUID
+		Username   string
+		Solution   [][]int
+		StartedAt  time.Time
+		Duration   int
+		CreatedAt  time.Time
 	}
 )
 

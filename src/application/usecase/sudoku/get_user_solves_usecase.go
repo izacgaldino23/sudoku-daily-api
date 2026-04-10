@@ -35,5 +35,9 @@ func (s *getUserSolvesUseCase) Execute(ctx context.Context, userID vo.UUID) ([]e
 		return []entities.Solve{}, nil
 	}
 
+	for i := range solves {
+		solves[i].SudokuDate = today
+	}
+
 	return solves, nil
 }

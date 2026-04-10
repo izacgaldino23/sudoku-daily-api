@@ -122,6 +122,8 @@ definitions:
     type: object
   src_infrastructure_http_sudoku.Solve:
     properties:
+      date:
+        type: string
       duration:
         type: integer
       id:
@@ -129,10 +131,6 @@ definitions:
       size:
         type: integer
       started_at:
-        type: string
-      sudoku_id:
-        type: string
-      user_id:
         type: string
     type: object
   sudoku.Cell:

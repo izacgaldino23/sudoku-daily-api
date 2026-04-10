@@ -638,6 +638,9 @@ const docTemplate = `{
         "src_infrastructure_http_sudoku.Solve": {
             "type": "object",
             "properties": {
+                "date": {
+                    "type": "string"
+                },
                 "duration": {
                     "type": "integer"
                 },
@@ -648,12 +651,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "started_at": {
-                    "type": "string"
-                },
-                "sudoku_id": {
-                    "type": "string"
-                },
-                "user_id": {
                     "type": "string"
                 }
             }

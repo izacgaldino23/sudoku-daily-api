@@ -44,11 +44,10 @@ type (
 
 	Solve struct {
 		ID        vo.UUID   `json:"id"`
-		SudokuID  vo.UUID   `json:"sudoku_id"`
-		UserID    vo.UUID   `json:"user_id"`
 		Duration  int       `json:"duration"`
 		StartedAt time.Time `json:"started_at"`
 		Size      int       `json:"size"`
+		Date      time.Time `json:"date"`
 	}
 )
 
@@ -93,8 +92,7 @@ func (m *MySolvesResponse) FromDomain(solves []entities.Solve) {
 	for _, solve := range solves {
 		m.Solves = append(m.Solves, Solve{
 			ID:        solve.ID,
-			SudokuID:  solve.SudokuID,
-			UserID:    solve.UserID,
+			Date:      solve.SudokuDate,
 			Duration:  solve.Duration,
 			StartedAt: solve.StartedAt,
 			Size:      solve.Size,
