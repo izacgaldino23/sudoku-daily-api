@@ -55,7 +55,7 @@ func NewSudokuHandler(
 // @Router /api/sudoku [get]
 func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	var (
-		ctxReq  = c.Context()
+		reqCtx  = c.Context()
 		request GetDailySudokuRequest
 	)
 
@@ -69,8 +69,8 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 
 	size := entities.BoardSizeFromName(request.Size)
 
-	userID := appContext.GetUserIDFromContext(ctxReq)
-	dailySudoku, playToken, err := sh.getDailyUseCase.Execute(ctxReq, size, userID)
+	userID := appContext.GetUserIDFromContext(reqCtx)
+	dailySudoku, playToken, err := sh.getDailyUseCase.Execute(reqCtx, size, userID)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
@@ -89,12 +89,12 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 // @Router /api/sudoku/generate [post]
 func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	var (
-		ctxReq = c.Context()
+		reqCtx = c.Context()
 		err    error
 	)
 
 	var dailySudoku []entities.Sudoku
-	dailySudoku, err = sh.createSudokuUseCase.Execute(ctxReq)
+	dailySudoku, err = sh.createSudokuUseCase.Execute(reqCtx)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
@@ -124,7 +124,7 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 // @Router /api/sudoku/submit [post]
 func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 	var (
-		ctxReq  = c.Context()
+		reqCtx  = c.Context()
 		now     = time.Now().UTC() // Get time here to not waste time in the use case
 		err     error
 		request VerifySolutionRequest
@@ -138,10 +138,10 @@ func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	userID := appContext.GetUserIDFromContext(ctxReq)
+	userID := appContext.GetUserIDFromContext(reqCtx)
 	solve := request.ToDomain(userID)
 
-	_, err = sh.verifySolutionUseCase.Execute(ctxReq, solve, request.PlayToken, now)
+	_, err = sh.verifySolutionUseCase.Execute(reqCtx, solve, request.PlayToken, now)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
@@ -159,12 +159,12 @@ func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 // @Router /api/sudoku/me [get]
 func (sh *sudokuHandler) GetMyDailySudoku(c fiber.Ctx) error {
 	var (
-		ctxReq = c.Context()
+		reqCtx = c.Context()
 		err    error
 	)
 
-	userID := appContext.GetUserIDFromContext(ctxReq)
-	solves, err := sh.getUserSolvesUseCase.Execute(ctxReq, userID)
+	userID := appContext.GetUserIDFromContext(reqCtx)
+	solves, err := sh.getUserSolvesUseCase.Execute(reqCtx, userID)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}

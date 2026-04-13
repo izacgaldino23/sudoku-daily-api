@@ -27,8 +27,9 @@ type Config struct {
 }
 
 type Limits struct {
-	MaxRequestCountGlobal int `mapstructure:"MAX_REQUEST_COUNT_GLOBAL"`
-	MaxRequestCountUser   int `mapstructure:"MAX_REQUEST_COUNT_USER"`
+	MaxRequestCountGlobal int           `mapstructure:"MAX_REQUEST_COUNT_GLOBAL"`
+	MaxRequestCountUser   int           `mapstructure:"MAX_REQUEST_COUNT_USER"`
+	Timeout               time.Duration `mapstructure:"TIMEOUT"`
 }
 
 type Auth struct {
@@ -59,7 +60,6 @@ type Database struct {
 	MaxOpenConns int           `mapstructure:"MAX_OPEN_CONNS"`
 	MaxIdleConns int           `mapstructure:"MAX_IDLE_CONNS"`
 	MaxLifetime  time.Duration `mapstructure:"MAX_LIFETIME"`
-	Timeout      time.Duration `mapstructure:"TIMEOUT"`
 }
 
 func (d *Database) DSNPostgres() string {

@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -51,7 +52,8 @@ var defaultEnvVars = envMap{
 	"DATABASE_MIGRATIONS_PATH":    "./migrations",
 	"DATABASE_MAX_OPEN_CONNS":     "25",
 	"DATABASE_MAX_IDLE_CONNS":     "5",
-	"DATABASE_MAX_LIFETIME":       "300",
+	"DATABASE_MAX_LIFETIME":       "300s",
+	"LIMITS_TIMEOUT":              "3s",
 	"DEBUG":                       "true",
 	"AUTH_ITERATIONS":             "65536",
 	"AUTH_MEMORY":                 "65536",
@@ -86,7 +88,7 @@ func TestLoadConfig(t *testing.T) {
 	assert.Equal(t, "./migrations", cfg.Database.MigrationsPath)
 	assert.Equal(t, 25, cfg.Database.MaxOpenConns)
 	assert.Equal(t, 5, cfg.Database.MaxIdleConns)
-	assert.Equal(t, 300, cfg.Database.MaxLifetime)
+	assert.Equal(t, time.Second*300, cfg.Database.MaxLifetime)
 	assert.True(t, cfg.Debug)
 	assert.Equal(t, uint32(65536), cfg.Auth.Iterations)
 	assert.Equal(t, uint32(65536), cfg.Auth.Memory)
@@ -162,7 +164,8 @@ DATABASE_SSL_MODE=require
 DATABASE_MIGRATIONS_PATH=/migrations
 DATABASE_MAX_OPEN_CONNS=50
 DATABASE_MAX_IDLE_CONNS=10
-DATABASE_MAX_LIFETIME=600
+DATABASE_MAX_LIFETIME=600s
+LIMITS_TIMEOUT=3s
 DEBUG=false
 AUTH_ITERATIONS=8192
 AUTH_MEMORY=8192
@@ -195,7 +198,7 @@ AUTH_OIDC_AUDIENCE=file-audience
 	assert.Equal(t, "/migrations", cfg.Database.MigrationsPath)
 	assert.Equal(t, 50, cfg.Database.MaxOpenConns)
 	assert.Equal(t, 10, cfg.Database.MaxIdleConns)
-	assert.Equal(t, 600, cfg.Database.MaxLifetime)
+	assert.Equal(t, time.Second*600, cfg.Database.MaxLifetime)
 	assert.False(t, cfg.Debug)
 	assert.Equal(t, uint32(8192), cfg.Auth.Iterations)
 	assert.Equal(t, uint32(8192), cfg.Auth.Memory)

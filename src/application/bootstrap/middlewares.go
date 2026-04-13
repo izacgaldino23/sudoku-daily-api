@@ -17,4 +17,5 @@ func (c *Container) BuildMiddlewares() {
 	c.Middlewares.AuthOIDC = middlewares.AuthOIDCMiddleware(c.Config.Auth.OidcEnabled, c.Config.Auth.OidcAudience)
 	c.Middlewares.GlobalRateLimiter = middlewares.NewGlobalRateLimiterMiddleware(c.Config.Limits.MaxRequestCountGlobal)
 	c.Middlewares.UserRateLimiter = middlewares.NewUserRateLimitMiddleware(c.Config.Limits.MaxRequestCountUser)
+	c.Middlewares.Timeout = middlewares.TimeoutMiddleware(c.Config.Limits.Timeout)
 }

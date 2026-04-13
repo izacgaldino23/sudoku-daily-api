@@ -1,7 +1,6 @@
 package database
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"time"
@@ -34,14 +33,7 @@ func ConnectDB(configEnv *config.Config) (err error) {
 
 	sqlDB.SetMaxIdleConns(configEnv.Database.MaxIdleConns)
 	sqlDB.SetMaxOpenConns(configEnv.Database.MaxOpenConns)
-	sqlDB.SetConnMaxLifetime(configEnv.Database.MaxLifetime * time.Minute)
-
-	ctx, cancel := context.WithTimeout(context.Background(), configEnv.Database.Timeout*time.Second)
-	defer cancel()
-
-	if err := sqlDB.PingContext(ctx); err != nil {
-		return fmt.Errorf("database ping timeout: %w", err)
-	}
+	sqlDB.SetConnMaxLifetime(configEnv.Database.MaxLifetime)
 
 	dbConnection.SqlConnection = sqlDB
 	dbConnection.BunConnection = bun.NewDB(sqlDB, pgdialect.New())

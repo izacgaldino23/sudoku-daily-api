@@ -131,7 +131,7 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	accessToken, err := a.userRefreshTokenUseCase.Execute(c, request.RefreshToken)
+	accessToken, err := a.userRefreshTokenUseCase.Execute(c.Context(), request.RefreshToken)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
@@ -156,6 +156,7 @@ func (a *authHandler) Logout(c fiber.Ctx) error {
 	var (
 		userID  vo.UUID
 		request LogoutRequest
+		reqCtx  = c.Context()
 	)
 
 	if err := c.Bind().Body(&request); err != nil {
@@ -166,9 +167,9 @@ func (a *authHandler) Logout(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	userID = app_context.GetUserIDFromContext(c.Context())
+	userID = app_context.GetUserIDFromContext(reqCtx)
 
-	err := a.userLogoutUseCase.Execute(c.Context(), userID, request.RefreshToken)
+	err := a.userLogoutUseCase.Execute(reqCtx, userID, request.RefreshToken)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
@@ -184,9 +185,10 @@ func (a *authHandler) Logout(c fiber.Ctx) error {
 // @Success 200 {object} ResumeResponse
 // @Router /api/auth/resume [get]
 func (a *authHandler) Resume(c fiber.Ctx) error {
-	userID := app_context.GetUserIDFromContext(c.Context())
+	var reqCtx = c.Context()
+	userID := app_context.GetUserIDFromContext(reqCtx)
 
-	resume, err := a.userResumeUseCase.Execute(c.Context(), userID)
+	resume, err := a.userResumeUseCase.Execute(reqCtx, userID)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}

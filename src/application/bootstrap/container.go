@@ -74,4 +74,5 @@ type Middlewares struct {
 	AuthOIDC          fiber.Handler
 	GlobalRateLimiter fiber.Handler
 	UserRateLimiter   fiber.Handler
+	Timeout           fiber.Handler
 }
