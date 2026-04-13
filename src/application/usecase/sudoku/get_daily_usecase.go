@@ -51,11 +51,11 @@ func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.Board
 	if !userID.IsEmpty() {
 		// validate if user has already played the game
 		if _, err = s.sudokuFetcher.GetSolveByIDAndUser(ctx, sudoku.ID, userID); err != nil {
-			logging.Log(ctx).Info().Err(err).Msg("user has already played the game")
-			if errors.Is(err, pkg.ErrSolutionNotFound) {
-				return nil, "", pkg.ErrAlreadyPlayed
-			}
+			logging.Log(ctx).Info().Err(err).Msgf("error fetching solve by user %s and sudoku %s", userID, sudoku.ID)
+			return nil, "", err
 		}
+
+		return sudoku, "", nil
 	}
 
 	sessionID := app_context.GetSessionIDFromContext(ctx)

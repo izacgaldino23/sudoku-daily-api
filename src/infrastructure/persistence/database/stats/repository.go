@@ -47,7 +47,7 @@ func (r *userStatsRepository) GetByUserID(ctx context.Context, userID vo.UUID) (
 func (r *userStatsRepository) GetOrCreate(ctx context.Context, userID vo.UUID) (*entities.UserStats, error) {
 	stats, err := r.GetByUserID(ctx, userID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, err
+		return nil, r.txManager.HandleError(ctx, err)
 	}
 
 	if stats != nil {
@@ -68,11 +68,11 @@ func (r *userStatsRepository) GetOrCreate(ctx context.Context, userID vo.UUID) (
 		Model(newStats).
 		Exec(ctx)
 	if err != nil {
-		return nil, err
+		return nil, r.txManager.HandleError(ctx, err)
 	}
 
 	_, err = result.RowsAffected()
-	return newStats.ToDomain(), err
+	return newStats.ToDomain(), r.txManager.HandleError(ctx, err)
 }
 
 func (r *userStatsRepository) Update(ctx context.Context, stats *entities.UserStats) error {
@@ -85,11 +85,11 @@ func (r *userStatsRepository) Update(ctx context.Context, stats *entities.UserSt
 		Where("id = ?", stats.ID).
 		Exec(ctx)
 	if err != nil {
-		return err
+		return r.txManager.HandleError(ctx, err)
 	}
 
 	_, err = result.RowsAffected()
-	return err
+	return r.txManager.HandleError(ctx, err)
 }
 
 func (r *userStatsRepository) GetBestStreakLeaderboard(ctx context.Context, limit int, offset int, filterDate time.Time) ([]entities.UserStats, bool, error) {
@@ -109,7 +109,7 @@ func (r *userStatsRepository) GetBestStreakLeaderboard(ctx context.Context, limi
 		Offset(offset).
 		Scan(ctx)
 	if err != nil {
-		return nil, false, err
+		return nil, false, r.txManager.HandleError(ctx, err)
 	}
 
 	hasNext := len(stats) > limit
@@ -142,7 +142,7 @@ func (r *userStatsRepository) GetTotalSolvesLeaderboard(ctx context.Context, lim
 		Offset(offset).
 		Scan(ctx)
 	if err != nil {
-		return nil, false, err
+		return nil, false, r.txManager.HandleError(ctx, err)
 	}
 
 	hasNext := len(stats) > limit
@@ -162,7 +162,7 @@ func (r *userStatsRepository) GetTotalSolvesLeaderboard(ctx context.Context, lim
 	return result, hasNext, nil
 }
 
-func (r *userStatsRepository) ResetStrikes(ctx context.Context, today time.Time) (count int64, err error) {
+func (r *userStatsRepository) ResetStrikes(ctx context.Context, today time.Time) (int64, error) {
 	dayBeforeYesterday := today.Truncate(24*time.Hour).AddDate(0, 0, -2)
 
 	result, err := r.txManager.GetExecutor(ctx).
@@ -171,13 +171,13 @@ func (r *userStatsRepository) ResetStrikes(ctx context.Context, today time.Time)
 		Where("last_solved_date <= ?", dayBeforeYesterday).
 		Exec(ctx)
 	if err != nil {
-		return
+		return 0, r.txManager.HandleError(ctx, err)
 	}
 
-	count, err = result.RowsAffected()
+	count, err := result.RowsAffected()
 	if err != nil {
-		return
+		return 0, r.txManager.HandleError(ctx, err)
 	}
 
-	return
+	return count, nil
 }

@@ -36,11 +36,11 @@ func (r *refreshTokenRepository) Create(ctx context.Context, token *entities.Ref
 		Model(refreshToken).
 		Exec(ctx)
 	if err != nil {
-		return err
+		return r.txManager.HandleError(ctx, err)
 	}
 
 	if a, err := res.RowsAffected(); err != nil {
-		return err
+		return r.txManager.HandleError(ctx, err)
 	} else if a == 0 {
 		return sql.ErrNoRows
 	}
@@ -60,7 +60,7 @@ func (r *refreshTokenRepository) GetByToken(ctx context.Context, token string) (
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, pkg.ErrRefreshTokenNotFound
 		}
-		return nil, err
+		return nil, r.txManager.HandleError(ctx, err)
 	}
 
 	return refreshTokenModel.ToDomain(), nil
@@ -74,5 +74,5 @@ func (r *refreshTokenRepository) Revoke(ctx context.Context, userID vo.UUID, tok
 		Set("revoked = ?", true).
 		Exec(ctx)
 
-	return err
+	return r.txManager.HandleError(ctx, err)
 }

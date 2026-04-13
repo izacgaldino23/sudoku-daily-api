@@ -55,6 +55,10 @@ func SetupTestEnvironment() {
 		os.Setenv("DATABASE_PASSWORD", "12345")
 		os.Setenv("DATABASE_NAME", "sudoku_test")
 		os.Setenv("DATABASE_SSL_MODE", "disable")
+		os.Setenv("DATABASE_MAX_OPEN_CONNS", "25")
+		os.Setenv("DATABASE_MAX_IDLE_CONNS", "10")
+		os.Setenv("DATABASE_MAX_LIFETIME", "60")
+		os.Setenv("DATABASE_TIMEOUT", "3")
 		os.Setenv("API_PORT", "8081")
 		os.Setenv("DEBUG", "false")
 

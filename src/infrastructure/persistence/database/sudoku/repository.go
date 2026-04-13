@@ -34,7 +34,10 @@ func (r *sudokuRepository) GetByDateAndSize(ctx context.Context, date time.Time,
 
 	err := r.txManager.GetExecutor(ctx).NewSelect().Model(&sudokuResp).Where("size = ? and date = ?", size, date).Scan(ctx)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, pkg.ErrSudokuNotFound
+		}
+		return nil, r.txManager.HandleError(ctx, err)
 	}
 
 	return sudokuResp.ToDomain(), nil
@@ -49,11 +52,11 @@ func (r *sudokuRepository) Create(ctx context.Context, sudoku *entities.Sudoku) 
 		Model(sudokuModel).
 		Exec(ctx)
 	if err != nil {
-		return err
+		return r.txManager.HandleError(ctx, err)
 	}
 
 	_, err = result.RowsAffected()
-	return err
+	return r.txManager.HandleError(ctx, err)
 }
 
 func (r *sudokuRepository) AddSolve(ctx context.Context, solve *entities.Solve) error {
@@ -65,11 +68,11 @@ func (r *sudokuRepository) AddSolve(ctx context.Context, solve *entities.Solve) 
 		Model(solveModel).
 		Exec(ctx)
 	if err != nil {
-		return err
+		return r.txManager.HandleError(ctx, err)
 	}
 
 	_, err = result.RowsAffected()
-	return err
+	return r.txManager.HandleError(ctx, err)
 }
 
 func (r *sudokuRepository) GetSolveByIDAndUser(ctx context.Context, userID vo.UUID, sudokuID vo.UUID) (*entities.Solve, error) {
@@ -84,7 +87,7 @@ func (r *sudokuRepository) GetSolveByIDAndUser(ctx context.Context, userID vo.UU
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, pkg.ErrSolutionNotFound
 		}
-		return nil, err
+		return nil, r.txManager.HandleError(ctx, err)
 	}
 
 	return solve.ToDomain(), nil
@@ -102,7 +105,7 @@ func (r *sudokuRepository) GetSolvesByUserAndDate(ctx context.Context, userID vo
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		return nil, r.txManager.HandleError(ctx, err)
 	}
 
 	result := make([]entities.Solve, len(solves))
@@ -129,7 +132,7 @@ func (r *sudokuRepository) GetTotalSolvedByUser(ctx context.Context, userID vo.U
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		return nil, r.txManager.HandleError(ctx, err)
 	}
 	totalSolvesBySize := make(map[entities.BoardSize]int)
 	for _, result := range results {
@@ -152,7 +155,7 @@ func (r *sudokuRepository) GetTodaySolvedByUser(ctx context.Context, userID vo.U
 		Where("user_id = ? AND started_at >= ? AND started_at < ?", userID, today, tomorrow).
 		Scan(ctx)
 	if err != nil {
-		return nil, err
+		return nil, r.txManager.HandleError(ctx, err)
 	}
 
 	result := make([]entities.Solve, len(solves))
@@ -175,7 +178,7 @@ func (r *sudokuRepository) GetBestTimesByUser(ctx context.Context, userID vo.UUI
 		Order("sudokus.size", "solve.duration ASC").
 		Scan(ctx)
 	if err != nil {
-		return nil, err
+		return nil, r.txManager.HandleError(ctx, err)
 	}
 
 	result := make([]entities.Solve, len(solves))
@@ -200,7 +203,7 @@ func (r *sudokuRepository) GetDailyLeaderboard(ctx context.Context, sudokuID vo.
 		Offset(offset).
 		Scan(ctx)
 	if err != nil {
-		return nil, false, err
+		return nil, false, r.txManager.HandleError(ctx, err)
 	}
 
 	hasNext := len(solves) > limit
@@ -241,7 +244,7 @@ func (r *sudokuRepository) GetAllTimeBestLeaderboard(ctx context.Context, size e
 		Offset(offset).
 		Scan(ctx, &solves)
 	if err != nil {
-		return nil, false, err
+		return nil, false, r.txManager.HandleError(ctx, err)
 	}
 
 	hasNext := len(solves) > limit

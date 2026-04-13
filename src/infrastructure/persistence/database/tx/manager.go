@@ -3,6 +3,9 @@ package tx
 import (
 	"context"
 
+	"sudoku-daily-api/pkg"
+	"sudoku-daily-api/src/infrastructure/logging"
+
 	"github.com/uptrace/bun"
 )
 
@@ -35,6 +38,15 @@ func (m *Manager) GetExecutor(ctx context.Context) bun.IDB {
 	}
 
 	return m.db
+}
+
+func (m *Manager) HandleError(ctx context.Context, err error) error {
+	if err != nil {
+		logging.Log(ctx).Error().Err(err).Msg("database error")
+		return pkg.ErrInternalServerError
+	}
+
+	return nil
 }
 
 func injectTx(ctx context.Context, tx bun.Tx) context.Context {

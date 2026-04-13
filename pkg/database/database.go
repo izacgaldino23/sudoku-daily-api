@@ -1,8 +1,10 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"sudoku-daily-api/pkg/config"
 
@@ -15,6 +17,7 @@ import (
 type DatabaseConnection struct {
 	SqlConnection *sql.DB
 	BunConnection *bun.DB
+	Timeout       time.Duration
 }
 
 var (
@@ -27,6 +30,17 @@ func ConnectDB(configEnv *config.Config) (err error) {
 	sqlDB, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return fmt.Errorf("Error connecting to database: %w", err)
+	}
+
+	sqlDB.SetMaxIdleConns(configEnv.Database.MaxIdleConns)
+	sqlDB.SetMaxOpenConns(configEnv.Database.MaxOpenConns)
+	sqlDB.SetConnMaxLifetime(configEnv.Database.MaxLifetime * time.Minute)
+
+	ctx, cancel := context.WithTimeout(context.Background(), configEnv.Database.Timeout*time.Second)
+	defer cancel()
+
+	if err := sqlDB.PingContext(ctx); err != nil {
+		return fmt.Errorf("database ping timeout: %w", err)
 	}
 
 	dbConnection.SqlConnection = sqlDB

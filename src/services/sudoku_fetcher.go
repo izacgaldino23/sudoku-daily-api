@@ -59,7 +59,15 @@ func (s *sudokuDailyFetcher) GetByDateAndSize(ctx context.Context, date time.Tim
 }
 
 func (s *sudokuDailyFetcher) GetSolveByIDAndUser(ctx context.Context, sudokuID, userID vo.UUID) (*entities.Solve, error) {
-	return s.sudokuRepository.GetSolveByIDAndUser(ctx, sudokuID, userID)
+	solve, err := s.sudokuRepository.GetSolveByIDAndUser(ctx, sudokuID, userID)
+	if err != nil {
+		if errors.Is(err, pkg.ErrSolutionNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return solve, nil
 }
 
 func isSameDate(a, b time.Time) bool {

@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
@@ -55,9 +56,10 @@ type Database struct {
 	Name     string `mapstructure:"NAME"`
 	SSLMode  string `mapstructure:"SSL_MODE"`
 
-	MaxOpenConns int `mapstructure:"MAX_OPEN_CONNS"`
-	MaxIdleConns int `mapstructure:"MAX_IDLE_CONNS"`
-	MaxLifetime  int `mapstructure:"MAX_LIFETIME"`
+	MaxOpenConns int           `mapstructure:"MAX_OPEN_CONNS"`
+	MaxIdleConns int           `mapstructure:"MAX_IDLE_CONNS"`
+	MaxLifetime  time.Duration `mapstructure:"MAX_LIFETIME"`
+	Timeout      time.Duration `mapstructure:"TIMEOUT"`
 }
 
 func (d *Database) DSNPostgres() string {

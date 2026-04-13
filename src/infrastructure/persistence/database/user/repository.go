@@ -35,11 +35,11 @@ func (r *userRepository) Create(ctx context.Context, user *entities.User) error 
 		Model(userModel).
 		Exec(ctx)
 	if err != nil {
-		return err
+		return r.txManager.HandleError(ctx, err)
 	}
 
 	_, err = result.RowsAffected()
-	return err
+	return r.txManager.HandleError(ctx, err)
 }
 
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*entities.User, error) {
@@ -50,7 +50,7 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*entitie
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, pkg.ErrUserNotFound
 		}
-		return nil, err
+		return nil, r.txManager.HandleError(ctx, err)
 	}
 
 	return userResp.ToDomain(), nil
