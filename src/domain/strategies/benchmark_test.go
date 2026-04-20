@@ -1,10 +1,12 @@
 package strategies
 
 import (
+	"context"
 	"math/rand"
-	"sudoku-daily-api/src/domain/entities"
 	"testing"
 	"time"
+
+	"sudoku-daily-api/src/domain/entities"
 )
 
 func BenchmarkFillStrategy4(b *testing.B) {
@@ -52,7 +54,7 @@ func benchmarkHideStrategy(b *testing.B, size entities.BoardSize) {
 		sudoku := entities.NewSudoku(size)
 		sudoku.Difficulty = entities.DifficultyMedium
 		f.Fill(sudoku, r)
-		h.Hide(sudoku, r)
+		h.Hide(context.Background(), sudoku, r)
 	}
 }
 

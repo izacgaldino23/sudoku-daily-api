@@ -45,7 +45,7 @@ func (s *sudokuGenerator) GenerateDaily(ctx context.Context, size entities.Board
 		return nil, err
 	}
 
-	hide := s.hideStrategy.Hide(sudoku, r)
+	hide := s.hideStrategy.Hide(ctx, sudoku, r)
 	if !hide {
 		return nil, fmt.Errorf("failed to hide sudoku")
 	}

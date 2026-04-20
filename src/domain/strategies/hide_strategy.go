@@ -1,15 +1,17 @@
 package strategies
 
 import (
-	"fmt"
+	"context"
 	"math/rand"
+	"time"
 
 	"sudoku-daily-api/src/domain/entities"
+	"sudoku-daily-api/src/infrastructure/logging"
 )
 
 type (
 	HideStrategy interface {
-		Hide(board *entities.Sudoku, r *rand.Rand) bool
+		Hide(ctx context.Context, board *entities.Sudoku, r *rand.Rand) bool
 	}
 
 	hideBacktracking struct {
@@ -23,54 +25,100 @@ func NewHideStrategy() HideStrategy {
 	}
 }
 
-func (s *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) bool {
+func (s *hideBacktracking) Hide(ctx context.Context, board *entities.Sudoku, r *rand.Rand) bool {
 	targetToHide := s.defineToHideCount(board, r)
 
 	const (
-		maxTries          = 100
-		maxTargetDecrease = 5
+		maxTries          = 1000
+		maxTargetDecrease = 15
+	)
+
+	var (
+		tries     int
+		startTime = time.Now()
 	)
 
 	for range maxTargetDecrease {
-		for i := 0; i < maxTries; i++ {
+		for range maxTries {
 			cells := s.getCellShuffled(board, r)
 
-			if s.solveRecursive(&board.Board, cells, 0, 0, targetToHide) {
+			if s.hideCells(&board.Board, cells, targetToHide) {
+				logging.Log(ctx).Info().Msgf("Successfully hidden %v cells, tries: %v, board size: %v, time: %v", targetToHide, tries, board.Size, time.Since(startTime))
 				return true
 			}
+
+			tries++
 		}
 
 		targetToHide--
 	}
 
+	logging.Log(ctx).Error().Msgf("Failed to hide %v cells, tries: %v, board size: %v", targetToHide, tries, board.Size)
+
 	return false
 }
 
-func (s *hideBacktracking) solveRecursive(board *entities.Board, cells [][2]int, index int, hiddenCount int, target int) bool {
-	if hiddenCount >= target {
-		return true
-	}
+func (s *hideBacktracking) hideCells(board *entities.Board, cells [][3]int, target int) bool {
+	var (
+		hiddenCount = 0
+	)
+	for i := range cells {
+		if hiddenCount >= target || i+(target-hiddenCount) >= len(cells) {
+			break
+		}
 
-	if index >= len(cells) {
-		return false
-	}
+		cell := cells[i]
+		row, col, value := cell[0], cell[1], cell[2]
 
-	cell := cells[index]
-	row, col := cell[0], cell[1]
-	originalVal := board.GetCell(row, col)
-
-	board.SetCell(row, col, 0)
-
-	if s.solver.Execute(board) == 1 {
-		fmt.Printf("index: %d, hiddenCount: %d, target: %d, cellCount: %d\n", index, hiddenCount, target, len(cells))
-		if s.solveRecursive(board, cells, index+1, hiddenCount+1, target) {
-			return true
+		board.SetCell(row, col, 0)
+		if s.solver.Execute(board) == 1 {
+			hiddenCount++
+		} else {
+			board.SetCell(row, col, value)
 		}
 	}
 
-	board.SetCell(row, col, originalVal)
+	hidedTarget := hiddenCount >= target
 
-	return s.solveRecursive(board, cells, index+1, hiddenCount, target)
+	if !hidedTarget {
+		for i := range cells {
+			cell := cells[i]
+			row, col, value := cell[0], cell[1], cell[2]
+
+			board.SetCell(row, col, value)
+		}
+	}
+
+	return hidedTarget
+
+	// if attempts == nil {
+	// 	attempts = new(int)
+	// }
+
+	// if hiddenCount >= target {
+	// 	return true
+	// }
+
+	// if index >= len(cells) || *attempts >= len(cells)*2 {
+	// 	return false
+	// }
+
+	// cell := cells[index]
+	// row, col := cell[0], cell[1]
+	// originalVal := board.GetCell(row, col)
+
+	// board.SetCell(row, col, 0)
+
+	// if s.solver.Execute(board) == 1 {
+	// 	if s.hideCells(board, cells, index+1, hiddenCount+1, target, attempts) {
+	// 		return true
+	// 	}
+	// }
+
+	// board.SetCell(row, col, originalVal)
+
+	// *attempts++
+	// return s.hideCells(board, cells, index+1, hiddenCount, target, attempts)
 }
 
 func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Rand) int {
@@ -86,13 +134,14 @@ func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Ran
 	return board.GetSize()*board.GetSize() - clueCount
 }
 
-func (s *hideBacktracking) getCellShuffled(board *entities.Sudoku, r *rand.Rand) [][2]int {
-	cellReference := make([][2]int, 0)
+func (s *hideBacktracking) getCellShuffled(board *entities.Sudoku, r *rand.Rand) [][3]int {
+	cellReference := make([][3]int, 0)
 
 	for row := range board.Board.GetBoard() {
 		for col := range board.Board.GetBoard()[row] {
-			if board.Board.GetCell(row, col) != 0 {
-				cellReference = append(cellReference, [2]int{row, col})
+			value := board.Board.GetCell(row, col)
+			if value != 0 {
+				cellReference = append(cellReference, [3]int{row, col, value})
 			}
 		}
 	}

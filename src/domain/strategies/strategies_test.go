@@ -1,6 +1,7 @@
 package strategies
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"testing"
@@ -53,9 +54,9 @@ func TestHideStrategy(t *testing.T) {
 			sudoku := generateValidSudoku(size, r)
 			sudoku.Date = fakeDate
 			sudoku.Difficulty = entities.DifficultyMedium
-		
-			h.Hide(sudoku, r)
-		
+
+			h.Hide(context.Background(), sudoku, r)
+
 			emptyCells := 0
 			for _, row := range sudoku.Board.GetBoard() {
 				for _, cell := range row {
@@ -64,11 +65,11 @@ func TestHideStrategy(t *testing.T) {
 					}
 				}
 			}
-		
+
 			min, max := entities.GetClue(entities.BoardSize(size), entities.DifficultyMedium)
-		
+
 			var totalCells int = int(size * size)
-		
+
 			assert.GreaterOrEqual(t, totalCells-emptyCells, min, "min value for difficulty %v is %v", sudoku.Difficulty, min)
 			assert.LessOrEqual(t, totalCells-emptyCells, max, "max value for difficulty %v is %v", sudoku.Difficulty, max)
 		})
@@ -126,7 +127,7 @@ func TestGenerateComplete(t *testing.T) {
 			filled := fillStrategy.Fill(sudoku, r)
 			assert.True(t, filled)
 
-			hidden := hideStrategy.Hide(sudoku, r)
+			hidden := hideStrategy.Hide(context.Background(), sudoku, r)
 			assert.True(t, hidden)
 
 			filledCells := 0
