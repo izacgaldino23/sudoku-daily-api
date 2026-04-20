@@ -1,7 +1,9 @@
 package strategies
 
 import (
+	"fmt"
 	"math/rand"
+
 	"sudoku-daily-api/src/domain/entities"
 )
 
@@ -24,14 +26,21 @@ func NewHideStrategy() HideStrategy {
 func (s *hideBacktracking) Hide(board *entities.Sudoku, r *rand.Rand) bool {
 	targetToHide := s.defineToHideCount(board, r)
 
-	const maxTries = 1000
+	const (
+		maxTries          = 100
+		maxTargetDecrease = 5
+	)
 
-	for i := 0; i < maxTries; i++ {
-		cells := s.getCellShuffled(board, r)
+	for range maxTargetDecrease {
+		for i := 0; i < maxTries; i++ {
+			cells := s.getCellShuffled(board, r)
 
-		if s.solveRecursive(&board.Board, cells, 0, 0, targetToHide) {
-			return true
+			if s.solveRecursive(&board.Board, cells, 0, 0, targetToHide) {
+				return true
+			}
 		}
+
+		targetToHide--
 	}
 
 	return false
@@ -53,6 +62,7 @@ func (s *hideBacktracking) solveRecursive(board *entities.Board, cells [][2]int,
 	board.SetCell(row, col, 0)
 
 	if s.solver.Execute(board) == 1 {
+		fmt.Printf("index: %d, hiddenCount: %d, target: %d, cellCount: %d\n", index, hiddenCount, target, len(cells))
 		if s.solveRecursive(board, cells, index+1, hiddenCount+1, target) {
 			return true
 		}
@@ -60,7 +70,6 @@ func (s *hideBacktracking) solveRecursive(board *entities.Board, cells [][2]int,
 
 	board.SetCell(row, col, originalVal)
 
-	// Tenta esconder as próximas SEM esconder esta atual
 	return s.solveRecursive(board, cells, index+1, hiddenCount, target)
 }
 

@@ -9,5 +9,4 @@ import (
 
 func Log(ctx context.Context) *zerolog.Logger {
 	return log.Ctx(ctx)
-
 }

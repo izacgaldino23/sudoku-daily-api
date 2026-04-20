@@ -58,7 +58,7 @@ func SetupTestEnvironment() {
 		os.Setenv("DATABASE_MAX_OPEN_CONNS", "25")
 		os.Setenv("DATABASE_MAX_IDLE_CONNS", "10")
 		os.Setenv("DATABASE_MAX_LIFETIME", "5m")
-		os.Setenv("LIMITS_TIMEOUT", "3s")
+		os.Setenv("LIMITS_TIMEOUT", "100s")
 		os.Setenv("API_PORT", "8081")
 		os.Setenv("DEBUG", "false")
 

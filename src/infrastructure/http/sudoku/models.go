@@ -17,7 +17,7 @@ type (
 		Size      int     `json:"size"`
 		Board     []Cell  `json:"board"`
 		Date      string  `json:"date"`
-		PlayToken string  `json:"session_token,omitempty"`
+		PlayToken string  `json:"session_token"`
 		SessionID vo.UUID `json:"session_id,omitempty"`
 	}
 

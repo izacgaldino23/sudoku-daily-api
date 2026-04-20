@@ -47,30 +47,33 @@ func TestHideStrategy(t *testing.T) {
 	now := time.Now()
 	fakeDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
-	var size entities.BoardSize = 6
-
-	r := rand.New(rand.NewSource(fakeDate.Unix()))
-	sudoku := generateValidSudoku(size, r)
-	sudoku.Date = fakeDate
-	sudoku.Difficulty = entities.DifficultyMedium
-
-	h.Hide(sudoku, r)
-
-	emptyCells := 0
-	for _, row := range sudoku.Board.GetBoard() {
-		for _, cell := range row {
-			if cell == 0 {
-				emptyCells++
+	for size := range entities.BoardSizes {
+		t.Run(fmt.Sprintf("TestHideStrategy_%v", size), func(t *testing.T) {
+			r := rand.New(rand.NewSource(fakeDate.Unix()))
+			sudoku := generateValidSudoku(size, r)
+			sudoku.Date = fakeDate
+			sudoku.Difficulty = entities.DifficultyMedium
+		
+			h.Hide(sudoku, r)
+		
+			emptyCells := 0
+			for _, row := range sudoku.Board.GetBoard() {
+				for _, cell := range row {
+					if cell == 0 {
+						emptyCells++
+					}
+				}
 			}
-		}
+		
+			min, max := entities.GetClue(entities.BoardSize(size), entities.DifficultyMedium)
+		
+			var totalCells int = int(size * size)
+		
+			assert.GreaterOrEqual(t, totalCells-emptyCells, min, "min value for difficulty %v is %v", sudoku.Difficulty, min)
+			assert.LessOrEqual(t, totalCells-emptyCells, max, "max value for difficulty %v is %v", sudoku.Difficulty, max)
+		})
 	}
 
-	min, max := entities.GetClue(entities.BoardSize(size), entities.DifficultyMedium)
-
-	var totalCells int = int(size * size)
-
-	assert.GreaterOrEqual(t, totalCells-emptyCells, min, "min value for difficulty %v is %v", sudoku.Difficulty, min)
-	assert.LessOrEqual(t, totalCells-emptyCells, max, "max value for difficulty %v is %v", sudoku.Difficulty, max)
 }
 
 func TestSolver(t *testing.T) {
@@ -113,7 +116,7 @@ func TestGenerateComplete(t *testing.T) {
 	r := rand.New(rand.NewSource(fakeDate.Unix()))
 
 	for size := range entities.BoardSizes {
-		t.Run(fmt.Sprintf("TestFillStrategy_%v", size), func(t *testing.T) {
+		t.Run(fmt.Sprintf("TestGenerateComplete_%v", size), func(t *testing.T) {
 
 			sudoku := entities.NewSudoku(size)
 

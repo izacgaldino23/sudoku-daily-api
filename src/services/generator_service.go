@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -9,6 +10,7 @@ import (
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/strategies"
+	"sudoku-daily-api/src/infrastructure/logging"
 )
 
 type (
@@ -28,12 +30,7 @@ func NewGenerator(
 	}
 }
 
-func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, date time.Time) (*entities.Sudoku, error) {
-	sum := 0
-	for i := 0; i < int(size); i++ {
-		sum += i + 1
-	}
-
+func (s *sudokuGenerator) GenerateDaily(ctx context.Context, size entities.BoardSize, date time.Time) (*entities.Sudoku, error) {
 	sudoku := entities.NewSudoku(size)
 
 	r := rand.New(rand.NewSource(date.Unix()))
@@ -42,6 +39,7 @@ func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, date time.Time)
 	if !filled {
 		return nil, fmt.Errorf("failed to fill sudoku")
 	}
+	logging.Log(ctx).Info().Msgf("Sudoku for size %v filled", size)
 
 	if err := deepCopy(&sudoku.Board, &sudoku.Solution); err != nil {
 		return nil, err
@@ -51,6 +49,7 @@ func (s *sudokuGenerator) GenerateDaily(size entities.BoardSize, date time.Time)
 	if !hide {
 		return nil, fmt.Errorf("failed to hide sudoku")
 	}
+	logging.Log(ctx).Info().Msgf("Sudoku for size %v hidden", size)
 
 	return sudoku, nil
 }

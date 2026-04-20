@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rs/zerolog/log"
-
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/repository"
 	"sudoku-daily-api/src/domain/vo"
+	"sudoku-daily-api/src/infrastructure/logging"
 )
 
 type (
@@ -48,33 +47,43 @@ func (s *sudokuGenerateDailyUseCase) Execute(ctx context.Context) ([]entities.Su
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
+	var puzzles []entities.Sudoku
+
+	sizes := []entities.BoardSize{entities.BoardSize9}
+
+	for _, boardSize := range sizes {
+		logging.Log(ctx).Info().Msgf("Generating sudoku for size %v", boardSize)
+		todayPuzzle, err := s.sudokuFetcherService.GetDaily(ctx, boardSize)
+		if err != nil && !errors.Is(err, pkg.ErrSudokuNotFound) {
+			return nil, err
+		}
+
+		if todayPuzzle != nil && todayPuzzle.ID != "" {
+			sudokuList = append(sudokuList, *todayPuzzle)
+			logging.Log(ctx).Info().Msgf("Sudoku for size %v already exists", boardSize)
+			continue
+		}
+
+		sudoku, err := s.sudokuService.GenerateDaily(ctx, boardSize, today)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to generate sudoku for size %v: %w", boardSize, err)
+		}
+
+		puzzles = append(puzzles, *sudoku)
+		logging.Log(ctx).Info().Msgf("Sudoku for size %v generated", boardSize)
+	}
+
 	if err := s.txManager.WithinTransaction(ctx, func(ctx context.Context) error {
-		for boardSize := range entities.BoardSizes {
-			todayPuzzle, err := s.sudokuFetcherService.GetDaily(ctx, boardSize)
-			if err != nil && !errors.Is(err, pkg.ErrSudokuNotFound) {
-				return err
-			}
-
-			if todayPuzzle != nil && todayPuzzle.ID != "" {
-				sudokuList = append(sudokuList, *todayPuzzle)
-				log.Warn().Msgf("Sudoku for size %v already exists", boardSize)
-				continue
-			}
-
-			sudoku, err := s.sudokuService.GenerateDaily(boardSize, today)
-			if err != nil {
-				return fmt.Errorf("Failed to generate sudoku for size %v: %w", boardSize, err)
-			}
-
+		for _, sudoku := range puzzles {
 			sudoku.Date = today
 			sudoku.ID = vo.NewUUID()
 
-			err = s.sudokuRepo.Create(ctx, sudoku)
+			err := s.sudokuRepo.Create(ctx, &sudoku)
 			if err != nil {
 				return err
 			}
 
-			sudokuList = append(sudokuList, *sudoku)
+			sudokuList = append(sudokuList, sudoku)
 		}
 
 		return nil
