@@ -1,7 +1,6 @@
 package strategies
 
 import (
-	"slices"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
 )
@@ -41,38 +40,54 @@ func (s *solver) Execute(board *entities.Board) int {
 		}
 	}
 
-	slices.SortFunc(empty, func(a, b cell) int {
-		return a.possible.Count() - b.possible.Count()
-	})
-
 	return s.guess(board, empty, 0, 0)
 }
 
-func (s *solver) guess(board *entities.Board, empty []cell, current int, solutions int) int {
-	if current == len(empty) {
+func (s *solver) guess(board *entities.Board, empty []cell, left int, solutions int) int {
+	if left == 0 {
 		return solutions + 1
 	}
 
-	row, col := empty[current].row, empty[current].col
-	possibilities := board.GetPossibleByPosition(row, col)
+	best := -1
+	bestCount := 999
 
-	if possibilities.Count() == 0 {
+	for i := 0; i < left; i++ {
+		r := empty[i].row
+		c := empty[i].col
+
+		p := board.GetPossibleByPosition(r, c)
+		cnt := p.Count()
+
+		if cnt == 0 {
+			return solutions
+		}
+
+		empty[i].possible = p
+
+		if cnt < bestCount {
+			best = i
+			bestCount = cnt
+			if cnt == 1 {
+				break
+			}
+		}
+	}
+
+	empty[best], empty[left-1] = empty[left-1], empty[best]
+	cur := empty[left-1]
+
+	if cur.possible.Count() == 0 {
 		return solutions
 	}
 
-	for _, n := range possibilities.Values() {
-		if !board.HasNumber(row, col, n) {
-			board.SetCell(row, col, n)
+	for _, n := range cur.possible.Values() {
+		board.SetCell(cur.row, cur.col, n)
 
-			v := s.guess(board, empty, current+1, solutions)
-			board.SetCell(row, col, 0)
-			if v > 1 {
-				return v
-			} else {
-				solutions = v
-			}
+		solutions = s.guess(board, empty, left-1, solutions)
+		board.SetCell(cur.row, cur.col, 0)
 
-			board.SetCell(row, col, 0)
+		if solutions > 1 {
+			return 2
 		}
 	}
 

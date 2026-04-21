@@ -90,35 +90,6 @@ func (s *hideBacktracking) hideCells(board *entities.Board, cells [][3]int, targ
 	}
 
 	return hidedTarget
-
-	// if attempts == nil {
-	// 	attempts = new(int)
-	// }
-
-	// if hiddenCount >= target {
-	// 	return true
-	// }
-
-	// if index >= len(cells) || *attempts >= len(cells)*2 {
-	// 	return false
-	// }
-
-	// cell := cells[index]
-	// row, col := cell[0], cell[1]
-	// originalVal := board.GetCell(row, col)
-
-	// board.SetCell(row, col, 0)
-
-	// if s.solver.Execute(board) == 1 {
-	// 	if s.hideCells(board, cells, index+1, hiddenCount+1, target, attempts) {
-	// 		return true
-	// 	}
-	// }
-
-	// board.SetCell(row, col, originalVal)
-
-	// *attempts++
-	// return s.hideCells(board, cells, index+1, hiddenCount, target, attempts)
 }
 
 func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Rand) int {
