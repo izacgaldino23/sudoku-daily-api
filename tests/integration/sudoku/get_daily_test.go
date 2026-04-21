@@ -20,9 +20,7 @@ func TestSudokuGetDaily(t *testing.T) {
 	t.Cleanup(helpers.TruncateTables)
 	app := helpers.SetupTestApp()
 
-	req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate", nil)
-	req.Header.Set("Content-Type", "application/json")
-	_, err := app.Test(req, fiber.TestConfig{Timeout: 0})
+	err := helpers.SeedSudokus()
 	assert.NoError(t, err)
 
 	t.Run("get daily sudoku without login", func(t *testing.T) {
@@ -85,6 +83,20 @@ func TestSudokuGetDaily(t *testing.T) {
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		respBody, err := io.ReadAll(resp.Body)
+		assert.NoError(t, err)
+
+		var sudokuResp sudoku.SudokuResponse
+		err = json.Unmarshal(respBody, &sudokuResp)
+		assert.NoError(t, err)
+
+		assert.NotEmpty(t, sudokuResp.ID)
+		assert.Equal(t, 4, sudokuResp.Size)
+		assert.NotEmpty(t, sudokuResp.Board)
+		assert.NotEmpty(t, sudokuResp.Date)
+		assert.NotEmpty(t, sudokuResp.PlayToken)
+		assert.NotEmpty(t, sudokuResp.SessionID)
 	})
 
 	t.Run("get daily sudoku with size six", func(t *testing.T) {
@@ -121,6 +133,6 @@ func TestSudokuGetDaily(t *testing.T) {
 		assert.NotEmpty(t, sudokuResp.Board)
 		assert.NotEmpty(t, sudokuResp.Date)
 		assert.NotEmpty(t, sudokuResp.PlayToken)
-		assert.Empty(t, sudokuResp.SessionID)
+		assert.NotEmpty(t, sudokuResp.SessionID)
 	})
 }

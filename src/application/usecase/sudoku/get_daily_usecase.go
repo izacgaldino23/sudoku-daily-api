@@ -18,7 +18,7 @@ import (
 
 type (
 	ISudokuGetDailyUseCase interface {
-		Execute(ctx context.Context, size entities.BoardSize, userID vo.UUID) (sudoku *entities.Sudoku, playToken string, err error)
+		Execute(ctx context.Context, size entities.BoardSize, userID vo.UUID) (sudoku *entities.Sudoku, playToken string, sessionID vo.UUID, err error)
 	}
 
 	sudokuGetDailyUseCase struct {
@@ -37,35 +37,33 @@ func NewSudokuGetDailyUseCase(
 	}
 }
 
-func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.BoardSize, userID vo.UUID) (*entities.Sudoku, string, error) {
+func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.BoardSize, userID vo.UUID) (*entities.Sudoku, string, vo.UUID, error) {
 	boardSize := entities.BoardSize(size)
 
 	sudoku, err := s.sudokuFetcher.GetDaily(ctx, boardSize)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, "", pkg.ErrSudokuNotFound
+			return nil, "", "", pkg.ErrSudokuNotFound
 		}
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	if !userID.IsEmpty() {
 		// validate if user has already played the game
 		if _, err = s.sudokuFetcher.GetSolveByIDAndUser(ctx, sudoku.ID, userID); err != nil {
 			logging.Log(ctx).Info().Err(err).Msgf("error fetching solve by user %s and sudoku %s", userID, sudoku.ID)
-			return nil, "", err
+			return nil, "", "", err
 		}
-
-		return sudoku, "", nil
 	}
 
 	sessionID := app_context.GetSessionIDFromContext(ctx)
 
 	token, err := s.generateToken(sessionID, sudoku)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
-	return sudoku, token, nil
+	return sudoku, token, sessionID, nil
 }
 
 func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entities.Sudoku) (string, error) {

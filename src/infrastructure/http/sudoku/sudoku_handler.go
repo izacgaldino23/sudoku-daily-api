@@ -70,13 +70,13 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	size := entities.BoardSizeFromName(request.Size)
 
 	userID := appContext.GetUserIDFromContext(reqCtx)
-	dailySudoku, playToken, err := sh.getDailyUseCase.Execute(reqCtx, size, userID)
+	dailySudoku, playToken, sessionID, err := sh.getDailyUseCase.Execute(reqCtx, size, userID)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
 
 	var response SudokuResponse
-	response.FromDomain(dailySudoku, playToken)
+	response.FromDomain(dailySudoku, playToken, sessionID)
 
 	return c.Status(http.StatusOK).JSON(response)
 }
@@ -102,7 +102,7 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	var response []SudokuResponse
 	for _, sudoku := range dailySudoku {
 		s := SudokuResponse{}
-		s.FromDomain(&sudoku, "")
+		s.FromDomain(&sudoku, "", "")
 		response = append(response, s)
 	}
 
