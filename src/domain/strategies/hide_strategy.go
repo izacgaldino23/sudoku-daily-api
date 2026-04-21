@@ -3,6 +3,8 @@ package strategies
 import (
 	"context"
 	"math/rand"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"sudoku-daily-api/src/domain/entities"
@@ -15,14 +17,11 @@ type (
 	}
 
 	hideBacktracking struct {
-		solver *solver
 	}
 )
 
 func NewHideStrategy() HideStrategy {
-	return &hideBacktracking{
-		solver: newSolver(),
-	}
+	return &hideBacktracking{}
 }
 
 func (s *hideBacktracking) Hide(ctx context.Context, board *entities.Sudoku, r *rand.Rand) bool {
@@ -31,37 +30,81 @@ func (s *hideBacktracking) Hide(ctx context.Context, board *entities.Sudoku, r *
 	const (
 		maxTries          = 1000
 		maxTargetDecrease = 15
+		parallelism       = 3
 	)
 
 	var (
 		tries     int
+		wg        sync.WaitGroup
 		startTime = time.Now()
+		jobs      = make(chan struct{}, parallelism)
+		result    = make(chan *entities.Board, 1)
+		success   atomic.Bool
+		mu        sync.Mutex
 	)
 
-	for range maxTargetDecrease {
-		for range maxTries {
-			cells := s.getCellShuffled(board, r)
+	wg.Add(parallelism)
+	for i := 0; i < parallelism; i++ {
+		go func() {
+			defer wg.Done()
 
-			if s.hideCells(&board.Board, cells, targetToHide) {
-				logging.Log(ctx).Info().Msgf("Successfully hidden %v cells, tries: %v, board size: %v, time: %v", targetToHide, tries, board.Size, time.Since(startTime))
-				return true
+			solver := newSolver()
+			for range jobs {
+				if success.Load() {
+					return
+				}
+
+				clone, err := board.Board.Clone()
+				mu.Lock()
+				tries++
+				logging.Log(ctx).Debug().Msgf("Executing job on attempt %v", tries)
+				mu.Unlock()
+
+				if err != nil {
+					continue
+				}
+				if s.hideCells(solver, clone, r, targetToHide) && !success.Load() {
+					success.Store(true)
+					logging.Log(ctx).Info().Msgf("Successfully hidden %v cells, tries: %v, board size: %v, time: %v", targetToHide, tries, board.Size, time.Since(startTime))
+					select {
+					case result <- clone:
+					default:
+					}
+					return
+				}
 			}
-
-			tries++
-		}
-
-		targetToHide--
+		}()
 	}
+
+	for target := targetToHide; target >= targetToHide-maxTargetDecrease && !success.Load(); target-- {
+		for i := 0; i < maxTries && !success.Load(); i++ {
+			jobs <- struct{}{}
+
+			select {
+			case clone:=<-result:
+				board.Board = *clone
+				close(jobs)
+				wg.Wait()
+				return true
+			default:
+			}
+		}
+	}
+
+	close(jobs)
+	wg.Wait()
 
 	logging.Log(ctx).Error().Msgf("Failed to hide %v cells, tries: %v, board size: %v", targetToHide, tries, board.Size)
 
 	return false
 }
 
-func (s *hideBacktracking) hideCells(board *entities.Board, cells [][3]int, target int) bool {
+func (s *hideBacktracking) hideCells(solver *solver, board *entities.Board, r *rand.Rand, target int) bool {
 	var (
 		hiddenCount = 0
+		cells       = s.getCellShuffled(board, r)
 	)
+
 	for i := range cells {
 		if hiddenCount >= target || i+(target-hiddenCount) >= len(cells) {
 			break
@@ -71,7 +114,7 @@ func (s *hideBacktracking) hideCells(board *entities.Board, cells [][3]int, targ
 		row, col, value := cell[0], cell[1], cell[2]
 
 		board.SetCell(row, col, 0)
-		if s.solver.Execute(board) == 1 {
+		if solver.Execute(board) == 1 {
 			hiddenCount++
 		} else {
 			board.SetCell(row, col, value)
@@ -105,12 +148,12 @@ func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Ran
 	return board.GetSize()*board.GetSize() - clueCount
 }
 
-func (s *hideBacktracking) getCellShuffled(board *entities.Sudoku, r *rand.Rand) [][3]int {
+func (s *hideBacktracking) getCellShuffled(board *entities.Board, r *rand.Rand) [][3]int {
 	cellReference := make([][3]int, 0)
 
-	for row := range board.Board.GetBoard() {
-		for col := range board.Board.GetBoard()[row] {
-			value := board.Board.GetCell(row, col)
+	for row := range board.GetBoard() {
+		for col := range board.GetBoard()[row] {
+			value := board.GetCell(row, col)
 			if value != 0 {
 				cellReference = append(cellReference, [3]int{row, col, value})
 			}

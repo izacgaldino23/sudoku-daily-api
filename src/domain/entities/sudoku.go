@@ -1,8 +1,10 @@
 package entities
 
 import (
-	"sudoku-daily-api/src/domain/vo"
+	"encoding/json"
 	"time"
+
+	"sudoku-daily-api/src/domain/vo"
 )
 
 const (
@@ -191,6 +193,19 @@ func (b *Board) GetFullCount() vo.Binary {
 		b.fullCount = vo.NewFullBinary(b.GetSize())
 	}
 	return b.fullCount
+}
+
+func (b *Board) Clone() (*Board, error) {
+	bytes, err := json.Marshal(b)
+	if err != nil {
+		return nil, err
+	}
+	var cloned Board
+	err = json.Unmarshal(bytes, &cloned)
+	if err != nil {
+		return nil, err
+	}
+	return &cloned, nil
 }
 
 func GetClue(boardSize BoardSize, difficulty Difficulty) (int, int) {

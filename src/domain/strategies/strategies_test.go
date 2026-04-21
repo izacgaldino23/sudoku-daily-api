@@ -112,37 +112,47 @@ func TestGenerateComplete(t *testing.T) {
 	fillStrategy := NewFillStrategy()
 
 	now := time.Now()
+
 	fakeDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	hardDate := time.Date(2026, 4, 18, 0, 0, 0, 0, time.UTC)
 
-	r := rand.New(rand.NewSource(fakeDate.Unix()))
+	dates := map[string]time.Time{
+		"fake": fakeDate,
+		"hard": hardDate,
+	}
 
-	for size := range entities.BoardSizes {
-		t.Run(fmt.Sprintf("TestGenerateComplete_%v", size), func(t *testing.T) {
+	for _, date := range dates {
+		r := rand.New(rand.NewSource(date.Unix()))
 
-			sudoku := entities.NewSudoku(size)
+		for size := range entities.BoardSizes {
+			t.Run(fmt.Sprintf("TestGenerateComplete_%v_%v", date, size), func(t *testing.T) {
 
-			sudoku.Difficulty = entities.DifficultyMedium
-			sudoku.Date = fakeDate
+				sudoku := entities.NewSudoku(size)
 
-			filled := fillStrategy.Fill(sudoku, r)
-			assert.True(t, filled)
+				sudoku.Difficulty = entities.DifficultyMedium
+				sudoku.Date = date
 
-			hidden := hideStrategy.Hide(context.Background(), sudoku, r)
-			assert.True(t, hidden)
+				filled := fillStrategy.Fill(sudoku, r)
+				assert.True(t, filled)
 
-			filledCells := 0
-			for _, row := range sudoku.Board.GetBoard() {
-				for _, cell := range row {
-					if cell != 0 {
-						filledCells++
+				hidden := hideStrategy.Hide(context.Background(), sudoku, r)
+				assert.True(t, hidden)
+
+				filledCells := 0
+				for _, row := range sudoku.Board.GetBoard() {
+					for _, cell := range row {
+						if cell != 0 {
+							filledCells++
+						}
 					}
 				}
-			}
 
-			minClues, maxClues := entities.GetClue(sudoku.Size, sudoku.Difficulty)
+				minClues, maxClues := entities.GetClue(sudoku.Size, sudoku.Difficulty)
 
-			assert.GreaterOrEqual(t, filledCells, minClues, "min value for difficulty %v is %v", sudoku.Difficulty, minClues)
-			assert.LessOrEqual(t, filledCells, maxClues, "max value for difficulty %v is %v", sudoku.Difficulty, maxClues)
-		})
+				assert.GreaterOrEqual(t, filledCells, minClues, "min value for difficulty %v is %v", sudoku.Difficulty, minClues)
+				assert.LessOrEqual(t, filledCells, maxClues, "max value for difficulty %v is %v", sudoku.Difficulty, maxClues)
+			})
+		}
 	}
+
 }

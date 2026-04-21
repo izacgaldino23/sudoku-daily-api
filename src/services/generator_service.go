@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"time"
@@ -41,9 +40,11 @@ func (s *sudokuGenerator) GenerateDaily(ctx context.Context, size entities.Board
 	}
 	logging.Log(ctx).Info().Msgf("Sudoku for size %v filled", size)
 
-	if err := deepCopy(&sudoku.Board, &sudoku.Solution); err != nil {
+	cloned, err := sudoku.Board.Clone()
+	if err != nil {
 		return nil, err
 	}
+	sudoku.Solution = *cloned
 
 	hide := s.hideStrategy.Hide(ctx, sudoku, r)
 	if !hide {
@@ -52,16 +53,4 @@ func (s *sudokuGenerator) GenerateDaily(ctx context.Context, size entities.Board
 	logging.Log(ctx).Info().Msgf("Sudoku for size %v hidden", size)
 
 	return sudoku, nil
-}
-
-func deepCopy(src, dst interface{}) error {
-	bytes, err := json.Marshal(src)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(bytes, dst)
-	if err != nil {
-		return err
-	}
-	return nil
 }
