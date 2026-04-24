@@ -124,8 +124,8 @@ func TestGenerateComplete(t *testing.T) {
 	for _, date := range dates {
 		r := rand.New(rand.NewSource(date.Unix()))
 
-		for size := range entities.BoardSizes {
-			t.Run(fmt.Sprintf("TestGenerateComplete_%v_%v", date, size), func(t *testing.T) {
+		for size, title := range entities.BoardSizes {
+			t.Run(fmt.Sprintf("TestGenerateComplete_%v_%v", title, size), func(t *testing.T) {
 
 				sudoku := entities.NewSudoku(size)
 

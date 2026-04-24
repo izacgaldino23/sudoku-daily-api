@@ -49,9 +49,7 @@ func (s *sudokuGenerateDailyUseCase) Execute(ctx context.Context) ([]entities.Su
 
 	var puzzles []entities.Sudoku
 
-	sizes := []entities.BoardSize{entities.BoardSize9}
-
-	for _, boardSize := range sizes {
+	for boardSize := range entities.BoardSizes {
 		logging.Log(ctx).Info().Msgf("Generating sudoku for size %v", boardSize)
 		todayPuzzle, err := s.sudokuFetcherService.GetDaily(ctx, boardSize)
 		if err != nil && !errors.Is(err, pkg.ErrSudokuNotFound) {
