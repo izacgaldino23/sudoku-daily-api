@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/api/auth/login": {
             "post": {
-                "description": "Authenticates a user and returns access and refresh tokens",
+                "description": "Authenticates a user and returns access token. Refresh token is sent via secure HTTP-only cookie.",
                 "consumes": [
                     "application/json"
                 ],
@@ -68,7 +68,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Invalidates the user's refresh token",
+                "description": "Invalidates the user's refresh token from cookie",
                 "consumes": [
                     "application/json"
                 ],
@@ -79,17 +79,6 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Logout user",
-                "parameters": [
-                    {
-                        "description": "Logout request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/auth.LogoutRequest"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Logged out successfully",
@@ -97,8 +86,8 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
-                    "400": {
-                        "description": "invalid_body",
+                    "401": {
+                        "description": "invalid_token",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
@@ -108,7 +97,7 @@ const docTemplate = `{
         },
         "/api/auth/refresh": {
             "post": {
-                "description": "Refreshes an expired access token using a refresh token",
+                "description": "Refreshes an expired access token using refresh token from cookie. Returns new access token and rotates refresh token cookie.",
                 "consumes": [
                     "application/json"
                 ],
@@ -119,28 +108,11 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Refresh access token",
-                "parameters": [
-                    {
-                        "description": "Refresh token request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/auth.RefreshTokenRequest"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/auth.RefreshTokenResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "invalid_body",
-                        "schema": {
-                            "$ref": "#/definitions/pkg.Error"
                         }
                     },
                     "401": {
@@ -532,32 +504,7 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "refresh_token": {
-                    "type": "string"
-                },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "auth.LogoutRequest": {
-            "type": "object",
-            "required": [
-                "refresh_token"
-            ],
-            "properties": {
-                "refresh_token": {
-                    "type": "string"
-                }
-            }
-        },
-        "auth.RefreshTokenRequest": {
-            "type": "object",
-            "required": [
-                "refresh_token"
-            ],
-            "properties": {
-                "refresh_token": {
                     "type": "string"
                 }
             }

@@ -12,7 +12,7 @@ import (
 
 type (
 	UserRefreshTokenUseCase interface {
-		Execute(ctx context.Context, tokenHash string) (accessToken string, err error)
+		Execute(ctx context.Context, tokenHash string) (accessToken, newRefreshToken string, err error)
 	}
 
 	userRefreshTokenUseCase struct {
@@ -31,22 +31,40 @@ func NewUserRefreshTokenUseCase(
 	}
 }
 
-func (u *userRefreshTokenUseCase) Execute(ctx context.Context, tokenHash string) (string, error) {
+func (u *userRefreshTokenUseCase) Execute(ctx context.Context, tokenHash string) (string, string, error) {
 	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, tokenHash)
 	if err != nil {
 		if errors.Is(err, pkg.ErrRefreshTokenNotFound) {
-			return "", pkg.ErrInvalidToken
+			return "", "", pkg.ErrInvalidToken
 		}
-		return "", err
+		return "", "", err
 	}
 
 	if refreshToken.Revoked {
-		return "", pkg.ErrRefreshTokenRevoked
+		return "", "", pkg.ErrRefreshTokenRevoked
 	}
 
 	if refreshToken.ExpiresAt.Before(time.Now()) {
-		return "", pkg.ErrRefreshTokenExpired
+		return "", "", pkg.ErrRefreshTokenExpired
 	}
 
-	return u.tokenService.GenerateJWTToken(map[string]any{"user_id": refreshToken.UserID}, nil)
+	newAccessToken, err := u.tokenService.GenerateJWTToken(map[string]any{"user_id": refreshToken.UserID}, nil)
+	if err != nil {
+		return "", "", err
+	}
+
+	newRefreshToken, err := u.tokenService.GenerateRefreshToken(refreshToken.UserID)
+	if err != nil {
+		return "", "", err
+	}
+
+	if err := u.refreshTokenRepo.Revoke(ctx, refreshToken.UserID, tokenHash); err != nil {
+		return "", "", err
+	}
+
+	if err := u.refreshTokenRepo.Create(ctx, newRefreshToken); err != nil {
+		return "", "", err
+	}
+
+	return newAccessToken, newRefreshToken.Hash, nil
 }

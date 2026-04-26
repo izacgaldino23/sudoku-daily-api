@@ -19,24 +19,8 @@ definitions:
         type: string
       email:
         type: string
-      refresh_token:
-        type: string
       username:
         type: string
-    type: object
-  auth.LogoutRequest:
-    properties:
-      refresh_token:
-        type: string
-    required:
-    - refresh_token
-    type: object
-  auth.RefreshTokenRequest:
-    properties:
-      refresh_token:
-        type: string
-    required:
-    - refresh_token
     type: object
   auth.RefreshTokenResponse:
     properties:
@@ -187,7 +171,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Authenticates a user and returns access and refresh tokens
+      description: Authenticates a user and returns access token. Refresh token is
+        sent via secure HTTP-only cookie.
       parameters:
       - description: User login request
         in: body
@@ -217,14 +202,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Invalidates the user's refresh token
-      parameters:
-      - description: Logout request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/auth.LogoutRequest'
+      description: Invalidates the user's refresh token from cookie
       produces:
       - application/json
       responses:
@@ -232,8 +210,8 @@ paths:
           description: Logged out successfully
           schema:
             type: string
-        "400":
-          description: invalid_body
+        "401":
+          description: invalid_token
           schema:
             $ref: '#/definitions/pkg.Error'
       security:
@@ -245,14 +223,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Refreshes an expired access token using a refresh token
-      parameters:
-      - description: Refresh token request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/auth.RefreshTokenRequest'
+      description: Refreshes an expired access token using refresh token from cookie.
+        Returns new access token and rotates refresh token cookie.
       produces:
       - application/json
       responses:
@@ -260,10 +232,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/auth.RefreshTokenResponse'
-        "400":
-          description: invalid_body
-          schema:
-            $ref: '#/definitions/pkg.Error'
         "401":
           description: invalid_token, refresh_token_expired, refresh_token_revoked
           schema:

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"sudoku-daily-api/pkg"
+	"sudoku-daily-api/pkg/config"
 	"sudoku-daily-api/src/application/usecase/user"
 	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/vo"
@@ -76,7 +77,7 @@ func (a *authHandler) Register(c fiber.Ctx) error {
 }
 
 // @Summary Login user
-// @Description Authenticates a user and returns access and refresh tokens
+// @Description Authenticates a user and returns access token. Refresh token is sent via secure HTTP-only cookie.
 // @Tags auth
 // @Accept json
 // @Produce json
@@ -102,6 +103,17 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
+	refreshTokenDuration := config.GetConfig().Auth.RefreshTokenDuration
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    userData.Tokens.RefreshToken,
+		Path:    "/",
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: fiber.CookieSameSiteLaxMode,
+		MaxAge:   refreshTokenDuration,
+	})
+
 	resp := LoginResponse{}
 	resp.FromDomain(userData)
 
@@ -109,32 +121,34 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 }
 
 // @Summary Refresh access token
-// @Description Refreshes an expired access token using a refresh token
+// @Description Refreshes an expired access token using refresh token from cookie. Returns new access token and rotates refresh token cookie.
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body RefreshTokenRequest true "Refresh token request"
 // @Success 200 {object} RefreshTokenResponse
-// @Failure 400 {object} pkg.Error "invalid_body"
 // @Failure 401 {object} pkg.Error "invalid_token, refresh_token_expired, refresh_token_revoked"
 // @Router /api/auth/refresh [post]
 func (a *authHandler) Refresh(c fiber.Ctx) error {
-	var (
-		request RefreshTokenRequest
-	)
-
-	if err := c.Bind().Body(&request); err != nil {
-		return pkg.ErrBodyInvalid
+	refreshTokenCookie := c.Cookies("refresh_token")
+	if refreshTokenCookie == "" {
+		return pkg.JsonError(c, pkg.ErrInvalidToken)
 	}
 
-	if err := pkg.ValidateStruct(request); err != nil {
-		return pkg.JsonError(c, err)
-	}
-
-	accessToken, err := a.userRefreshTokenUseCase.Execute(c.Context(), request.RefreshToken)
+	accessToken, newRefreshToken, err := a.userRefreshTokenUseCase.Execute(c.Context(), refreshTokenCookie)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
+
+	refreshTokenDuration := config.GetConfig().Auth.RefreshTokenDuration
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    newRefreshToken,
+		Path:    "/",
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: fiber.CookieSameSiteLaxMode,
+		MaxAge:   refreshTokenDuration,
+	})
 
 	refreshTokenResponse := RefreshTokenResponse{}
 	refreshTokenResponse.AccessToken = accessToken
@@ -143,36 +157,38 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 }
 
 // @Summary Logout user
-// @Description Invalidates the user's refresh token
+// @Description Invalidates the user's refresh token from cookie
 // @Tags auth
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body LogoutRequest true "Logout request"
 // @Success 200 {string} string "Logged out successfully"
-// @Failure 400 {object} pkg.Error "invalid_body"
+// @Failure 401 {object} pkg.Error "invalid_token"
 // @Router /api/auth/logout [post]
 func (a *authHandler) Logout(c fiber.Ctx) error {
 	var (
 		userID  vo.UUID
-		request LogoutRequest
 		reqCtx  = c.Context()
 	)
 
-	if err := c.Bind().Body(&request); err != nil {
-		return pkg.ErrBodyInvalid
-	}
-
-	if err := pkg.ValidateStruct(request); err != nil {
-		return pkg.JsonError(c, err)
+	refreshTokenCookie := c.Cookies("refresh_token")
+	if refreshTokenCookie == "" {
+		return pkg.JsonError(c, pkg.ErrInvalidToken)
 	}
 
 	userID = app_context.GetUserIDFromContext(reqCtx)
 
-	err := a.userLogoutUseCase.Execute(reqCtx, userID, request.RefreshToken)
+	err := a.userLogoutUseCase.Execute(reqCtx, userID, refreshTokenCookie)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
+
+	c.Cookie(&fiber.Cookie{
+		Name:   "refresh_token",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
 
 	return c.SendStatus(http.StatusOK)
 }

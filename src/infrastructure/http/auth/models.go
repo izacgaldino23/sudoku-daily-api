@@ -19,8 +19,7 @@ type (
 	}
 
 	LoginResponse struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
+		AccessToken string `json:"access_token"`
 
 		UserName  string    `json:"username"`
 		Email     string    `json:"email"`
@@ -75,7 +74,6 @@ func (r *LoginResponse) FromDomain(user *entities.User) {
 
 	if user.Tokens != nil {
 		r.AccessToken = user.Tokens.AccessToken
-		r.RefreshToken = user.Tokens.RefreshToken
 	}
 }
 

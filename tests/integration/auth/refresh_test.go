@@ -1,7 +1,6 @@
 package auth_test
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -21,7 +20,8 @@ func TestAuthRefresh(t *testing.T) {
 		app := helpers.SetupTestApp()
 
 		email := helpers.GenerateUniqueEmail("test")
-		tokens, err := helpers.RegisterAndLoginUserWithTokens(app, email, "testuser", "password123")
+		username := helpers.GenerateUniqueUsername("testuser")
+		tokens, err := helpers.RegisterAndLoginUserWithTokens(app, email, username, "password123")
 		assert.NoError(t, err)
 
 		return tokens.AccessToken, tokens.RefreshToken
@@ -31,10 +31,10 @@ func TestAuthRefresh(t *testing.T) {
 		accessToken, refreshToken := setupTokens()
 		app := helpers.SetupTestApp()
 
-		body, _ := json.Marshal(map[string]string{"refresh_token": refreshToken})
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewReader(body))
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", nil)
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", accessToken)
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+		helpers.SetRefreshCookie(req, refreshToken)
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
 		assert.NoError(t, err)
@@ -44,20 +44,24 @@ func TestAuthRefresh(t *testing.T) {
 		err = json.NewDecoder(resp.Body).Decode(&refreshResp)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, refreshResp.AccessToken)
+
+		cookies := resp.Cookies()
+		assert.Len(t, cookies, 1)
+		assert.Equal(t, "refresh_token", cookies[0].Name)
+		assert.NotEmpty(t, cookies[0].Value)
 	})
 
-	t.Run("missing refresh token", func(t *testing.T) {
+	t.Run("missing refresh token cookie", func(t *testing.T) {
 		accessToken, _ := setupTokens()
 		app := helpers.SetupTestApp()
 
-		body, _ := json.Marshal(map[string]string{})
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewReader(body))
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", nil)
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", accessToken)
+		req.Header.Set("Authorization", "Bearer "+accessToken)
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
 		assert.NoError(t, err)
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 
 		var result pkg.Error
 		err = json.NewDecoder(resp.Body).Decode(&result)
@@ -65,14 +69,14 @@ func TestAuthRefresh(t *testing.T) {
 		assert.NotEmpty(t, result.Message)
 	})
 
-	t.Run("invalid refresh token", func(t *testing.T) {
+	t.Run("invalid refresh token cookie", func(t *testing.T) {
 		accessToken, _ := setupTokens()
 		app := helpers.SetupTestApp()
 
-		body, _ := json.Marshal(map[string]string{"refresh_token": "invalid-refresh-token"})
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", bytes.NewReader(body))
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", nil)
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", accessToken)
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+		helpers.SetRefreshCookie(req, "invalid-refresh-token")
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
 		assert.NoError(t, err)

@@ -222,6 +222,14 @@ func RegisterAndLoginUserWithTokens(app *fiber.App, email, username, password st
 		return UserData{}, err
 	}
 
+	cookies := loginResp.Cookies()
+	for _, c := range cookies {
+		if c.Name == "refresh_token" {
+			userData.RefreshToken = c.Value
+			break
+		}
+	}
+
 	return userData, nil
 }
 
@@ -300,4 +308,15 @@ func GetUserStats(userID string) (int, int, error) {
 	}
 
 	return stats.Solves, stats.Streak, nil
+}
+
+func SetRefreshCookie(req *http.Request, cookieValue string) {
+	req.AddCookie(&http.Cookie{
+		Name:     "refresh_token",
+		Value:    cookieValue,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
 }
