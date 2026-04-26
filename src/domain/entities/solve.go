@@ -11,7 +11,8 @@ type (
 	PlayToken struct {
 		Date      string    `json:"date"`
 		SudokuID  vo.UUID   `json:"sudoku_id"`
-		SessionID vo.UUID   `json:"session_id"`
+		SessionID vo.UUID   `json:"session_id,omitempty"`
+		UserID    vo.UUID   `json:"user_id,omitempty"`
 		Size      BoardSize `json:"size"`
 		StartedAt time.Time `json:"started_at"`
 		ExpiresAt time.Time `json:"expires_at"`
@@ -48,13 +49,19 @@ func (s *Solve) ToGameResult() *GameResult {
 }
 
 func (s *PlayToken) ToMap() map[string]any {
-	return map[string]any{
+	m := map[string]any{
 		"date":       s.Date,
 		"size":       s.Size,
 		"started_at": s.StartedAt,
-		"session_id": s.SessionID,
 		"expires_at": s.ExpiresAt,
 	}
+	if !s.SessionID.IsEmpty() {
+		m["session_id"] = s.SessionID
+	}
+	if !s.UserID.IsEmpty() {
+		m["user_id"] = s.UserID
+	}
+	return m
 }
 
 func PlayTokenFromMap(m map[string]any) (*PlayToken, error) {
@@ -76,6 +83,9 @@ func PlayTokenFromMap(m map[string]any) (*PlayToken, error) {
 	}
 	if sessionID, ok := m["session_id"].(string); ok {
 		token.SessionID = vo.UUID(sessionID)
+	}
+	if userID, ok := m["user_id"].(string); ok {
+		token.UserID = vo.UUID(userID)
 	}
 	if expiresAt, ok := m["expires_at"].(string); ok {
 		t, err := time.Parse(time.RFC3339, expiresAt)

@@ -464,8 +464,40 @@ paths:
           schema:
             $ref: '#/definitions/pkg.Error'
       security:
-      - BearerAuth  // optional: []
+      - BearerAuth: []
       summary: Verify sudoku solution
+      tags:
+      - sudoku
+  /api/sudoku/submit/guest:
+    post:
+      consumes:
+      - application/json
+      description: Verifies if the submitted solution is correct for guest users
+      parameters:
+      - description: Solution request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/sudoku.VerifySolutionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Solution verified successfully
+          schema:
+            type: string
+        "400":
+          description: invalid_body, invalid_solution
+          schema:
+            $ref: '#/definitions/pkg.Error'
+        "401":
+          description: invalid_token
+          schema:
+            $ref: '#/definitions/pkg.Error'
+      security:
+      - BearerAuth: []
+      summary: Verify guest sudoku solution
       tags:
       - sudoku
 swagger: "2.0"

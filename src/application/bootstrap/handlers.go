@@ -12,6 +12,7 @@ func (c *Container) BuildHandlers() {
 		c.GetDailySudoku,
 		c.GenerateDailySudokus,
 		c.VerifySolution,
+		c.VerifySolutionGuest,
 		c.GetUserSolvesUseCase,
 	)
 

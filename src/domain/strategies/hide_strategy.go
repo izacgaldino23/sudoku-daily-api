@@ -30,7 +30,7 @@ func (s *hideBacktracking) Hide(ctx context.Context, board *entities.Sudoku, r *
 	const (
 		maxTries          = 1000
 		maxTargetDecrease = 15
-		parallelism       = 3
+		parallelism       = 4
 	)
 
 	var (
@@ -81,7 +81,7 @@ func (s *hideBacktracking) Hide(ctx context.Context, board *entities.Sudoku, r *
 			jobs <- struct{}{}
 
 			select {
-			case clone:=<-result:
+			case clone := <-result:
 				board.Board = *clone
 				close(jobs)
 				wg.Wait()

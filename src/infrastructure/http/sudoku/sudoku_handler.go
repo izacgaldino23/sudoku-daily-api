@@ -17,14 +17,16 @@ type (
 		GetDailySudoku(c fiber.Ctx) error
 		CreateSudoku(c fiber.Ctx) error
 		VerifySolution(c fiber.Ctx) error
+		VerifySolutionGuest(c fiber.Ctx) error
 		GetMyDailySudoku(c fiber.Ctx) error
 	}
 
 	sudokuHandler struct {
-		getDailyUseCase       sudoku.ISudokuGetDailyUseCase
-		createSudokuUseCase   sudoku.SudokuGenerateDailyUseCase
-		verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase
-		getUserSolvesUseCase  sudoku.SudokuGetUserSolvesUseCase
+		getDailyUseCase           sudoku.ISudokuGetDailyUseCase
+		createSudokuUseCase       sudoku.SudokuGenerateDailyUseCase
+		verifySolutionUseCase    sudoku.SudokuVerifySolutionUseCase
+		verifySolutionGuestUseCase sudoku.SudokuVerifySolutionGuestUseCase
+		getUserSolvesUseCase     sudoku.SudokuGetUserSolvesUseCase
 	}
 )
 
@@ -32,13 +34,15 @@ func NewSudokuHandler(
 	getDailyUseCase sudoku.ISudokuGetDailyUseCase,
 	createSudokuUseCase sudoku.SudokuGenerateDailyUseCase,
 	verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase,
+	verifySolutionGuestUseCase sudoku.SudokuVerifySolutionGuestUseCase,
 	getUserSolvesUseCase sudoku.SudokuGetUserSolvesUseCase,
 ) SudokuHandler {
 	return &sudokuHandler{
-		getDailyUseCase:       getDailyUseCase,
-		createSudokuUseCase:   createSudokuUseCase,
-		verifySolutionUseCase: verifySolutionUseCase,
-		getUserSolvesUseCase:  getUserSolvesUseCase,
+		getDailyUseCase:           getDailyUseCase,
+		createSudokuUseCase:       createSudokuUseCase,
+		verifySolutionUseCase:    verifySolutionUseCase,
+		verifySolutionGuestUseCase: verifySolutionGuestUseCase,
+		getUserSolvesUseCase:     getUserSolvesUseCase,
 	}
 }
 
@@ -114,7 +118,7 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 // @Tags sudoku
 // @Accept json
 // @Produce json
-// @Security BearerAuth  // optional
+// @Security BearerAuth
 // @Param request body VerifySolutionRequest true "Solution request"
 // @Success 200 {string} string "Solution verified successfully"
 // @Failure 400 {object} pkg.Error "invalid_body, invalid_solution"
@@ -142,6 +146,43 @@ func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 	solve := request.ToDomain(userID)
 
 	_, err = sh.verifySolutionUseCase.Execute(reqCtx, solve, request.PlayToken, now)
+	if err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	return c.SendStatus(http.StatusOK)
+}
+
+// @Summary Verify guest sudoku solution
+// @Description Verifies if the submitted solution is correct for guest users
+// @Tags sudoku
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body VerifySolutionRequest true "Solution request"
+// @Success 200 {string} string "Solution verified successfully"
+// @Failure 400 {object} pkg.Error "invalid_body, invalid_solution"
+// @Failure 401 {object} pkg.Error "invalid_token"
+// @Router /api/sudoku/submit/guest [post]
+func (sh *sudokuHandler) VerifySolutionGuest(c fiber.Ctx) error {
+	var (
+		reqCtx  = c.Context()
+		now     = time.Now().UTC()
+		err     error
+		request VerifySolutionRequest
+	)
+
+	if err := c.Bind().Body(&request); err != nil {
+		return pkg.ErrBodyInvalid
+	}
+
+	if err := pkg.ValidateStruct(request); err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	solve := request.ToDomain("")
+
+	_, err = sh.verifySolutionGuestUseCase.Execute(reqCtx, solve, request.PlayToken, now)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}

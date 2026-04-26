@@ -391,7 +391,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "BearerAuth  // optional": []
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Verifies if the submitted solution is correct",
@@ -443,6 +443,57 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "already_played",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/sudoku/submit/guest": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Verifies if the submitted solution is correct for guest users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sudoku"
+                ],
+                "summary": "Verify guest sudoku solution",
+                "parameters": [
+                    {
+                        "description": "Solution request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sudoku.VerifySolutionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Solution verified successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid_body, invalid_solution",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid_token",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }

@@ -33,6 +33,13 @@ func (c *Container) BuildUseCases() {
 		c.TxManager,
 	)
 
+	c.VerifySolutionGuest = sudokuUsecase.NewSudokuVerifySolutionGuestUseCase(
+		c.SudokuRepository,
+		c.TokenService,
+		c.SudokuFetcher,
+		c.TxManager,
+	)
+
 	c.GetUserSolvesUseCase = sudokuUsecase.NewSudokuGetUserSolvesUseCase(
 		c.SudokuRepository,
 	)

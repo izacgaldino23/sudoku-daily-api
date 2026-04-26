@@ -35,6 +35,7 @@ func TestSudokuSubmitWithLogin(t *testing.T) {
 
 	dailyReq := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=nine", nil)
 	dailyReq.Header.Set("Content-Type", "application/json")
+	dailyReq.Header.Set("Authorization", "Bearer "+userData.AccessToken)
 	dailyResp, err := app.Test(dailyReq, fiber.TestConfig{Timeout: 0})
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, dailyResp.StatusCode)
@@ -44,9 +45,6 @@ func TestSudokuSubmitWithLogin(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, sudokuResp.PlayToken)
 
-	sessionID := dailyResp.Header.Get("X-Session-Id")
-	assert.NotEmpty(t, sessionID)
-
 	t.Run("submit valid solution", func(t *testing.T) {
 		body, _ := json.Marshal(map[string]interface{}{
 			"solution":   solution,
@@ -54,7 +52,6 @@ func TestSudokuSubmitWithLogin(t *testing.T) {
 		})
 		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit", bytes.NewReader(body))
 		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add("X-Session-Id", sessionID)
 		req.Header.Add("Authorization", "Bearer "+userData.AccessToken)
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
@@ -88,7 +85,7 @@ func TestSudokuSubmitWithLogin(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 	})
 
-	t.Run("submit with missing session and authorization token", func(t *testing.T) {
+	t.Run("submit with missing authorization token", func(t *testing.T) {
 		body, _ := json.Marshal(map[string]interface{}{
 			"solution":   solution,
 			"play_token": sudokuResp.PlayToken,
@@ -110,7 +107,6 @@ func TestSudokuSubmitWithLogin(t *testing.T) {
 		})
 		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-Session-Id", sessionID)
 		req.Header.Set("Authorization", "Bearer "+userData.AccessToken)
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})

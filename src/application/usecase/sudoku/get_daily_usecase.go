@@ -58,7 +58,12 @@ func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.Board
 
 	sessionID := app_context.GetSessionIDFromContext(ctx)
 
-	token, err := s.generateToken(sessionID, sudoku)
+	var token string
+	if !userID.IsEmpty() {
+		token, err = s.generateTokenWithUser(userID, sudoku)
+	} else {
+		token, err = s.generateToken(sessionID, sudoku)
+	}
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -86,6 +91,32 @@ func (s *sudokuGetDailyUseCase) generateToken(sessionID vo.UUID, sudoku *entitie
 	token, err := s.tokenService.GenerateJWTToken(playToken.ToMap(), &secondsUntilTomorrow)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to generate session token")
+		return "", err
+	}
+
+	return token, nil
+}
+
+func (s *sudokuGetDailyUseCase) generateTokenWithUser(userID vo.UUID, sudoku *entities.Sudoku) (string, error) {
+	tomorrow := sudoku.Date.AddDate(0, 0, 1)
+
+	playToken := &entities.PlayToken{
+		Date:      sudoku.Date.Format(time.DateOnly),
+		Size:      sudoku.Size,
+		UserID:    userID,
+		SudokuID:  sudoku.ID,
+		StartedAt: time.Now(),
+		ExpiresAt: tomorrow,
+	}
+
+	secondsUntilTomorrow := int(time.Until(tomorrow).Seconds())
+	if secondsUntilTomorrow < 0 {
+		secondsUntilTomorrow = 0
+	}
+
+	token, err := s.tokenService.GenerateJWTToken(playToken.ToMap(), &secondsUntilTomorrow)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to generate user token")
 		return "", err
 	}
 

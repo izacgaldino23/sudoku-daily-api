@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSudokuSubmitWithoutLogin(t *testing.T) {
+func TestSudokuSubmitGuest(t *testing.T) {
 	t.Cleanup(helpers.TruncateTables)
 	app := helpers.SetupTestApp()
 
@@ -45,7 +45,7 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 			"solution":   solution,
 			"play_token": sudokuResp.PlayToken,
 		})
-		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit", bytes.NewReader(body))
+		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit/guest", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("X-Session-Id", sessionID)
 
@@ -62,7 +62,7 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 			"solution":   solution,
 			"play_token": "invalid-token",
 		})
-		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit", bytes.NewReader(body))
+		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit/guest", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("X-Session-Id", "invalid-token")
 
@@ -79,7 +79,7 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 			"solution":   solution,
 			"play_token": sudokuResp.PlayToken,
 		})
-		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit", bytes.NewReader(body))
+		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit/guest", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
@@ -94,7 +94,7 @@ func TestSudokuSubmitWithoutLogin(t *testing.T) {
 		body, _ := json.Marshal(map[string]interface{}{
 			"play_token": sudokuResp.PlayToken,
 		})
-		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit", bytes.NewReader(body))
+		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/submit/guest", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("X-Session-Id", sessionID)
 
