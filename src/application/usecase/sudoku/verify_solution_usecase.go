@@ -21,23 +21,12 @@ type (
 		Execute(ctx context.Context, sudoku *entities.Solve, playToken string, finished time.Time) (bool, error)
 	}
 
-	SudokuVerifySolutionGuestUseCase interface {
-		Execute(ctx context.Context, sudoku *entities.Solve, playToken string, finished time.Time) (bool, error)
-	}
-
 	sudokuVerifySolutionUseCase struct {
 		sudokuRepo            repository.SudokuRepository
 		tokenService          domain.TokenService
 		sudokuFetcher         domain.SudokuDailyFetcher
 		solveAddStrikeUseCase user_stats_usecase.SolveAddStrikeUseCase
 		txManager             repository.TransactionManager
-	}
-
-	sudokuVerifySolutionGuestUseCase struct {
-		sudokuRepo    repository.SudokuRepository
-		tokenService domain.TokenService
-		sudokuFetcher domain.SudokuDailyFetcher
-		txManager    repository.TransactionManager
 	}
 )
 
@@ -54,20 +43,6 @@ func NewSudokuVerifySolutionUseCase(
 		sudokuFetcher:         sudokuFetcher,
 		solveAddStrikeUseCase: solveAddStrikeUseCase,
 		txManager:             txManager,
-	}
-}
-
-func NewSudokuVerifySolutionGuestUseCase(
-	sudokuRepo repository.SudokuRepository,
-	tokenService domain.TokenService,
-	sudokuFetcher domain.SudokuDailyFetcher,
-	txManager repository.TransactionManager,
-) SudokuVerifySolutionGuestUseCase {
-	return &sudokuVerifySolutionGuestUseCase{
-		sudokuRepo:    sudokuRepo,
-		tokenService: tokenService,
-		sudokuFetcher: sudokuFetcher,
-		txManager:    txManager,
 	}
 }
 
@@ -140,59 +115,4 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, input *entiti
 	}
 
 	return true, nil
-}
-
-func (s *sudokuVerifySolutionGuestUseCase) Execute(ctx context.Context, input *entities.Solve, token string, finished time.Time) (bool, error) {
-	claims, err := s.tokenService.ParseToken(token)
-	if err != nil {
-		log.Ctx(ctx).Err(err).Send()
-		return false, pkg.ErrInvalidToken
-	}
-
-	playToken, err := entities.PlayTokenFromMap(claims)
-	if err != nil {
-		return false, pkg.ErrInvalidToken
-	}
-
-	sessionIdToken := playToken.SessionID
-	sessionID := app_context.GetSessionIDFromContext(ctx)
-
-	if sessionIdToken != sessionID {
-		return false, pkg.ErrInvalidToken
-	}
-
-	sudokuDate, err := time.Parse(time.DateOnly, playToken.Date)
-	if err != nil {
-		return false, err
-	}
-
-	if err = s.txManager.WithinTransaction(ctx, func(txCtx context.Context) error {
-		sudoku, err := s.sudokuFetcher.GetByDateAndSize(txCtx, sudokuDate, playToken.Size)
-		if err != nil {
-			return err
-		}
-
-		if !compareSolution(sudoku, input) {
-			return pkg.ErrInvalidSolution
-		}
-
-		return nil
-	}); err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
-
-func compareSolution(sudoku *entities.Sudoku, solution *entities.Solve) bool {
-	board := sudoku.Solution.GetBoard()
-	for i := 0; i < int(sudoku.Size); i++ {
-		for j := 0; j < int(sudoku.Size); j++ {
-			if board[i][j] != solution.Solution[i][j] {
-				return false
-			}
-		}
-	}
-
-	return true
 }
