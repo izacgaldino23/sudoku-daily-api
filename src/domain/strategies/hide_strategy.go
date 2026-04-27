@@ -33,70 +33,87 @@ func (s *hideBacktracking) Hide(ctx context.Context, board *entities.Sudoku, r *
 		parallelism       = 4
 	)
 
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	var (
 		tries     int
 		wg        sync.WaitGroup
 		startTime = time.Now()
-		jobs      = make(chan struct{}, parallelism)
+		jobs      = make(chan int)
 		result    = make(chan *entities.Board, 1)
 		success   atomic.Bool
 		mu        sync.Mutex
 	)
 
-	wg.Add(parallelism)
 	for i := 0; i < parallelism; i++ {
-		go func() {
-			defer wg.Done()
-
-			solver := newSolver()
-			for range jobs {
-				if success.Load() {
-					return
-				}
-
-				clone, err := board.Board.Clone()
-				mu.Lock()
-				tries++
-				logging.Log(ctx).Debug().Msgf("Executing job on attempt %v", tries)
-				mu.Unlock()
-
-				if err != nil {
-					continue
-				}
-				if s.hideCells(solver, clone, r, targetToHide) && !success.Load() {
-					success.Store(true)
-					logging.Log(ctx).Info().Msgf("Successfully hidden %v cells, tries: %v, board size: %v, time: %v", targetToHide, tries, board.Size, time.Since(startTime))
-					select {
-					case result <- clone:
-					default:
-					}
-					return
-				}
-			}
-		}()
+		wg.Add(1)
+		go s.worker(ctx, jobs, result, &success, &mu, &tries, board, r, startTime, &wg, cancel)
 	}
 
-	for target := targetToHide; target >= targetToHide-maxTargetDecrease && !success.Load(); target-- {
-		for i := 0; i < maxTries && !success.Load(); i++ {
-			jobs <- struct{}{}
-
-			select {
-			case clone := <-result:
-				board.Board = *clone
-				close(jobs)
-				wg.Wait()
-				return true
-			default:
+	// produce jobs
+	go func() {
+		defer close(jobs)
+		for target := targetToHide; target >= targetToHide-maxTargetDecrease && !success.Load(); target-- {
+			for i := 0; i < maxTries && !success.Load(); i++ {
+				select {
+				case <-ctx.Done():
+					return
+				case jobs <- target:
+				}
 			}
 		}
+	}()
+
+	select {
+	case clone := <-result:
+		board.Board = *clone
+		logging.Log(ctx).Info().Msgf("Successfully hidden %v cells, tries: %v, board size: %v, time: %v", targetToHide, tries, board.Size, time.Since(startTime))
+		success.Store(true)
+	case <-ctx.Done():
+		logging.Log(ctx).Error().Msgf("Failed to hide %v cells, tries: %v, board size: %v", targetToHide, tries, board.Size)
+		success.Store(false)
 	}
 
-	close(jobs)
 	wg.Wait()
+	return success.Load()
+}
 
-	logging.Log(ctx).Error().Msgf("Failed to hide %v cells, tries: %v, board size: %v", targetToHide, tries, board.Size)
+func (s *hideBacktracking) worker(ctx context.Context, jobs <-chan int, result chan<- *entities.Board, success *atomic.Bool, mu *sync.Mutex, tries *int, board *entities.Sudoku, r *rand.Rand, startTime time.Time, wg *sync.WaitGroup, cancel context.CancelFunc) {
+	defer wg.Done()
 
-	return false
+	solver := newSolver()
+	for {
+		select {
+		case targetToHide := <-jobs:
+			if success.Load() {
+				return
+			}
+
+			clone, err := board.Board.Clone()
+			if err != nil {
+				continue
+			}
+
+			mu.Lock()
+			*tries++
+			logging.Log(ctx).Debug().Msgf("Executing job on attempt %v", *tries)
+			mu.Unlock()
+
+			if s.hideCells(solver, clone, r, targetToHide) && !success.Load() {
+				select {
+				case result <- clone:
+					success.Store(true)
+					logging.Log(ctx).Info().Msgf("Successfully hidden %v cells, tries: %v, board size: %v, time: %v", targetToHide, tries, board.Size, time.Since(startTime))
+					cancel()
+				default:
+				}
+				return
+			}
+		case <-ctx.Done():
+			return
+		}
+	}
 }
 
 func (s *hideBacktracking) hideCells(solver *solver, board *entities.Board, r *rand.Rand, target int) bool {
