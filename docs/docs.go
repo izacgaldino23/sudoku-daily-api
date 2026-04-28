@@ -307,7 +307,10 @@ const docTemplate = `{
         },
         "/api/sudoku/generate": {
             "post": {
-                "description": "Generates new daily sudoku puzzles for all sizes",
+                "description": "Generates new daily sudoku puzzle for a given size",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -315,14 +318,30 @@ const docTemplate = `{
                     "sudoku"
                 ],
                 "summary": "Generate sudoku",
+                "parameters": [
+                    {
+                        "enum": [
+                            "four",
+                            "six",
+                            "nine"
+                        ],
+                        "type": "string",
+                        "name": "size",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/sudoku.SudokuResponse"
-                            }
+                            "$ref": "#/definitions/sudoku.SudokuResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid_query_param, invalid_size",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.Error"
                         }
                     }
                 }

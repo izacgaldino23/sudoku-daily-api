@@ -364,16 +364,29 @@ paths:
       - sudoku
   /api/sudoku/generate:
     post:
-      description: Generates new daily sudoku puzzles for all sizes
+      consumes:
+      - application/json
+      description: Generates new daily sudoku puzzle for a given size
+      parameters:
+      - enum:
+        - four
+        - six
+        - nine
+        in: query
+        name: size
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/sudoku.SudokuResponse'
-            type: array
+            $ref: '#/definitions/sudoku.SudokuResponse'
+        "400":
+          description: invalid_query_param, invalid_size
+          schema:
+            $ref: '#/definitions/pkg.Error'
       summary: Generate sudoku
       tags:
       - sudoku

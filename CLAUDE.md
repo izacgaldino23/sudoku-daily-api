@@ -101,3 +101,6 @@ Common error codes returned in responses: `invalid_token`, `token_expired`, `inv
 - API endpoints or routes
 - Running commands
 - Environment variables
+
+**DOCUMENTATION**: For every change/addition on handler, update the swagger docs
+Run `make generate-docs`

@@ -86,29 +86,38 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 }
 
 // @Summary Generate sudoku
-// @Description Generates new daily sudoku puzzles for all sizes
+// @Description Generates new daily sudoku puzzle for a given size
 // @Tags sudoku
+// @Accept json
 // @Produce json
-// @Success 200 {array} SudokuResponse
+// @Param size query GetDailySudokuRequest true "Board size (four, six, or nine)"
+// @Success 200 {object} SudokuResponse
+// @Failure 400 {object} pkg.Error "invalid_query_param, invalid_size"
 // @Router /api/sudoku/generate [post]
 func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	var (
-		reqCtx = c.Context()
-		err    error
+		reqCtx  = c.Context()
+		request GetDailySudokuRequest
+		err     error
 	)
 
-	var dailySudoku []entities.Sudoku
-	dailySudoku, err = sh.createSudokuUseCase.Execute(reqCtx)
+	if err := c.Bind().Query(&request); err != nil {
+		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
+	}
+
+	if err := pkg.ValidateStruct(request); err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	size := entities.BoardSizeFromName(request.Size)
+
+	dailySudoku, err := sh.createSudokuUseCase.Execute(reqCtx, size)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
 
-	var response []SudokuResponse
-	for _, sudoku := range dailySudoku {
-		s := SudokuResponse{}
-		s.FromDomain(&sudoku, "", "")
-		response = append(response, s)
-	}
+	var response SudokuResponse
+	response.FromDomain(dailySudoku, "", "")
 
 	return c.Status(http.StatusOK).JSON(response)
 }
