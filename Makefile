@@ -1,5 +1,3 @@
-.PHONY: new-migration run-migrations test-integration
-
 MIGRATIONS_PATH = migrations/sql
 DATABASE_HOST = localhost
 DATABASE_PORT = 5432
@@ -15,9 +13,17 @@ run-migrations:
 	set ENV=local&& go run cmd/migrate/main.go
 
 test-integration:
-	docker-compose -f tests/docker-compose.test.yaml up -d
+	docker-compose -f tests/docker-compose.yaml --profile tests up -d 
 	go test ./tests/integration/... -p=1
-	docker-compose -f tests/docker-compose.test.yaml down
+	docker-compose -f tests/docker-compose.yaml --profile tests down 
 
 generate-docs:
 	swag init -g ./cmd/api/main.go
+
+lint: format
+	golangci-lint run
+
+format:
+	go fmt ./...
+
+.PHONY: new-migration run-migrations test-integration generate-docs lint format
