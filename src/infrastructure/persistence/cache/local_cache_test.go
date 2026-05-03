@@ -38,7 +38,7 @@ func TestLocalCache_SetAndGet(t *testing.T) {
 		},
 		{
 			name:    "Should update a previously inserted value",
-			maxSize: 10,
+			maxSize: 1,
 			actions: func(c domain.Cache) {
 				c.Set("api_key", "12345")
 				c.Set("api_key", "67890")
@@ -48,7 +48,7 @@ func TestLocalCache_SetAndGet(t *testing.T) {
 			expectedFound: true,
 		},
 		{
-			name:    "Should respect the max size (LRU/FIFO)",
+			name:    "Should respect the max size (LRU-FIFO)",
 			maxSize: 2,
 			actions: func(c domain.Cache) {
 				c.Set("k1", "v1")
@@ -56,6 +56,48 @@ func TestLocalCache_SetAndGet(t *testing.T) {
 				c.Set("k3", "v3")
 			},
 			keyToFetch:    "k1",
+			expectedValue: nil,
+			expectedFound: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			c := cache.NewLocalCache(tt.maxSize)
+
+			// Act
+			tt.actions(c)
+			gotValue, gotFound := c.Get(tt.keyToFetch)
+
+			// Assert
+			if gotFound != tt.expectedFound {
+				t.Errorf("Get() found = %v, want %v", gotFound, tt.expectedFound)
+			}
+			if gotValue != tt.expectedValue {
+				t.Errorf("Get() value = %v, want %v", gotValue, tt.expectedValue)
+			}
+		})
+	}
+}
+
+func TestLocalCache_Flush(t *testing.T) {
+	tests := []struct {
+		name          string
+		maxSize       int
+		actions       func(c domain.Cache)
+		keyToFetch    string
+		expectedValue any
+		expectedFound bool
+	}{
+		{
+			name:    "Should flush the cache",
+			maxSize: 10,
+			actions: func(c domain.Cache) {
+				c.Set("user_1", "Gabriel")
+				c.Flush()
+			},
+			keyToFetch:    "user_1",
 			expectedValue: nil,
 			expectedFound: false,
 		},
