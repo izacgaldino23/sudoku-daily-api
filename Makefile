@@ -22,6 +22,9 @@ test-integration:
 	go test ./tests/integration/... -p=1
 	docker-compose -f tests/docker-compose.test.yaml down 
 
+test-loads:
+	docker-compose --profile loads -f docker-compose.yaml up
+
 generate-docs:
 	swag init -g ./cmd/api/main.go
 
@@ -31,4 +34,4 @@ lint: format
 format:
 	go fmt ./...
 
-.PHONY: new-migration run-migrations test-integration generate-docs lint format test
+.PHONY: new-migration run-migrations test-integration generate-docs lint format test test-loads

@@ -6,7 +6,7 @@ import (
 	"sudoku-daily-api/src/infrastructure/persistence/cache"
 )
 
-const maxCacheSize = 5
+const maxCacheSize = 50
 
 func (c *Container) BuildInfrastructure() {
 	c.Config = config.GetConfig()

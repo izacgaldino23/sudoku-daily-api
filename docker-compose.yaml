@@ -43,8 +43,8 @@ services:
     profiles:
       - loads
     volumes:
-      - ./k6:/scripts
-    entrypoint: ["k6", "run", "/scripts/script.js"]
+      - ./scripts:/scripts
+    entrypoint: ["k6", "run", "/scripts/k6/script.js"]
     depends_on:
       - api
 
