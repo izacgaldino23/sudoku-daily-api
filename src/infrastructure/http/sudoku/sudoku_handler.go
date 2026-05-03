@@ -22,11 +22,11 @@ type (
 	}
 
 	sudokuHandler struct {
-		getDailyUseCase           sudoku.ISudokuGetDailyUseCase
-		createSudokuUseCase       sudoku.SudokuGenerateDailyUseCase
-		verifySolutionUseCase    sudoku.SudokuVerifySolutionUseCase
+		getDailyUseCase            sudoku.ISudokuGetDailyUseCase
+		createSudokuUseCase        sudoku.SudokuGenerateDailyUseCase
+		verifySolutionUseCase      sudoku.SudokuVerifySolutionUseCase
 		verifySolutionGuestUseCase sudoku.SudokuVerifySolutionGuestUseCase
-		getUserSolvesUseCase     sudoku.SudokuGetUserSolvesUseCase
+		getUserSolvesUseCase       sudoku.SudokuGetUserSolvesUseCase
 	}
 )
 
@@ -38,11 +38,11 @@ func NewSudokuHandler(
 	getUserSolvesUseCase sudoku.SudokuGetUserSolvesUseCase,
 ) SudokuHandler {
 	return &sudokuHandler{
-		getDailyUseCase:           getDailyUseCase,
-		createSudokuUseCase:       createSudokuUseCase,
-		verifySolutionUseCase:    verifySolutionUseCase,
+		getDailyUseCase:            getDailyUseCase,
+		createSudokuUseCase:        createSudokuUseCase,
+		verifySolutionUseCase:      verifySolutionUseCase,
 		verifySolutionGuestUseCase: verifySolutionGuestUseCase,
-		getUserSolvesUseCase:     getUserSolvesUseCase,
+		getUserSolvesUseCase:       getUserSolvesUseCase,
 	}
 }
 

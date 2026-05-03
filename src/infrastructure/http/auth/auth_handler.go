@@ -107,7 +107,7 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
 		Value:    userData.Tokens.RefreshToken,
-		Path:    "/",
+		Path:     "/",
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: fiber.CookieSameSiteLaxMode,
@@ -143,7 +143,7 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
 		Value:    newRefreshToken,
-		Path:    "/",
+		Path:     "/",
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: fiber.CookieSameSiteLaxMode,
@@ -167,8 +167,8 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 // @Router /api/auth/logout [post]
 func (a *authHandler) Logout(c fiber.Ctx) error {
 	var (
-		userID  vo.UUID
-		reqCtx  = c.Context()
+		userID vo.UUID
+		reqCtx = c.Context()
 	)
 
 	refreshTokenCookie := c.Cookies("refresh_token")

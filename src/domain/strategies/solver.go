@@ -48,7 +48,7 @@ func (s *solver) Execute(board *entities.Board) int {
 func (s *solver) guess(board *entities.Board, empty []cell, left int, solutions int) int {
 	if solutions >= 2 {
 		return 2
-	}	
+	}
 
 	if left == 0 {
 		return solutions + 1
