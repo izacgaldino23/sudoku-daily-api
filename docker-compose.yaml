@@ -12,6 +12,7 @@ services:
       DATABASE_HOST: "db"
       DATABASE_PORT: "5432"
   migrate:
+    container_name: sudoku_migrate
     build: .
     depends_on:
       - db
@@ -39,43 +40,13 @@ services:
       start_period: 80s
   k6:
     image: grafana/k6
+    profiles:
+      - loads
     volumes:
       - ./k6:/scripts
     entrypoint: ["k6", "run", "/scripts/script.js"]
     depends_on:
       - api
-  db-test:
-    container_name: postgres_test
-    image: postgres
-    profiles:
-      - tests
-    command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all
-    environment:
-      POSTGRES_PASSWORD: "12345"
-      PGDATA: "/data/postgres"
-    ports:
-      - "5333:5432"
-    restart: unless-stopped
-    volumes:
-      - postgres-test-data:/var/lib/postgresql/data
-      - ./tests/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "postgres"]
-      interval: 10s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-  pghero:
-    image: ankane/pghero
-    profiles:
-      - tests
-    ports:
-      - "8080:8080"
-    environment:
-      DATABASE_URL: "postgresql://postgres:12345@db-test:5432/sudoku_test"
-    depends_on:
-      db-test:
-        condition: service_healthy
 
 networks:
   default:
@@ -83,4 +54,3 @@ networks:
 
 volumes:
   postgres-data: {}
-  postgres-test-data: {}

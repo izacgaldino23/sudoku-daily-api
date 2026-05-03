@@ -12,10 +12,15 @@ new-migration:
 run-migrations:
 	set ENV=local&& go run cmd/migrate/main.go
 
+# run unit tests for pkg and src folder on root
+test:
+	go test ./pkg/... ./src/... -p=1
+
+# run integration tests on tests folder on root
 test-integration:
-	docker-compose -f tests/docker-compose.yaml --profile tests up -d 
+	docker-compose -f tests/docker-compose.test.yaml up -d 
 	go test ./tests/integration/... -p=1
-	docker-compose -f tests/docker-compose.yaml --profile tests down 
+	docker-compose -f tests/docker-compose.test.yaml down 
 
 generate-docs:
 	swag init -g ./cmd/api/main.go
@@ -26,4 +31,4 @@ lint: format
 format:
 	go fmt ./...
 
-.PHONY: new-migration run-migrations test-integration generate-docs lint format
+.PHONY: new-migration run-migrations test-integration generate-docs lint format test
