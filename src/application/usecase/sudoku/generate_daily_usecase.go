@@ -58,7 +58,7 @@ func (s *sudokuGenerateDailyUseCase) Execute(ctx context.Context, size entities.
 
 	sudoku, err := s.sudokuService.GenerateDaily(ctx, size, today)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to generate sudoku for size %v: %w", size, err)
+		return nil, fmt.Errorf("failed to generate sudoku for size %v: %w", size, err)
 	}
 
 	sudoku.Date = today

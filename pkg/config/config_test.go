@@ -18,13 +18,13 @@ type envMap map[string]string
 
 func (e envMap) set() {
 	for k, v := range e {
-		os.Setenv(k, v)
+		_ = os.Setenv(k, v)
 	}
 }
 
 func (e envMap) unset() {
 	for k := range e {
-		os.Unsetenv(k)
+		_ = os.Unsetenv(k)
 	}
 }
 

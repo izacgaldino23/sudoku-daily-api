@@ -47,32 +47,32 @@ var (
 // Safe to call from multiple TestMain functions - only runs once.
 func SetupTestEnvironment() {
 	setupOnce.Do(func() {
-		os.Setenv("ENV", "test")
-		os.Setenv("DATABASE_MIGRATIONS_PATH", "../../../migrations/sql")
-		os.Setenv("DATABASE_HOST", "127.0.0.1")
-		os.Setenv("DATABASE_PORT", "5333")
-		os.Setenv("DATABASE_USERNAME", "postgres")
-		os.Setenv("DATABASE_PASSWORD", "12345")
-		os.Setenv("DATABASE_NAME", "sudoku_test")
-		os.Setenv("DATABASE_SSL_MODE", "disable")
-		os.Setenv("DATABASE_MAX_OPEN_CONNS", "25")
-		os.Setenv("DATABASE_MAX_IDLE_CONNS", "10")
-		os.Setenv("DATABASE_MAX_LIFETIME", "5m")
-		os.Setenv("LIMITS_TIMEOUT", "100s")
-		os.Setenv("API_PORT", "8081")
-		os.Setenv("DEBUG", "false")
+		_ = os.Setenv("ENV", "test")
+		_ = os.Setenv("DATABASE_MIGRATIONS_PATH", "../../../migrations/sql")
+		_ = os.Setenv("DATABASE_HOST", "127.0.0.1")
+		_ = os.Setenv("DATABASE_PORT", "5333")
+		_ = os.Setenv("DATABASE_USERNAME", "postgres")
+		_ = os.Setenv("DATABASE_PASSWORD", "12345")
+		_ = os.Setenv("DATABASE_NAME", "sudoku_test")
+		_ = os.Setenv("DATABASE_SSL_MODE", "disable")
+		_ = os.Setenv("DATABASE_MAX_OPEN_CONNS", "25")
+		_ = os.Setenv("DATABASE_MAX_IDLE_CONNS", "10")
+		_ = os.Setenv("DATABASE_MAX_LIFETIME", "5m")
+		_ = os.Setenv("LIMITS_TIMEOUT", "100s")
+		_ = os.Setenv("API_PORT", "8081")
+		_ = os.Setenv("DEBUG", "false")
 
 		memory := 64
-		os.Setenv("AUTH_ITERATIONS", "3")
-		os.Setenv("AUTH_MEMORY", strconv.Itoa(memory))
-		os.Setenv("AUTH_PARALLELISM", "4")
-		os.Setenv("AUTH_KEY_LEN", "32")
-		os.Setenv("AUTH_SALT_LEN", "16")
-		os.Setenv("AUTH_SECRET_KEY", "test-secret-key-for-integration-tests")
-		os.Setenv("AUTH_ACCESS_TOKEN_DURATION", "900")
-		os.Setenv("AUTH_REFRESH_TOKEN_DURATION", "60")
-		os.Setenv("LIMITS_MAX_REQUEST_COUNT_GLOBAL", "1000")
-		os.Setenv("LIMITS_MAX_REQUEST_COUNT_USER", "100")
+		_ = os.Setenv("AUTH_ITERATIONS", "3")
+		_ = os.Setenv("AUTH_MEMORY", strconv.Itoa(memory))
+		_ = os.Setenv("AUTH_PARALLELISM", "4")
+		_ = os.Setenv("AUTH_KEY_LEN", "32")
+		_ = os.Setenv("AUTH_SALT_LEN", "16")
+		_ = os.Setenv("AUTH_SECRET_KEY", "test-secret-key-for-integration-tests")
+		_ = os.Setenv("AUTH_ACCESS_TOKEN_DURATION", "900")
+		_ = os.Setenv("AUTH_REFRESH_TOKEN_DURATION", "60")
+		_ = os.Setenv("LIMITS_MAX_REQUEST_COUNT_GLOBAL", "1000")
+		_ = os.Setenv("LIMITS_MAX_REQUEST_COUNT_USER", "100")
 
 		err := config.Load()
 		if err != nil {
@@ -100,7 +100,7 @@ func TeardownTestDB() {
 	teardownOnce.Do(func() {
 		dbConn := database.GetDB()
 		if dbConn.SqlConnection != nil {
-			dbConn.SqlConnection.Close()
+			_ = dbConn.SqlConnection.Close()
 		}
 	})
 }

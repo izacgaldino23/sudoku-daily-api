@@ -13,7 +13,7 @@ import (
 func RunMigrations(migrationsPath string) error {
 	driver, err := postgres.WithInstance(database.GetDB().SqlConnection, &postgres.Config{})
 	if err != nil {
-		return fmt.Errorf("Error creating driver: %w", err)
+		return fmt.Errorf("error creating driver: %w", err)
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(
@@ -22,11 +22,11 @@ func RunMigrations(migrationsPath string) error {
 		driver,
 	)
 	if err != nil {
-		return fmt.Errorf("Error creating migrate: %w", err)
+		return fmt.Errorf("error creating migrate: %w", err)
 	}
 
 	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		return fmt.Errorf("Error running migrations: %w", err)
+		return fmt.Errorf("error running migrations: %w", err)
 	}
 
 	return nil

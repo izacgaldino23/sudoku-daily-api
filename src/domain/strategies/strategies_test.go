@@ -68,7 +68,7 @@ func TestHideStrategy(t *testing.T) {
 
 			min, max := entities.GetClue(entities.BoardSize(size), entities.DifficultyMedium)
 
-			var totalCells int = int(size * size)
+			totalCells := int(size * size)
 
 			assert.GreaterOrEqual(t, totalCells-emptyCells, min, "min value for difficulty %v is %v", sudoku.Difficulty, min)
 			assert.LessOrEqual(t, totalCells-emptyCells, max, "max value for difficulty %v is %v", sudoku.Difficulty, max)

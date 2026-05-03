@@ -28,7 +28,7 @@ func ConnectDB(configEnv *config.Config) (err error) {
 
 	sqlDB, err := sql.Open("postgres", dsn)
 	if err != nil {
-		return fmt.Errorf("Error connecting to database: %w", err)
+		return fmt.Errorf("error connecting to database: %w", err)
 	}
 
 	sqlDB.SetMaxIdleConns(configEnv.Database.MaxIdleConns)
