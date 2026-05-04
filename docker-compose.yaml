@@ -38,15 +38,6 @@ services:
       timeout: 60s
       retries: 5
       start_period: 80s
-  k6:
-    image: grafana/k6
-    profiles:
-      - loads
-    volumes:
-      - ./scripts:/scripts
-    entrypoint: ["k6", "run", "/scripts/k6/script.js"]
-    depends_on:
-      - api
 
 networks:
   default:

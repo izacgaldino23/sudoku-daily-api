@@ -1,0 +1,2 @@
+GET http://api-load:8080/api/sudoku
+Authorization: Bearer TOKEN_PLACEHOLDER

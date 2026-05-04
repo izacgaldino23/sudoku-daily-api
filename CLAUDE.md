@@ -56,6 +56,15 @@ make run-migrations
 # Run integration tests
 make test-integration
 
+# Run load tests (Vegeta + pghero)
+make test-loads
+
+# View load test reports
+make load-report
+
+# Clean load test reports
+make load-clean
+
 # Generate API docs (Swagger)
 make generate-docs
 ```
@@ -63,6 +72,67 @@ make generate-docs
 ## Dependencies
 
 - Fiber (HTTP), Bun (ORM), golang-jwt/jwt/v5, pg (postgres driver), Viper (env), golang-migrate, zerolog
+
+## Load Testing
+
+Uses **Vegeta CLI** for load testing high-traffic endpoints. Activated via Docker Compose profiles.
+
+### Endpoints Tested
+| Endpoint | Method | Rate | Justification |
+|----------|--------|------|---------------|
+| `/api/sudoku` | GET | 1000 req/s | Highest volume - daily user access |
+| `/api/sudoku/submit` | POST | 500 req/s | Authenticated submissions |
+| `/api/sudoku/submit/guest` | POST | 500 req/s | Guest submissions |
+| `/api/leaderboard` | GET | 300 req/s | Heavy queries with JOINs |
+| `/api/auth/login` | POST | 200 req/s | Daily user logins |
+
+### Running Load Tests
+```bash
+# Start load tests (uses docker-compose.load.yaml)
+make test-loads
+
+# View generated reports
+make load-report
+
+# Clean reports
+make load-clean
+```
+
+Uses separate `docker-compose.load.yaml` to avoid interfering with the main development environment.
+
+### Profiling (pprof)
+- Activated when `DEBUG=true` in environment
+- Runs on port `:6060` (internal Docker network only)
+- Access from within Docker: `http://api:6060/debug/pprof/`
+- Generate CPU profile: `go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30`
+
+### Database Analysis
+- **pghero**: Available at `http://localhost:8082` when using `make test-loads`
+- **pg_stat_statements**: Enabled automatically via init script in `scripts/db/init.sql`
+- Analyze slow queries in pghero dashboard during load tests
+- Load test DB runs on port `5334` to avoid conflicts
+
+### Load Test Reports
+Reports are saved to `load-reports/` directory:
+- Text reports (*.txt): Latency percentiles, throughput, errors
+- HTML plots (*.html): Visual graphs of performance metrics
+
+### Test Structure
+```
+scripts/
+  load-tests/
+    docker-compose.yaml     # Isolated load test environment
+    run-load-tests.sh       # Main orchestrator
+    setup-auth.sh           # Generates JWT tokens for auth endpoints
+    targets/                # Vegeta target files
+      get-sudoku.txt
+      submit-guest.txt
+      submit-auth.txt
+      leaderboard.txt
+      login.txt
+  db/
+    init.sql                # Enables pg_stat_statements
+```
 
 ## API Endpoints
 

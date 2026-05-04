@@ -1,0 +1,1 @@
+GET http://api-load:8080/api/leaderboard

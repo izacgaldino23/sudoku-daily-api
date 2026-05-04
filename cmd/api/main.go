@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"time"
 
@@ -39,6 +41,13 @@ func main() {
 
 	apiRouter := app.Group("/api")
 	_ = application.InitApp(apiRouter)
+
+	if config.GetConfig().Debug {
+		go func() {
+			log.Logger.Info().Msg("Starting pprof on :6060")
+			http.ListenAndServe(":6060", nil)
+		}()
+	}
 
 	port := config.GetConfig().ApiPort
 	log.Logger.Info().Msgf("🚀 Server running on port %v", port)

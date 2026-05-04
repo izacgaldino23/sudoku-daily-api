@@ -1,0 +1,4 @@
+POST http://api-load:8080/api/sudoku/submit/guest
+Content-Type: application/json
+
+{"solution": [[1,2,3,4],[3,4,1,2],[2,3,4,1],[4,1,2,3]], "play_token": "test"}
