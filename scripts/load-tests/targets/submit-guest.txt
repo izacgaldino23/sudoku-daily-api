@@ -1,3 +1,0 @@
-POST http://api-load:8080/api/sudoku/submit/guest
-Content-Type: application/json
-@targets/bodies/submit-guest.json

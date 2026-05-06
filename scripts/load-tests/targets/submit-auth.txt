@@ -1,4 +1,0 @@
-POST http://api-load:8080/api/sudoku/submit
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc5MTMzMzksImlhdCI6MTc3NzkxMjQzOSwidXNlcl9pZCI6IjEyNWRkNjViLTVhMTctNDA4Mi1hYTAxLTdhYTM0NzJjN2NiZSJ9.waPxSWKOXFZOHKqneFUoD9_5Fs7PiT6Q5EZtIaqo91E
-Content-Type: application/json
-@targets/bodies/submit-auth.json
