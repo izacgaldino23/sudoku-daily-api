@@ -16,10 +16,9 @@ run-migrations:
 test:
 	go test ./pkg/... ./src/... -p=1
 
-# run integration tests on tests folder on root
+# run integration tests using build tags
 test-integration:
-	docker-compose -f tests/docker-compose.test.yaml up -d 
-	go test ./tests/integration/... -p=1
+	go test -tags=integration ./tests/... -p=1
 
 clean-test:
 	docker-compose -f tests/docker-compose.test.yaml down
