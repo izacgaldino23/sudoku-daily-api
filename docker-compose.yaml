@@ -25,6 +25,7 @@ services:
   db:
     container_name: postgres
     image: postgres
+    command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all
     environment:
       POSTGRES_PASSWORD: "12345"
       PGDATA: "/data/postgres"
@@ -32,12 +33,22 @@ services:
       - "5332:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./scripts/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "-d", "postgres"]
       interval: 30s
       timeout: 60s
       retries: 5
       start_period: 80s
+  pghero:
+    image: ankane/pghero
+    ports:
+      - "8082:8080"
+    environment:
+      DATABASE_URL: "postgresql://postgres:12345@db:5432/postgres"
+    depends_on:
+      db:
+        condition: service_healthy
 
 networks:
   default:
