@@ -20,7 +20,9 @@ test:
 test-integration:
 	docker-compose -f tests/docker-compose.test.yaml up -d 
 	go test ./tests/integration/... -p=1
-	docker-compose -f tests/docker-compose.test.yaml down 
+
+clean-test:
+	docker-compose -f tests/docker-compose.test.yaml down
 
 test-loads:
 	docker-compose -f scripts/load-tests/docker-compose.yaml up -d --remove-orphans db-load pghero

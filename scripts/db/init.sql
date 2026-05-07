@@ -1,2 +1,2 @@
-CREATE DATABASE sudoku_load;
+-- CREATE DATABASE IF NOT EXISTS postgres;
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
