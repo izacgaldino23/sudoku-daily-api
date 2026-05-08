@@ -31,6 +31,10 @@ jobs:
             type=sha,format=short
             type=raw,value=latest
 
+      - name: Short SHA
+        id: sha
+        run: echo "sha=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -40,3 +44,10 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Trigger infra deploy
+        run: |
+          curl -s -X POST https://api.github.com/repos/${{ github.repository_owner }}/sudoku-daily-infra/dispatches \
+            -H "Authorization: Bearer ${{ secrets.INFRA_PAT }}" \
+            -H "Content-Type: application/json" \
+            -d '{"event_type":"deploy","client_payload":{"service":"api","tag":"${{ steps.sha.outputs.sha }}"}}'
