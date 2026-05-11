@@ -42,7 +42,19 @@ func ConnectDB(configEnv *config.Config) (err error) {
 		dbConnection.BunConnection.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
 	}
 
-	return
+	return pingWithRetry(sqlDB)
+}
+
+func pingWithRetry(sqlDB *sql.DB) error {
+	var err error
+	for i := range 10 {
+		err = sqlDB.Ping()
+		if err == nil {
+			return nil
+		}
+		time.Sleep(time.Duration(i+1) * time.Second)
+	}
+	return fmt.Errorf("database not reachable after retries: %w", err)
 }
 
 func GetDB() DatabaseConnection {
