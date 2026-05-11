@@ -149,7 +149,7 @@ scripts/
 | Method | Endpoint               | Description               |
 | ------ | ----------------------| ----------------------- |
 | GET    | /api/sudoku          | Get daily sudoku        |
-| POST   | /api/sudoku/generate | Generate daily sudokus  |
+| POST   | /api/sudoku/generate/{size} | Generate daily sudokus (size: four, six, nine) |
 | POST   | /api/sudoku/submit  | Submit solution (logged) |
 | POST   | /api/sudoku/submit/guest | Submit solution (guest) |
 | GET    | /api/sudoku/me     | Get user's daily solves |

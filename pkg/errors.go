@@ -17,6 +17,7 @@ var (
 	ErrRefreshTokenRevoked    = newError(ErrorCodeRefreshTokenRevoked, "refresh token revoked", http.StatusUnauthorized)
 	ErrBodyInvalid            = newError(ErrorCodeBodyInvalid, "invalid body", http.StatusBadRequest)
 	ErrInvalidSolution        = newError(ErrorCodeInvalidSolution, "invalid solution", http.StatusBadRequest)
+	ErrInvalidSize           = newError(ErrorCodeInvalidSize, "invalid size", http.StatusBadRequest)
 	ErrInvalidLeaderboardType = newError(ErrorCodeInvalidLeaderboardType, "invalid leaderboard type", http.StatusBadRequest)
 	ErrInternalServerError    = newError(ErrorCodeInternalServerError, "internal server error", http.StatusInternalServerError)
 	ErrTooManyRequests        = newError(ErrorCodeTooManyRequests, "too many requests", http.StatusTooManyRequests)
