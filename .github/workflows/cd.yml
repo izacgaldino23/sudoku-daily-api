@@ -22,15 +22,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ vars.DOCKERHUB_REPO || format('{0}/sudoku-daily-api', secrets.DOCKERHUB_USERNAME) }}
-          tags: |
-            type=sha,format=short
-            type=raw,value=latest
-
       - name: Short SHA
         id: sha
         run: echo "sha=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
@@ -40,8 +31,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ${{ vars.DOCKERHUB_REPO || format('{0}/sudoku-daily-api', secrets.DOCKERHUB_USERNAME) }}:${{ steps.sha.outputs.sha }}
+            ${{ vars.DOCKERHUB_REPO || format('{0}/sudoku-daily-api', secrets.DOCKERHUB_USERNAME) }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
