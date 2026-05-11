@@ -47,7 +47,7 @@ func ConnectDB(configEnv *config.Config) (err error) {
 
 func pingWithRetry(sqlDB *sql.DB) error {
 	var err error
-	for i := range 10 {
+	for i := range 2 {
 		err = sqlDB.Ping()
 		if err == nil {
 			return nil
