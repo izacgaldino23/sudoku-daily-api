@@ -28,23 +28,11 @@ func boardSizeToName(size entities.BoardSize) string {
 }
 
 func TestSudokuGenerate(t *testing.T) {
-	t.Run("generate daily sudoku without size", func(t *testing.T) {
-		t.Cleanup(helpers.TruncateTables)
-		app := helpers.SetupTestApp()
-
-		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate", nil)
-		req.Header.Set("Content-Type", "application/json")
-
-		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-	})
-
 	t.Run("generate daily sudoku with invalid size", func(t *testing.T) {
 		t.Cleanup(helpers.TruncateTables)
 		app := helpers.SetupTestApp()
 
-		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate?size=invalid", nil)
+		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate/invalid", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
@@ -58,7 +46,7 @@ func TestSudokuGenerate(t *testing.T) {
 			app := helpers.SetupTestApp()
 
 			sizeName := boardSizeToName(boardSize)
-			req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate?size="+sizeName, nil)
+			req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate/"+sizeName, nil)
 			req.Header.Set("Content-Type", "application/json")
 
 			resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})

@@ -90,26 +90,23 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 // @Tags sudoku
 // @Accept json
 // @Produce json
-// @Param size query GetDailySudokuRequest true "Board size (four, six, or nine)"
+// @Param size path string true "Board size (four, six, or nine)" Enums(four, six, nine)
 // @Success 200 {object} SudokuResponse
-// @Failure 400 {object} pkg.Error "invalid_query_param, invalid_size"
-// @Router /api/sudoku/generate [post]
+// @Failure 400 {object} pkg.Error "invalid_size"
+// @Router /api/sudoku/generate/{size} [post]
 func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 	var (
-		reqCtx  = c.Context()
-		request GetDailySudokuRequest
-		err     error
+		reqCtx = c.Context()
+		size   entities.BoardSize
+		err    error
 	)
 
-	if err := c.Bind().Query(&request); err != nil {
-		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
+	sizeName := c.Params("size")
+	if !entities.IsValidBoardSizeName(sizeName) {
+		return pkg.JsonError(c, pkg.ErrInvalidSize)
 	}
 
-	if err := pkg.ValidateStruct(request); err != nil {
-		return pkg.JsonError(c, err)
-	}
-
-	size := entities.BoardSizeFromName(request.Size)
+	size = entities.BoardSizeFromName(sizeName)
 
 	dailySudoku, err := sh.createSudokuUseCase.Execute(reqCtx, size)
 	if err != nil {
