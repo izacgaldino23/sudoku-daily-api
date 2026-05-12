@@ -27,7 +27,7 @@ type (
 	}
 
 	ResetStrikesRequest struct {
-		Date time.Time `json:"date" validate:"required"`
+		Date time.Time `json:"date"`
 	}
 )
 
