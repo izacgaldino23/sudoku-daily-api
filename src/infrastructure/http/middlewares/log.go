@@ -11,25 +11,6 @@ import (
 	"sudoku-daily-api/src/domain/app_context"
 )
 
-func severityFromLevel(level zerolog.Level) string {
-	switch level {
-	case zerolog.DebugLevel:
-		return "DEBUG"
-	case zerolog.InfoLevel:
-		return "INFO"
-	case zerolog.WarnLevel:
-		return "WARNING"
-	case zerolog.ErrorLevel:
-		return "ERROR"
-	case zerolog.FatalLevel:
-		return "CRITICAL"
-	case zerolog.PanicLevel:
-		return "EMERGENCY"
-	default:
-		return "DEFAULT"
-	}
-}
-
 func httpRequestDict(c fiber.Ctx, status int, latency time.Duration) *zerolog.Event {
 	return zerolog.Dict().
 		Str("requestMethod", c.Method()).
