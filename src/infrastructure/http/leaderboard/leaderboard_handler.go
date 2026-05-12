@@ -2,6 +2,7 @@ package leaderboard
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 
@@ -67,6 +68,15 @@ func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 		JSON(response)
 }
 
+// @Summary Reset leaderboard strikes
+// @Description Resets current_streak to 0 for users whose last_solved_date is before yesterday. Called daily by Cloud Scheduler. If no date is provided, defaults to the current time.
+// @Tags leaderboard
+// @Accept json
+// @Produce json
+// @Param request body ResetStrikesRequest false "Date threshold for reset (optional, defaults to now)"
+// @Success 204 "No Content - strikes reset successfully"
+// @Failure 400 {object} pkg.Error "invalid_body, validation_error"
+// @Router /api/leaderboard/reset [post]
 func (h *leaderboardHandler) ResetStrikes(c fiber.Ctx) error {
 	var (
 		req    ResetStrikesRequest
@@ -74,12 +84,18 @@ func (h *leaderboardHandler) ResetStrikes(c fiber.Ctx) error {
 		reqCtx = c.Context()
 	)
 
-	if err = c.Bind().Body(&req); err != nil {
-		return pkg.ErrBodyInvalid
+	if len(c.Body()) > 0 {
+		if err = c.Bind().Body(&req); err != nil {
+			return pkg.JsonError(c, pkg.ErrBodyInvalid)
+		}
+
+		if err = pkg.ValidateStruct(req); err != nil {
+			return pkg.JsonError(c, err)
+		}
 	}
 
-	if err = pkg.ValidateStruct(req); err != nil {
-		return pkg.JsonError(c, err)
+	if req.Date.IsZero() {
+		req.Date = time.Now()
 	}
 
 	err = h.resetStrikesUseCase.Execute(reqCtx, req.Date)

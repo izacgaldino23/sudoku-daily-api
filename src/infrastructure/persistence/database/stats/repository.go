@@ -168,6 +168,7 @@ func (r *userStatsRepository) ResetStrikes(ctx context.Context, today time.Time)
 	result, err := r.txManager.GetExecutor(ctx).
 		NewUpdate().
 		Model(&Stats{}).
+		Set("current_streak = 0").
 		Where("last_solved_date <= ?", dayBeforeYesterday).
 		Exec(ctx)
 	if err != nil {

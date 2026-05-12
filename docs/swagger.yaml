@@ -86,6 +86,11 @@ definitions:
           $ref: '#/definitions/leaderboard.Entry'
         type: array
     type: object
+  leaderboard.ResetStrikesRequest:
+    properties:
+      date:
+        type: string
+    type: object
   pkg.Error:
     properties:
       code:
@@ -324,6 +329,31 @@ paths:
           schema:
             $ref: '#/definitions/pkg.Error'
       summary: Get leaderboard
+      tags:
+      - leaderboard
+  /api/leaderboard/reset:
+    post:
+      consumes:
+      - application/json
+      description: Resets current_streak to 0 for users whose last_solved_date is
+        before yesterday. Called daily by Cloud Scheduler. If no date is provided,
+        defaults to the current time.
+      parameters:
+      - description: Date threshold for reset (optional, defaults to now)
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/leaderboard.ResetStrikesRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content - strikes reset successfully
+        "400":
+          description: invalid_body, validation_error
+          schema:
+            $ref: '#/definitions/pkg.Error'
+      summary: Reset leaderboard strikes
       tags:
       - leaderboard
   /api/sudoku:

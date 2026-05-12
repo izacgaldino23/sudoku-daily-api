@@ -251,6 +251,42 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/leaderboard/reset": {
+            "post": {
+                "description": "Resets current_streak to 0 for users whose last_solved_date is before yesterday. Called daily by Cloud Scheduler. If no date is provided, defaults to the current time.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "leaderboard"
+                ],
+                "summary": "Reset leaderboard strikes",
+                "parameters": [
+                    {
+                        "description": "Date threshold for reset (optional, defaults to now)",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/leaderboard.ResetStrikesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content - strikes reset successfully"
+                    },
+                    "400": {
+                        "description": "invalid_body, validation_error",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/api/sudoku": {
             "get": {
                 "description": "Returns the daily sudoku puzzle for a given size",
@@ -622,6 +658,14 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/leaderboard.Entry"
                     }
+                }
+            }
+        },
+        "leaderboard.ResetStrikesRequest": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
                 }
             }
         },
