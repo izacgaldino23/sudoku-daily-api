@@ -14,6 +14,7 @@ Go 1.25 REST API using Fiber framework with PostgreSQL/Bun ORM.
 - `src/services/` - Business logic implementations (generator, password hasher, token, sudoku fetcher)
 - `src/domain/` - Entities, repository interfaces, value objects, service interfaces, strategies
 - `src/infrastructure/` - HTTP handlers, logging, database persistence
+- `src/infrastructure/http/middlewares/metrics.go` - Prometheus metrics definitions + /metrics handler
 - `pkg/` - Shared packages (config, database, errors, validator)
 - `migrations/sql/*.sql` - Database migrations
 
@@ -72,6 +73,12 @@ make generate-docs
 ## Dependencies
 
 - Fiber (HTTP), Bun (ORM), golang-jwt/jwt/v5, pg (postgres driver), Viper (env), golang-migrate, zerolog
+- Prometheus client_golang — /metrics endpoint + HTTP request metrics
+
+## Environment Variables
+
+- `LOG_LEVEL` — Log level (debug, info, warn, error, disabled). Default: info.
+- `DEBUG` — Legacy toggle (true → debug level). Overridden by LOG_LEVEL.
 
 ## Load Testing
 
@@ -101,7 +108,7 @@ make load-clean
 Uses separate `docker-compose.load.yaml` to avoid interfering with the main development environment.
 
 ### Profiling (pprof)
-- Activated when `DEBUG=true` in environment
+- Activated when `LOG_LEVEL=debug` or `DEBUG=true`
 - Runs on port `:6060` (internal Docker network only)
 - Access from within Docker: `http://api:6060/debug/pprof/`
 - Generate CPU profile: `go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30`
@@ -158,6 +165,12 @@ scripts/
 | Method | Endpoint         | Description     |
 | ------ | ---------------- | --------------- |
 | GET    | /api/leaderboard | Get leaderboard |
+
+### Monitoring
+| Method | Endpoint   | Description |
+| ------ | ---------- | ----------- |
+| GET    | /metrics   | Prometheus metrics (no auth) |
+| GET    | /health    | Health check |
 
 ## Error Codes
 

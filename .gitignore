@@ -7,3 +7,5 @@ seed/
 .env
 temp.env
 local.env
+
+*.exe

@@ -23,7 +23,8 @@ type Config struct {
 	Auth     Auth     `mapstructure:"AUTH"`
 	Limits   Limits   `mapstructure:"LIMITS"`
 
-	Debug bool `mapstructure:"DEBUG"`
+	Debug    bool   `mapstructure:"DEBUG"`
+	LogLevel string `mapstructure:"LOG_LEVEL"`
 }
 
 type Limits struct {
