@@ -2,6 +2,8 @@ package main
 
 import (
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"sudoku-daily-api/pkg/config"
@@ -43,12 +45,28 @@ func main() {
 	_ = application.InitApp(apiRouter)
 
 	port := config.GetConfig().ApiPort
-	log.Logger.Info().Msgf("Server running on port %v", port)
+	cfg := config.GetConfig()
 
-	err := app.Listen(port)
-	if err != nil {
-		log.Logger.Fatal().Err(err)
+	go func() {
+		log.Logger.Info().Msgf("Server running on port %v", port)
+		if err := app.Listen(port); err != nil {
+			log.Logger.Fatal().Err(err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	log.Logger.Info().Msg("Shutting down server...")
+
+	if err := app.ShutdownWithTimeout(cfg.Limits.ShutdownTimeout); err != nil {
+		log.Logger.Error().Err(err).Msg("Server forced to shutdown")
 	}
+
+	database.CloseDB()
+
+	log.Logger.Info().Msg("Server exited")
 }
 
 func initLogger() {

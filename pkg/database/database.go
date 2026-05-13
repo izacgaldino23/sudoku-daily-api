@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"time"
@@ -45,16 +46,26 @@ func ConnectDB(configEnv *config.Config) (err error) {
 	return pingWithRetry(sqlDB)
 }
 
+const pingTimeout = 5 * time.Second
+
 func pingWithRetry(sqlDB *sql.DB) error {
 	var err error
 	for i := range 2 {
-		err = sqlDB.Ping()
+		ctx, cancel := context.WithTimeout(context.Background(), pingTimeout)
+		err = sqlDB.PingContext(ctx)
+		cancel()
 		if err == nil {
 			return nil
 		}
 		time.Sleep(time.Duration(i+1) * time.Second)
 	}
 	return fmt.Errorf("database not reachable after retries: %w", err)
+}
+
+func CloseDB() {
+	if dbConnection.SqlConnection != nil {
+		_ = dbConnection.SqlConnection.Close()
+	}
 }
 
 func GetDB() DatabaseConnection {

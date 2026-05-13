@@ -31,6 +31,7 @@ type Limits struct {
 	MaxRequestCountGlobal int           `mapstructure:"MAX_REQUEST_COUNT_GLOBAL"`
 	MaxRequestCountUser   int           `mapstructure:"MAX_REQUEST_COUNT_USER"`
 	Timeout               time.Duration `mapstructure:"TIMEOUT"`
+	ShutdownTimeout       time.Duration `mapstructure:"SHUTDOWN_TIMEOUT"`
 }
 
 type Auth struct {
