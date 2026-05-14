@@ -6,6 +6,7 @@ import (
 	"syscall"
 	"time"
 
+	"sudoku-daily-api/migrations"
 	"sudoku-daily-api/pkg/config"
 	"sudoku-daily-api/pkg/database"
 	"sudoku-daily-api/src/application"
@@ -31,6 +32,12 @@ func init() {
 	err = database.ConnectDB(c)
 	if err != nil {
 		log.Logger.Fatal().Err(err)
+	}
+
+	if c.Database.MigrationsEnabled {
+		if err = migrations.RunMigrations(c.Database.MigrationsPath); err != nil {
+			log.Logger.Fatal().Err(err).Msg("Error running migrations")
+		}
 	}
 }
 

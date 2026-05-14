@@ -9,7 +9,7 @@ Go 1.25 REST API using Fiber framework with PostgreSQL/Bun ORM.
 ## Project Structure
 
 - `cmd/api/main.go` - API server entry point
-- `cmd/migrate/main.go` - Database migrations entry point
+- `cmd/api/main.go` - API server entry point (runs migrations on startup if enabled)
 - `src/application/` - Fiber app setup, routes, bootstrap, and use cases
 - `src/services/` - Business logic implementations (generator, password hasher, token, sudoku fetcher)
 - `src/domain/` - Entities, repository interfaces, value objects, service interfaces, strategies
@@ -36,8 +36,8 @@ go run cmd/api/main.go
 # Run tests (requires Docker)
 go test ./tests/...
 
-# Migrations
-go run cmd/migrate/main.go
+# API server (runs migrations on startup if DATABASE_MIGRATIONS_ENABLED=true)
+go run cmd/api/main.go
 ```
 
 ## Docker
@@ -79,6 +79,7 @@ make generate-docs
 
 - `LOG_LEVEL` — Log level (debug, info, warn, error, disabled). Default: info.
 - `DEBUG` — Legacy toggle (true → debug level). Overridden by LOG_LEVEL.
+- `DATABASE_MIGRATIONS_ENABLED` — Run migrations on API startup (true/false). Default: false.
 
 ## Load Testing
 

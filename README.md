@@ -76,14 +76,12 @@
 
 ## Migrations
 
-Migrations run on startup via `cmd/migrate/main.go`. Called by GitHub Actions pipeline.
+Migrations run automatically on API startup when `DATABASE_MIGRATIONS_ENABLED=true` is set.
+Uses `golang-migrate` — only pending migrations are applied (idempotent).
 
 ## Running
 
 ```bash
-# Start API
-go run cmd/api/main.go
-
-# Run migrations
-go run cmd/migrate/main.go
+# Start API (migrations run on startup if enabled)
+set DATABASE_MIGRATIONS_ENABLED=true && go run cmd/api/main.go
 ```

@@ -50,7 +50,8 @@ type Auth struct {
 }
 
 type Database struct {
-	MigrationsPath string `mapstructure:"MIGRATIONS_PATH"`
+	MigrationsPath    string `mapstructure:"MIGRATIONS_PATH"`
+	MigrationsEnabled bool   `mapstructure:"MIGRATIONS_ENABLED"`
 
 	Host     string `mapstructure:"HOST"`
 	Port     string `mapstructure:"PORT"`

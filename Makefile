@@ -10,7 +10,7 @@ new-migration:
 	@migrate create -ext sql -dir $(MIGRATIONS_PATH) -seq $(name)
 
 run-migrations:
-	set ENV=local&& go run cmd/migrate/main.go
+	set ENV=local&& DATABASE_MIGRATIONS_ENABLED=true go run cmd/api/main.go
 
 # run unit tests for pkg and src folder on root
 test:
