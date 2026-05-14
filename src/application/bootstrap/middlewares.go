@@ -14,7 +14,7 @@ func (c *Container) BuildMiddlewares() {
 	c.Middlewares.LogMiddleware = middlewares.LogMiddleware(log.Logger)
 	c.Middlewares.RequestID = middlewares.NewRequestIDMiddleware()
 	c.Middlewares.ResponseHeaders = middlewares.NewResponseHeadersMiddleware()
-	c.Middlewares.AuthOIDC = middlewares.AuthOIDCMiddleware(c.Config.Auth.OidcEnabled, c.Config.Auth.OidcAudience)
+	c.Middlewares.AuthOIDC = middlewares.AuthOIDCMiddleware(c.Config.Auth.OidcEnabled, c.Config.Auth.OidcAudience, c.Config.Auth.CronSecret)
 	c.Middlewares.GlobalRateLimiter = middlewares.NewGlobalRateLimiterMiddleware(c.Config.Limits.MaxRequestCountGlobal)
 	c.Middlewares.UserRateLimiter = middlewares.NewUserRateLimitMiddleware(c.Config.Limits.MaxRequestCountUser)
 	c.Middlewares.Timeout = middlewares.TimeoutMiddleware(c.Config.Limits.Timeout)

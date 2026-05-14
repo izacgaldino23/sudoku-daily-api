@@ -27,6 +27,7 @@ var (
 	ErrSudokuNotFound       = newError(ErrorCodeSudokuNotFound, "sudoku not found", http.StatusNotFound)
 	ErrRefreshTokenNotFound = newError(ErrorCodeRefreshTokenNotFound, "refresh token not found", http.StatusNotFound)
 	ErrSolutionNotFound     = newError(ErrorCodeSolutionNotFound, "solution not found", http.StatusNotFound)
+	ErrInvalidCronSecret    = newError(ErrorCodeInvalidCronSecret, "invalid cron secret", http.StatusUnauthorized)
 )
 
 type (

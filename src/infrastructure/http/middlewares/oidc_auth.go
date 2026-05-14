@@ -10,12 +10,24 @@ import (
 	"google.golang.org/api/idtoken"
 )
 
-func AuthOIDCMiddleware(isEnabled bool, audience string) func(c fiber.Ctx) error {
+const cronSecretHeader = "X-Cron-Secret"
+
+func AuthOIDCMiddleware(isEnabled bool, audience, cronSecret string) func(c fiber.Ctx) error {
 	return func(c fiber.Ctx) error {
 		reqCtx := c.Context()
 
+		if cronSecret != "" {
+			if c.Get(cronSecretHeader) == cronSecret {
+				return c.Next()
+			}
+			authHeader := c.Get(authorizationHeader)
+			if strings.TrimPrefix(authHeader, "Bearer ") == cronSecret {
+				return c.Next()
+			}
+		}
+
 		if !isEnabled {
-			return c.Next()
+			return pkg.JsonError(c, pkg.ErrInvalidToken)
 		}
 
 		authHeader := c.Get(authorizationHeader)

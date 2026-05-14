@@ -1,0 +1,31 @@
+name: Daily Cron
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  daily-seed:
+    name: Daily Seed
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        size: [four, six, nine]
+    steps:
+      - name: Generate ${{ matrix.size }}
+        run: |
+          curl -sS --fail-with-body -X POST "${{ secrets.API_URL }}/api/cron/generate/${{ matrix.size }}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+  leaderboard-reset:
+    name: Leaderboard Reset
+    runs-on: ubuntu-latest
+    needs: daily-seed
+    steps:
+      - name: Reset strikes
+        run: |
+          curl -sS --fail-with-body -X POST "${{ secrets.API_URL }}/api/leaderboard/reset" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"

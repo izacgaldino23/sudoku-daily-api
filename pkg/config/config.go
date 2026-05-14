@@ -47,6 +47,7 @@ type Auth struct {
 
 	OidcEnabled  bool   `mapstructure:"OIDC_ENABLED"`
 	OidcAudience string `mapstructure:"OIDC_AUDIENCE"`
+	CronSecret   string `mapstructure:"CRON_SECRET"`
 }
 
 type Database struct {

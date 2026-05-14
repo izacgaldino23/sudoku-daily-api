@@ -8,7 +8,6 @@ Go 1.25 REST API using Fiber framework with PostgreSQL/Bun ORM.
 
 ## Project Structure
 
-- `cmd/api/main.go` - API server entry point
 - `cmd/api/main.go` - API server entry point (runs migrations on startup if enabled)
 - `src/application/` - Fiber app setup, routes, bootstrap, and use cases
 - `src/services/` - Business logic implementations (generator, password hasher, token, sudoku fetcher)
@@ -80,6 +79,9 @@ make generate-docs
 - `LOG_LEVEL` — Log level (debug, info, warn, error, disabled). Default: info.
 - `DEBUG` — Legacy toggle (true → debug level). Overridden by LOG_LEVEL.
 - `DATABASE_MIGRATIONS_ENABLED` — Run migrations on API startup (true/false). Default: false.
+- `DATABASE_MIGRATIONS_PATH` — Path to migration SQL files (e.g. `migrations/sql`).
+- `AUTH_CRON_SECRET` — Secret for cron job authentication (via `Authorization: Bearer` or `X-Cron-Secret` header).
+- `AUTH_OIDC_ENABLED` / `AUTH_OIDC_AUDIENCE` — OIDC authentication toggle and audience.
 
 ## Load Testing
 
@@ -166,6 +168,13 @@ scripts/
 | Method | Endpoint         | Description     |
 | ------ | ---------------- | --------------- |
 | GET    | /api/leaderboard | Get leaderboard |
+| POST   | /api/leaderboard/reset | Reset daily strikes (OIDC/cron auth) |
+
+### Cron
+| Method | Endpoint               | Description                                     |
+| ------ | ---------------------- | ----------------------------------------------- |
+| POST   | /api/cron/generate/{size} | Generate daily sudoku for size (four, six, nine) |
+| POST   | /api/leaderboard/reset | Reset strikes (also available via cron auth)    |
 
 ### Monitoring
 | Method | Endpoint   | Description |
@@ -188,3 +197,9 @@ Common error codes returned in responses: `invalid_token`, `token_expired`, `inv
 
 **DOCUMENTATION**: For every change/addition on handler, update the swagger docs
 Run `make generate-docs`
+
+## Workflows
+
+- `.github/workflows/ci.yml` — Lint, build, unit + integration tests on PR/push to develop
+- `.github/workflows/cd.yml` — Build + push Docker image to DockerHub on push to main
+- `.github/workflows/cron.yml` — Daily cron at 00:00 UTC: generates all 3 sudoku sizes + resets leaderboard. Requires `API_URL` and `CRON_SECRET` secrets.`

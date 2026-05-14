@@ -25,4 +25,5 @@ const (
 	ErrorCodeSudokuNotFound       = "sudoku_not_found"
 	ErrorCodeRefreshTokenNotFound = "refresh_token_not_found"
 	ErrorCodeSolutionNotFound     = "solution_not_found"
+	ErrorCodeInvalidCronSecret    = "invalid_cron_secret"
 )

@@ -38,6 +38,10 @@ func (c *Container) BuildRouters(app fiber.Router) {
 	leaderboardGroup := app.Group("/leaderboard")
 	leaderboardGroup.Get("/", c.LeaderboardHandler.GetLeaderboard)
 	leaderboardGroup.Post("/reset", c.Middlewares.AuthOIDC, c.LeaderboardHandler.ResetStrikes)
+
+	// cron router
+	cronGroup := app.Group("/cron")
+	cronGroup.Post("/generate/:size", c.Middlewares.AuthOIDC, c.SudokuHandler.CreateSudoku)
 }
 
 func applyMiddlewares(app fiber.Router, container *Container) {
