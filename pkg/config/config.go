@@ -22,9 +22,29 @@ type Config struct {
 	Database Database `mapstructure:"DATABASE"`
 	Auth     Auth     `mapstructure:"AUTH"`
 	Limits   Limits   `mapstructure:"LIMITS"`
+	CORS     CORS     `mapstructure:"CORS"`
 
 	Debug    bool   `mapstructure:"DEBUG"`
 	LogLevel string `mapstructure:"LOG_LEVEL"`
+}
+
+type CORS struct {
+	AllowedOrigins []string `mapstructure:"ALLOWED_ORIGINS"`
+}
+
+func (c *CORS) SetAllowedOrigins(origins []string) {
+	if len(origins) == 0 {
+		return
+	}
+	parsed := make([]string, 0)
+	for _, o := range origins {
+		if strings.Contains(o, ",") {
+			parsed = append(parsed, strings.Split(o, ",")...)
+		} else {
+			parsed = append(parsed, o)
+		}
+	}
+	c.AllowedOrigins = parsed
 }
 
 type Limits struct {
@@ -125,6 +145,8 @@ func viperInit() error {
 	} else {
 		configEnv.ApiPort = "0.0.0.0:" + configEnv.ApiPort
 	}
+
+	configEnv.CORS.SetAllowedOrigins(configEnv.CORS.AllowedOrigins)
 
 	return nil
 }

@@ -241,3 +241,50 @@ func TestLoadConfigInvalidEnvFile(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to load env file")
 }
+
+func TestCORSAllowedOriginsSingle(t *testing.T) {
+	resetConfig()
+	env := envMap{
+		"API_PORT":              "8080",
+		"DATABASE_HOST":         "localhost",
+		"CORS_ALLOWED_ORIGINS":  "http://localhost:5173",
+	}
+	defer setupEnv(t, env)()
+
+	err := Load()
+	require.NoError(t, err)
+
+	cfg := GetConfig()
+	assert.Equal(t, []string{"http://localhost:5173"}, cfg.CORS.AllowedOrigins)
+}
+
+func TestCORSAllowedOriginsMultiple(t *testing.T) {
+	resetConfig()
+	env := envMap{
+		"API_PORT":              "8080",
+		"DATABASE_HOST":         "localhost",
+		"CORS_ALLOWED_ORIGINS":  "http://localhost:5173,https://app.example.com,https://staging.example.com",
+	}
+	defer setupEnv(t, env)()
+
+	err := Load()
+	require.NoError(t, err)
+
+	cfg := GetConfig()
+	assert.Equal(t, []string{"http://localhost:5173", "https://app.example.com", "https://staging.example.com"}, cfg.CORS.AllowedOrigins)
+}
+
+func TestCORSAllowedOriginsEmpty(t *testing.T) {
+	resetConfig()
+	env := envMap{
+		"API_PORT":      "8080",
+		"DATABASE_HOST": "localhost",
+	}
+	defer setupEnv(t, env)()
+
+	err := Load()
+	require.NoError(t, err)
+
+	cfg := GetConfig()
+	assert.Empty(t, cfg.CORS.AllowedOrigins)
+}
