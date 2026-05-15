@@ -23,20 +23,6 @@ test-integration:
 clean-test:
 	docker-compose -f tests/docker-compose.test.yaml down
 
-test-loads:
-	docker-compose -f scripts/load-tests/docker-compose.yaml up -d --remove-orphans db-load pghero
-	docker-compose -f scripts/load-tests/docker-compose.yaml run migrate-load
-	docker-compose -f scripts/load-tests/docker-compose.yaml up -d --remove-orphans api-load
-	docker-compose -f scripts/load-tests/docker-compose.yaml run vegeta
-	docker-compose -f scripts/load-tests/docker-compose.yaml down --remove-orphans
-
-load-report:
-	@echo "Load test reports:"
-	@ls -la load-reports/ 2>/dev/null || echo "No reports found. Run 'make test-loads' first."
-
-load-clean:
-	rm -f load-reports/*
-
 generate-docs:
 	swag init -g ./cmd/api/main.go
 
@@ -46,4 +32,7 @@ lint: format
 format:
 	go fmt ./...
 
-.PHONY: new-migration run-migrations test-integration generate-docs lint format test test-loads
+docker-build:
+	docker compose -f docker-compose.yaml up -d --remove-orphans --build
+
+.PHONY: new-migration run-migrations test-integration generate-docs lint format test test-loads docker-build
