@@ -110,7 +110,7 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 		Path:     "/",
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: fiber.CookieSameSiteLaxMode,
+		SameSite: fiber.CookieSameSiteNoneMode,
 		MaxAge:   refreshTokenDuration,
 	})
 
@@ -146,7 +146,7 @@ func (a *authHandler) Refresh(c fiber.Ctx) error {
 		Path:     "/",
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: fiber.CookieSameSiteLaxMode,
+		SameSite: fiber.CookieSameSiteNoneMode,
 		MaxAge:   refreshTokenDuration,
 	})
 

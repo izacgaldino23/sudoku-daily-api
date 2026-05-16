@@ -57,6 +57,7 @@ func applyMiddlewares(app fiber.Router, container *Container) {
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: container.Config.CORS.AllowedOrigins,
+		AllowCredentials: true,
 		AllowHeaders: []string{"Origin",
 			"Content-Type",
 			"Accept",
