@@ -42,7 +42,7 @@ func (s *solver) Execute(board *entities.Board) int {
 		}
 	}
 
-	return s.guess(board, empty, 0, 0)
+	return s.guess(board, empty, len(empty), 0)
 }
 
 func (s *solver) guess(board *entities.Board, empty []cell, left int, solutions int) int {

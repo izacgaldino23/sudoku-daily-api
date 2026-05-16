@@ -93,26 +93,88 @@ func TestHideStrategy(t *testing.T) {
 		})
 	}
 
+	t.Run("TestHideStrategy_uniqueSolution", func(t *testing.T) {
+		solver := newSolver()
+		for size := range entities.BoardSizes {
+			t.Run(fmt.Sprintf("size_%v", size), func(t *testing.T) {
+				r := rand.New(rand.NewPCG(uint64(fakeDate.Unix())+uint64(size), 0))
+				sudoku := generateValidSudoku(size, r)
+				sudoku.Date = fakeDate
+				sudoku.Difficulty = entities.DifficultyMedium
+
+				h.Hide(context.Background(), sudoku, r)
+
+				assert.Equal(t, 1, solver.Execute(&sudoku.Board), "hidden puzzle must have exactly one solution")
+			})
+		}
+	})
+
 }
 
 func TestSolver(t *testing.T) {
-	size := entities.BoardSize6
-
-	board := [][]int{
-		{0, 0, 3, 4, 5, 6},
-		{4, 5, 6, 0, 0, 3},
-		{3, 4, 5, 6, 0, 0},
-		{6, 0, 0, 3, 4, 5},
-		{0, 3, 4, 5, 6, 0},
-		{5, 6, 0, 0, 3, 4},
-	}
-
-	sudoku := entities.NewSudoku(size)
-	sudoku.Board = entities.NewFilledBoard(board)
-
 	solver := newSolver()
 
-	assert.Equal(t, 1, solver.Execute(&sudoku.Board))
+	t.Run("fullBoard_returns1", func(t *testing.T) {
+		size := entities.BoardSize4
+		board := [][]int{
+			{1, 2, 3, 4},
+			{3, 4, 1, 2},
+			{2, 1, 4, 3},
+			{4, 3, 2, 1},
+		}
+
+		sudoku := entities.NewSudoku(size)
+		sudoku.Board = entities.NewFilledBoard(board)
+
+		assert.Equal(t, 1, solver.Execute(&sudoku.Board))
+	})
+
+	t.Run("uniqueSolution_returns1", func(t *testing.T) {
+		size := entities.BoardSize4
+		board := [][]int{
+			{1, 2, 3, 4},
+			{3, 4, 1, 2},
+			{2, 1, 0, 3},
+			{4, 3, 2, 1},
+		}
+
+		sudoku := entities.NewSudoku(size)
+		sudoku.Board = entities.NewFilledBoard(board)
+
+		assert.Equal(t, 1, solver.Execute(&sudoku.Board))
+	})
+
+	t.Run("multipleSolutions_returns2", func(t *testing.T) {
+		size := entities.BoardSize6
+		board := [][]int{
+			{0, 0, 3, 4, 5, 6},
+			{4, 5, 6, 0, 0, 3},
+			{3, 4, 5, 6, 0, 0},
+			{6, 0, 0, 3, 4, 5},
+			{0, 3, 4, 5, 6, 0},
+			{5, 6, 0, 0, 3, 4},
+		}
+
+		sudoku := entities.NewSudoku(size)
+		sudoku.Board = entities.NewFilledBoard(board)
+
+		assert.Equal(t, 2, solver.Execute(&sudoku.Board))
+	})
+
+	t.Run("impossibleBoard_returns0", func(t *testing.T) {
+		size := entities.BoardSize4
+		board := [][]int{
+			{1, 2, 3, 4},
+			{0, 3, 4, 0},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+		}
+
+		sudoku := entities.NewSudoku(size)
+		sudoku.Board = entities.NewFilledBoard(board)
+
+		assert.Equal(t, 0, solver.Execute(&sudoku.Board))
+	})
 }
 
 func generateValidSudoku(size entities.BoardSize, r *rand.Rand) *entities.Sudoku {
