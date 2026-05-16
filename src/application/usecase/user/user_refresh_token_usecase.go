@@ -16,16 +16,19 @@ type (
 	}
 
 	userRefreshTokenUseCase struct {
+		txManager        repository.TransactionManager
 		refreshTokenRepo repository.RefreshTokenRepository
 		tokenService     domain.TokenService
 	}
 )
 
 func NewUserRefreshTokenUseCase(
+	txManager repository.TransactionManager,
 	refreshTokenRepo repository.RefreshTokenRepository,
 	tokenService domain.TokenService,
 ) UserRefreshTokenUseCase {
 	return &userRefreshTokenUseCase{
+		txManager:        txManager,
 		refreshTokenRepo: refreshTokenRepo,
 		tokenService:     tokenService,
 	}
@@ -58,11 +61,17 @@ func (u *userRefreshTokenUseCase) Execute(ctx context.Context, tokenHash string)
 		return "", "", err
 	}
 
-	if err := u.refreshTokenRepo.Revoke(ctx, refreshToken.UserID, tokenHash); err != nil {
-		return "", "", err
-	}
+	if err := u.txManager.WithinTransaction(ctx, func(txCtx context.Context) error {
+		if err := u.refreshTokenRepo.Revoke(txCtx, refreshToken.UserID, tokenHash); err != nil {
+			return err
+		}
 
-	if err := u.refreshTokenRepo.Create(ctx, newRefreshToken); err != nil {
+		if err := u.refreshTokenRepo.Create(txCtx, newRefreshToken); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return "", "", err
 	}
 

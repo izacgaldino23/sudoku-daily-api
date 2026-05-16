@@ -66,6 +66,17 @@ func (r *refreshTokenRepository) GetByToken(ctx context.Context, token string) (
 	return refreshTokenModel.ToDomain(), nil
 }
 
+func (r *refreshTokenRepository) RevokeAllByUserID(ctx context.Context, userID vo.UUID) error {
+	_, err := r.txManager.GetExecutor(ctx).
+		NewUpdate().
+		Model(&RefreshToken{}).
+		Where("user_id = ? AND revoked = ?", userID, false).
+		Set("revoked = ?", true).
+		Exec(ctx)
+
+	return r.txManager.HandleError(ctx, err)
+}
+
 func (r *refreshTokenRepository) Revoke(ctx context.Context, userID vo.UUID, token string) error {
 	_, err := r.txManager.GetExecutor(ctx).
 		NewUpdate().

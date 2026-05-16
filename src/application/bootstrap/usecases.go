@@ -58,6 +58,7 @@ func (c *Container) BuildUseCases() {
 	)
 
 	c.UserRefreshToken = userUsecase.NewUserRefreshTokenUseCase(
+		c.TxManager,
 		c.RefreshTokenRepository,
 		c.TokenService,
 	)

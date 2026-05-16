@@ -11,4 +11,5 @@ type RefreshTokenRepository interface {
 	Create(ctx context.Context, token *entities.RefreshToken) error
 	GetByToken(ctx context.Context, token string) (*entities.RefreshToken, error)
 	Revoke(ctx context.Context, userID vo.UUID, token string) error
+	RevokeAllByUserID(ctx context.Context, userID vo.UUID) error
 }

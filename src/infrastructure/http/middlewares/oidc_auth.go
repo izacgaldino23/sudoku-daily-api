@@ -16,6 +16,10 @@ func AuthOIDCMiddleware(isEnabled bool, audience, cronSecret string) func(c fibe
 	return func(c fiber.Ctx) error {
 		reqCtx := c.Context()
 
+		if !isEnabled {
+			return c.Next()
+		}
+
 		if cronSecret != "" {
 			if c.Get(cronSecretHeader) == cronSecret {
 				return c.Next()
@@ -24,10 +28,6 @@ func AuthOIDCMiddleware(isEnabled bool, audience, cronSecret string) func(c fibe
 			if strings.TrimPrefix(authHeader, "Bearer ") == cronSecret {
 				return c.Next()
 			}
-		}
-
-		if !isEnabled {
-			return pkg.JsonError(c, pkg.ErrInvalidToken)
 		}
 
 		authHeader := c.Get(authorizationHeader)

@@ -59,7 +59,7 @@ func (r *userStatsRepository) GetOrCreate(ctx context.Context, userID vo.UUID) (
 		UserID:         userID.String(),
 		CurrentStreak:  0,
 		LongestStreak:  0,
-		LastSolvedDate: time.Now(),
+		LastSolvedDate: time.Time{},
 		TotalSolved:    0,
 	}
 

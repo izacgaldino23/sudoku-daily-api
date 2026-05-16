@@ -33,14 +33,19 @@ func (s *solveAddStrikeUseCase) Execute(ctx context.Context, userID vo.UUID, sol
 	}
 
 	if !stats.LastSolvedDate.IsZero() {
-		yesterday := solveDateOnly.AddDate(0, 0, -1)
 		if stats.LastSolvedDate.Equal(solveDateOnly) {
-			return nil
-		} else if stats.LastSolvedDate.Equal(yesterday) {
+			stats.TotalSolved++
+			return s.userStatsRepository.Update(ctx, stats)
+		}
+
+		yesterday := solveDateOnly.AddDate(0, 0, -1)
+		if stats.LastSolvedDate.Equal(yesterday) {
 			stats.CurrentStreak++
 		} else {
 			stats.CurrentStreak = 1
 		}
+	} else {
+		stats.CurrentStreak = 1
 	}
 
 	if stats.CurrentStreak > stats.LongestStreak {

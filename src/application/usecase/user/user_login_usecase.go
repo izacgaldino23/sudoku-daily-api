@@ -60,6 +60,10 @@ func (u *userLoginUseCase) Execute(ctx context.Context, loginData *entities.User
 			return err
 		}
 
+		if err := u.refreshTokenRepo.RevokeAllByUserID(txCtx, user.ID); err != nil {
+			return err
+		}
+
 		refreshToken, err := u.tokenService.GenerateRefreshToken(user.ID)
 		if err != nil {
 			return err
