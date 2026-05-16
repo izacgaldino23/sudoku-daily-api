@@ -2,7 +2,7 @@ package strategies
 
 import (
 	"context"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -156,12 +156,12 @@ func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Ran
 	if board.Difficulty == "" {
 		// generate random difficulty
 		difficulties := []entities.Difficulty{entities.DifficultyEasy, entities.DifficultyMedium, entities.DifficultyHard}
-		board.Difficulty = difficulties[r.Intn(len(difficulties))]
+		board.Difficulty = difficulties[r.IntN(len(difficulties))]
 	}
 
 	min, max := entities.GetClue(board.Size, board.Difficulty)
 
-	clueCount := r.Intn(max-min+1) + min
+	clueCount := r.IntN(max-min+1) + min
 	return board.GetSize()*board.GetSize() - clueCount
 }
 

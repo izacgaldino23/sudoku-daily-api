@@ -2,7 +2,7 @@ package strategies
 
 import (
 	"context"
-	"math/rand"
+	"math/rand/v2"
 	"testing"
 	"time"
 
@@ -23,7 +23,7 @@ func BenchmarkFillStrategy9(b *testing.B) {
 
 func benchmarkFillStrategy(b *testing.B, size entities.BoardSize) {
 	f := NewFillStrategy()
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r := rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), 0))
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -47,7 +47,7 @@ func BenchmarkHideStrategy9(b *testing.B) {
 func benchmarkHideStrategy(b *testing.B, size entities.BoardSize) {
 	h := NewHideStrategy()
 	f := NewFillStrategy()
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r := rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), 0))
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -73,7 +73,7 @@ func BenchmarkSolver9(b *testing.B) {
 func benchmarkSolver(b *testing.B, size entities.BoardSize) {
 	solver := newSolver()
 	f := NewFillStrategy()
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r := rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), 0))
 
 	sudoku := entities.NewSudoku(size)
 	sudoku.Difficulty = entities.DifficultyMedium
@@ -100,7 +100,7 @@ func BenchmarkSolverEmpty9(b *testing.B) {
 func benchmarkSolverEmpty(b *testing.B, size entities.BoardSize) {
 	solver := newSolver()
 	f := NewFillStrategy()
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r := rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), 0))
 
 	sudoku := entities.NewSudoku(size)
 	sudoku.Difficulty = entities.DifficultyMedium

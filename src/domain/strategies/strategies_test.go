@@ -3,7 +3,7 @@ package strategies
 import (
 	"context"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"testing"
 	"time"
 
@@ -18,7 +18,7 @@ func TestFillStrategy(t *testing.T) {
 	now := time.Now()
 	fakeDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
-	r := rand.New(rand.NewSource(fakeDate.Unix()))
+	r := rand.New(rand.NewPCG(uint64(fakeDate.Unix()), 0))
 
 	for size := range entities.BoardSizes {
 		t.Run(fmt.Sprintf("TestFillStrategy_%v", size), func(t *testing.T) {
@@ -40,6 +40,24 @@ func TestFillStrategy(t *testing.T) {
 			assert.Equal(t, 0, emptyCells)
 		})
 	}
+
+	t.Run("TestFillStrategy_differentDates", func(t *testing.T) {
+		today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		tomorrow := today.Add(24 * time.Hour)
+
+		t.Log(today.Unix(), tomorrow.Unix())
+
+		rToday := rand.New(rand.NewPCG(uint64(today.Unix()), 0))
+		rTomorrow := rand.New(rand.NewPCG(uint64(tomorrow.Unix()), 0))
+
+		sudokuToday := entities.NewSudoku(entities.BoardSize4)
+		sudokuTomorrow := entities.NewSudoku(entities.BoardSize4)
+
+		f.Fill(sudokuToday, rToday)
+		f.Fill(sudokuTomorrow, rTomorrow)
+
+		assert.NotEqual(t, sudokuToday.Board.GetBoard(), sudokuTomorrow.Board.GetBoard(), "sudokus for different dates should not be the same")
+	})
 }
 
 func TestHideStrategy(t *testing.T) {
@@ -50,7 +68,7 @@ func TestHideStrategy(t *testing.T) {
 
 	for size := range entities.BoardSizes {
 		t.Run(fmt.Sprintf("TestHideStrategy_%v", size), func(t *testing.T) {
-			r := rand.New(rand.NewSource(fakeDate.Unix()))
+			r := rand.New(rand.NewPCG(uint64(fakeDate.Unix()), 0))
 			sudoku := generateValidSudoku(size, r)
 			sudoku.Date = fakeDate
 			sudoku.Difficulty = entities.DifficultyMedium
@@ -122,7 +140,7 @@ func TestGenerateComplete(t *testing.T) {
 	}
 
 	for _, date := range dates {
-		r := rand.New(rand.NewSource(date.Unix()))
+		r := rand.New(rand.NewPCG(uint64(fakeDate.Unix()), 0))
 
 		for size, title := range entities.BoardSizes {
 			t.Run(fmt.Sprintf("TestGenerateComplete_%v_%v", title, size), func(t *testing.T) {

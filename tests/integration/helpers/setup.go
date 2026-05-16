@@ -74,6 +74,8 @@ func SetupTestEnvironment() {
 		_ = os.Setenv("LIMITS_MAX_REQUEST_COUNT_GLOBAL", "1000")
 		_ = os.Setenv("LIMITS_MAX_REQUEST_COUNT_USER", "100")
 
+		_ = os.Setenv("CORS_ALLOWED_ORIGINS", "http://localhost")
+
 		err := config.Load()
 		if err != nil {
 			panic(fmt.Sprintf("failed to load config: %v", err))

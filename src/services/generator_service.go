@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	"sudoku-daily-api/src/domain"
@@ -32,7 +32,7 @@ func NewGenerator(
 func (s *sudokuGenerator) GenerateDaily(ctx context.Context, size entities.BoardSize, date time.Time) (*entities.Sudoku, error) {
 	sudoku := entities.NewSudoku(size)
 
-	r := rand.New(rand.NewSource(date.Unix()))
+	r := rand.New(rand.NewPCG(uint64(date.Unix()), 0))
 
 	filled := s.fillStrategy.Fill(sudoku, r)
 	if !filled {

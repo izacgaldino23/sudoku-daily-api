@@ -245,9 +245,9 @@ func TestLoadConfigInvalidEnvFile(t *testing.T) {
 func TestCORSAllowedOriginsSingle(t *testing.T) {
 	resetConfig()
 	env := envMap{
-		"API_PORT":              "8080",
-		"DATABASE_HOST":         "localhost",
-		"CORS_ALLOWED_ORIGINS":  "http://localhost:5173",
+		"API_PORT":             "8080",
+		"DATABASE_HOST":        "localhost",
+		"CORS_ALLOWED_ORIGINS": "http://localhost:5173",
 	}
 	defer setupEnv(t, env)()
 
@@ -261,9 +261,9 @@ func TestCORSAllowedOriginsSingle(t *testing.T) {
 func TestCORSAllowedOriginsMultiple(t *testing.T) {
 	resetConfig()
 	env := envMap{
-		"API_PORT":              "8080",
-		"DATABASE_HOST":         "localhost",
-		"CORS_ALLOWED_ORIGINS":  "http://localhost:5173,https://app.example.com,https://staging.example.com",
+		"API_PORT":             "8080",
+		"DATABASE_HOST":        "localhost",
+		"CORS_ALLOWED_ORIGINS": "http://localhost:5173,https://app.example.com,https://staging.example.com",
 	}
 	defer setupEnv(t, env)()
 

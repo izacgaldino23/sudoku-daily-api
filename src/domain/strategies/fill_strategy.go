@@ -1,7 +1,8 @@
 package strategies
 
 import (
-	"math/rand"
+	"math/rand/v2"
+
 	"sudoku-daily-api/src/domain/entities"
 )
 
@@ -33,7 +34,7 @@ func (f *fillBacktracking) fillCell(board *entities.Board, currentRow, currentCo
 		values[i], values[j] = values[j], values[i]
 	})
 
-	for _, n := range missing.Values() {
+	for _, n := range values {
 		if board.HasNumber(currentRow, currentCol, n) {
 			continue
 		}
