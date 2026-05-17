@@ -8,6 +8,7 @@ import (
 	"sudoku-daily-api/src/application/usecase/user"
 	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/vo"
+	"sudoku-daily-api/src/infrastructure/logging"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -129,12 +130,15 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 // @Failure 401 {object} pkg.Error "invalid_token, refresh_token_expired, refresh_token_revoked"
 // @Router /api/auth/refresh [post]
 func (a *authHandler) Refresh(c fiber.Ctx) error {
+	var reqCtx = c.Context()
+
 	refreshTokenCookie := c.Cookies("refresh_token")
 	if refreshTokenCookie == "" {
+		logging.Log(reqCtx).Warn().Msg("Refresh token cookie is missing")
 		return pkg.JsonError(c, pkg.ErrInvalidToken)
 	}
 
-	accessToken, newRefreshToken, err := a.userRefreshTokenUseCase.Execute(c.Context(), refreshTokenCookie)
+	accessToken, newRefreshToken, err := a.userRefreshTokenUseCase.Execute(reqCtx, refreshTokenCookie)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
