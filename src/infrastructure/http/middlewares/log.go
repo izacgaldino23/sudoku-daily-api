@@ -11,6 +11,10 @@ import (
 	"sudoku-daily-api/src/domain/app_context"
 )
 
+func safePath(c fiber.Ctx) string {
+	return string(c.RequestCtx().URI().PathOriginal())
+}
+
 func httpRequestDict(c fiber.Ctx, status int, latency time.Duration) *zerolog.Event {
 	return zerolog.Dict().
 		Str("requestMethod", c.Method()).
@@ -32,6 +36,7 @@ func serviceContextDict() *zerolog.Event {
 func LogMiddleware(base zerolog.Logger) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		start := time.Now()
+		reqPath := safePath(c)
 
 		reqCtx := c.Context()
 		requestID := app_context.GetRequestIDFromContext(reqCtx)
@@ -39,7 +44,7 @@ func LogMiddleware(base zerolog.Logger) fiber.Handler {
 		log := base.With().
 			Str("request_id", requestID.String()).
 			Str("method", c.Method()).
-			Str("path", c.Path()).
+			Str("path", reqPath).
 			Str("ip", c.IP()).
 			Logger()
 
@@ -68,7 +73,7 @@ func LogMiddleware(base zerolog.Logger) fiber.Handler {
 		latency := time.Since(start)
 		status := c.Response().StatusCode()
 
-		defer RecordMetrics(c.Method(), c.Path(), status, latency)
+		defer RecordMetrics(c.Method(), reqPath, status, latency)
 
 		baseEvent := log.With().
 			Int("status", status).
