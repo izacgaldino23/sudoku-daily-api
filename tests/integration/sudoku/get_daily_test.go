@@ -24,7 +24,7 @@ func TestSudokuGetDaily(t *testing.T) {
 	assert.NoError(t, err)
 
 	t.Run("get daily sudoku without login", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=nine", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/guest?size=nine", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
@@ -34,7 +34,7 @@ func TestSudokuGetDaily(t *testing.T) {
 		respBody, _ := io.ReadAll(resp.Body)
 		t.Logf("status=%d, body=%s", resp.StatusCode, string(respBody))
 
-		var sudokuResp sudoku.SudokuResponse
+		var sudokuResp sudoku.GetDailySudokuResponse
 		err = json.Unmarshal(respBody, &sudokuResp)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, sudokuResp.ID)
@@ -44,7 +44,7 @@ func TestSudokuGetDaily(t *testing.T) {
 	})
 
 	t.Run("get daily sudoku with session header", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=nine", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/guest?size=nine", nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("X-Session-Id", uuid.NewString())
 
@@ -54,7 +54,7 @@ func TestSudokuGetDaily(t *testing.T) {
 	})
 
 	t.Run("get daily sudoku with invalid size", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=invalid", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/guest?size=invalid", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
@@ -68,7 +68,7 @@ func TestSudokuGetDaily(t *testing.T) {
 	})
 
 	t.Run("get daily sudoku with missing size", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/api/sudoku", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/guest", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
@@ -77,7 +77,7 @@ func TestSudokuGetDaily(t *testing.T) {
 	})
 
 	t.Run("get daily sudoku with size four", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=four", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/guest?size=four", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
@@ -87,7 +87,7 @@ func TestSudokuGetDaily(t *testing.T) {
 		respBody, err := io.ReadAll(resp.Body)
 		assert.NoError(t, err)
 
-		var sudokuResp sudoku.SudokuResponse
+		var sudokuResp sudoku.GetDailySudokuResponse
 		err = json.Unmarshal(respBody, &sudokuResp)
 		assert.NoError(t, err)
 
@@ -100,7 +100,7 @@ func TestSudokuGetDaily(t *testing.T) {
 	})
 
 	t.Run("get daily sudoku with size six", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=six", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/sudoku/guest?size=six", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
@@ -124,7 +124,7 @@ func TestSudokuGetDaily(t *testing.T) {
 		respBody, err := io.ReadAll(resp.Body)
 		assert.NoError(t, err)
 
-		var sudokuResp sudoku.SudokuResponse
+		var sudokuResp sudoku.GetDailySudokuResponse
 		err = json.Unmarshal(respBody, &sudokuResp)
 		assert.NoError(t, err)
 
@@ -133,6 +133,5 @@ func TestSudokuGetDaily(t *testing.T) {
 		assert.NotEmpty(t, sudokuResp.Board)
 		assert.NotEmpty(t, sudokuResp.Date)
 		assert.NotEmpty(t, sudokuResp.PlayToken)
-		assert.NotEmpty(t, sudokuResp.SessionID)
 	})
 }

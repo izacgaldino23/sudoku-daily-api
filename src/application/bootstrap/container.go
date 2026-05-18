@@ -39,11 +39,12 @@ type Container struct {
 	ResumeFetcher    domain.ResumeFetcher
 
 	// use cases
-	GetDailySudoku       sudokuUsecase.ISudokuGetDailyUseCase
-	GenerateDailySudokus sudokuUsecase.SudokuGenerateDailyUseCase
-	VerifySolution       sudokuUsecase.SudokuVerifySolutionUseCase
-	VerifySolutionGuest  sudokuUsecase.SudokuVerifySolutionGuestUseCase
-	GetUserSolvesUseCase sudokuUsecase.SudokuGetUserSolvesUseCase
+	GetDailySudoku         sudokuUsecase.ISudokuGetDailyUseCase
+	GetDailySudokuForGuest sudokuUsecase.ISudokuGetDailyForGuestUseCase
+	GenerateDailySudokus   sudokuUsecase.SudokuGenerateDailyUseCase
+	VerifySolution         sudokuUsecase.SudokuVerifySolutionUseCase
+	VerifySolutionGuest    sudokuUsecase.SudokuVerifySolutionGuestUseCase
+	GetUserSolvesUseCase   sudokuUsecase.SudokuGetUserSolvesUseCase
 
 	UserRegister     userUsecase.UserRegisterUseCase
 	UserLogin        userUsecase.UserLoginUseCase
@@ -59,7 +60,7 @@ type Container struct {
 	Middlewares Middlewares
 
 	// handlers
-	SudokuHandler      httpSudoku.SudokuHandler
+	SudokuHandler      httpSudoku.Handler
 	AuthHandler        auth.AuthHandler
 	LeaderboardHandler leaderboard.LeaderboardHandler
 }

@@ -13,8 +13,9 @@ import (
 )
 
 type (
-	SudokuHandler interface {
+	Handler interface {
 		GetDailySudoku(c fiber.Ctx) error
+		GetDailySudokuForGuest(c fiber.Ctx) error
 		CreateSudoku(c fiber.Ctx) error
 		VerifySolution(c fiber.Ctx) error
 		VerifySolutionGuest(c fiber.Ctx) error
@@ -27,6 +28,7 @@ type (
 		verifySolutionUseCase      sudoku.SudokuVerifySolutionUseCase
 		verifySolutionGuestUseCase sudoku.SudokuVerifySolutionGuestUseCase
 		getUserSolvesUseCase       sudoku.SudokuGetUserSolvesUseCase
+		getDailySudokuForGuest     sudoku.ISudokuGetDailyForGuestUseCase
 	}
 )
 
@@ -36,24 +38,27 @@ func NewSudokuHandler(
 	verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase,
 	verifySolutionGuestUseCase sudoku.SudokuVerifySolutionGuestUseCase,
 	getUserSolvesUseCase sudoku.SudokuGetUserSolvesUseCase,
-) SudokuHandler {
+	getDailySudokuForGuest sudoku.ISudokuGetDailyForGuestUseCase,
+) Handler {
 	return &sudokuHandler{
 		getDailyUseCase:            getDailyUseCase,
 		createSudokuUseCase:        createSudokuUseCase,
 		verifySolutionUseCase:      verifySolutionUseCase,
 		verifySolutionGuestUseCase: verifySolutionGuestUseCase,
 		getUserSolvesUseCase:       getUserSolvesUseCase,
+		getDailySudokuForGuest:     getDailySudokuForGuest,
 	}
 }
 
-// @Summary Get daily sudoku
-// @Description Returns the daily sudoku puzzle for a given size
+// @Summary Get daily sudoku for auth users
+// @Description Returns the daily sudoku puzzle for a given size for authenticated users
 // @Tags sudoku
 // @Accept json
 // @Produce json
 // @Param size query GetDailySudokuRequest true "Board size (four, six, or nine)"
-// @Success 200 {object} SudokuResponse
+// @Success 200 {object} GetDailySudokuResponse
 // @Failure 400 {object} pkg.Error "invalid_query_param, invalid_size"
+// @Failure 401 {object} pkg.Error "invalid_credentials, invalid_token"
 // @Failure 404 {object} pkg.Error "sudoku_not_found"
 // @Failure 409 {object} pkg.Error "already_played"
 // @Router /api/sudoku [get]
@@ -74,13 +79,13 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 	size := entities.BoardSizeFromName(request.Size)
 
 	userID := appContext.GetUserIDFromContext(reqCtx)
-	dailySudoku, playToken, sessionID, err := sh.getDailyUseCase.Execute(reqCtx, size, userID)
+	dailySudoku, playToken, startedAt, err := sh.getDailyUseCase.Execute(reqCtx, size, userID)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
 
-	var response SudokuResponse
-	response.FromDomain(dailySudoku, playToken, sessionID)
+	var response GetDailySudokuResponse
+	response.FromDomain(dailySudoku, playToken, "", startedAt)
 
 	return c.Status(http.StatusOK).JSON(response)
 }
@@ -91,7 +96,7 @@ func (sh *sudokuHandler) GetDailySudoku(c fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param size path string true "Board size (four, six, or nine)" Enums(four, six, nine)
-// @Success 200 {object} SudokuResponse
+// @Success 200 {object} GetDailySudokuResponse
 // @Failure 400 {object} pkg.Error "invalid_size"
 // @Router /api/sudoku/generate/{size} [post]
 func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
@@ -113,8 +118,8 @@ func (sh *sudokuHandler) CreateSudoku(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	var response SudokuResponse
-	response.FromDomain(dailySudoku, "", "")
+	var response GetDailySudokuResponse
+	response.FromDomain(dailySudoku, "", "", time.Time{})
 
 	return c.Status(http.StatusOK).JSON(response)
 }
@@ -173,7 +178,6 @@ func (sh *sudokuHandler) VerifySolution(c fiber.Ctx) error {
 func (sh *sudokuHandler) VerifySolutionGuest(c fiber.Ctx) error {
 	var (
 		reqCtx  = c.Context()
-		now     = time.Now().UTC()
 		err     error
 		request VerifySolutionRequest
 	)
@@ -188,7 +192,7 @@ func (sh *sudokuHandler) VerifySolutionGuest(c fiber.Ctx) error {
 
 	solve := request.ToDomain("")
 
-	_, err = sh.verifySolutionGuestUseCase.Execute(reqCtx, solve, request.PlayToken, now)
+	_, err = sh.verifySolutionGuestUseCase.Execute(reqCtx, solve, request.PlayToken)
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}
@@ -218,6 +222,43 @@ func (sh *sudokuHandler) GetMyDailySudoku(c fiber.Ctx) error {
 
 	var response MySolvesResponse
 	response.FromDomain(solves)
+
+	return c.Status(http.StatusOK).JSON(response)
+}
+
+// @Summary Get daily sudoku
+// @Description Returns the daily sudoku puzzle for a given size
+// @Tags sudoku
+// @Accept json
+// @Produce json
+// @Param size query GetDailySudokuRequest true "Board size (four, six, or nine)"
+// @Success 200 {object} GetDailySudokuResponse
+// @Failure 400 {object} pkg.Error "invalid_query_param, invalid_size"
+// @Failure 404 {object} pkg.Error "sudoku_not_found"
+// @Router /api/sudoku [get]
+func (sh *sudokuHandler) GetDailySudokuForGuest(c fiber.Ctx) error {
+	var (
+		reqCtx  = c.Context()
+		request GetDailySudokuRequest
+	)
+
+	if err := c.Bind().Query(&request); err != nil {
+		return pkg.JsonErrorWithStatus(c, err, http.StatusBadRequest)
+	}
+
+	if err := pkg.ValidateStruct(request); err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	size := entities.BoardSizeFromName(request.Size)
+
+	dailySudoku, playToken, sessionID, err := sh.getDailySudokuForGuest.Execute(reqCtx, size)
+	if err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	var response GetDailySudokuResponse
+	response.FromDomain(dailySudoku, playToken, sessionID, time.Time{})
 
 	return c.Status(http.StatusOK).JSON(response)
 }

@@ -29,8 +29,7 @@ func NewSudokuDailyFetcher(cache domain.Cache, sudokuRepository repository.Sudok
 }
 
 func (s *sudokuDailyFetcher) GetDaily(ctx context.Context, size entities.BoardSize) (*entities.Sudoku, error) {
-	now := time.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	today := getToday()
 
 	cacheKey := fmt.Sprintf("sudoku-%d", size)
 	if value, ok := s.cache.Get(cacheKey); ok {
@@ -55,19 +54,24 @@ func (s *sudokuDailyFetcher) GetDaily(ctx context.Context, size entities.BoardSi
 }
 
 func (s *sudokuDailyFetcher) GetByDateAndSize(ctx context.Context, date time.Time, size entities.BoardSize) (*entities.Sudoku, error) {
+	today := getToday()
+
+	if isSameDate(date, today) {
+		return s.GetDaily(ctx, size)
+	}
+
 	return s.sudokuRepository.GetByDateAndSize(ctx, date, size)
 }
 
 func (s *sudokuDailyFetcher) GetSolveByIDAndUser(ctx context.Context, sudokuID, userID vo.UUID) (*entities.Solve, error) {
-	solve, err := s.sudokuRepository.GetSolveByIDAndUser(ctx, sudokuID, userID)
-	if err != nil {
-		if errors.Is(err, pkg.ErrSolutionNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
+	solve, err := s.sudokuRepository.GetSolveByIDAndUser(ctx, userID, sudokuID)
 
-	return solve, nil
+	return solve, err
+}
+
+func getToday() time.Time {
+	now := time.Now()
+	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 }
 
 func isSameDate(a, b time.Time) bool {

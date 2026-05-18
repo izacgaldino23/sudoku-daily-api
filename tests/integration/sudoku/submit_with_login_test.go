@@ -40,7 +40,7 @@ func TestSudokuSubmitWithLogin(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, dailyResp.StatusCode)
 
-	var sudokuResp sudoku.SudokuResponse
+	var sudokuResp sudoku.GetDailySudokuResponse
 	err = json.NewDecoder(dailyResp.Body).Decode(&sudokuResp)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, sudokuResp.PlayToken)

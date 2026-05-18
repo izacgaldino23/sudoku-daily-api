@@ -2,7 +2,7 @@ package sudoku
 
 import (
 	"context"
-	"errors"
+	"sudoku-daily-api/src/infrastructure/logging"
 	"time"
 
 	"sudoku-daily-api/pkg"
@@ -11,7 +11,6 @@ import (
 	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/repository"
-	"sudoku-daily-api/src/domain/vo"
 
 	"github.com/rs/zerolog/log"
 )
@@ -71,42 +70,33 @@ func (s *sudokuVerifySolutionUseCase) Execute(ctx context.Context, input *entiti
 	}
 
 	if err = s.txManager.WithinTransaction(ctx, func(txCtx context.Context) error {
-		sudoku, err := s.sudokuFetcher.GetByDateAndSize(txCtx, sudokuDate, playToken.Size)
+		sudoku, txErr := s.sudokuFetcher.GetByDateAndSize(txCtx, sudokuDate, playToken.Size)
 		if err != nil {
-			return err
+			return txErr
 		}
 
 		if !compareSolution(sudoku, input) {
 			return pkg.ErrInvalidSolution
 		}
 
-		solve, err := s.sudokuFetcher.GetSolveByIDAndUser(ctx, sudoku.ID, input.UserID)
-		if err != nil {
-			if !errors.Is(err, pkg.ErrSolutionNotFound) {
-				return err
-			}
+		solve, txErr := s.sudokuFetcher.GetSolveByIDAndUser(ctx, sudoku.ID, input.UserID)
+		if txErr != nil {
+			logging.Log(ctx).Info().Err(err).Msgf("error fetching solve by user %s and sudoku %s", input.UserID, sudoku.ID)
+			return txErr
 		}
 
-		if solve != nil && !solve.ID.IsEmpty() {
+		if solve != nil && !solve.ID.IsEmpty() && solve.Duration > 0 {
 			return pkg.ErrAlreadyPlayed
 		}
-		solve = &entities.Solve{
-			ID:        vo.NewUUID(),
-			SudokuID:  sudoku.ID,
-			Size:      sudoku.GetSize(),
-			UserID:    input.UserID,
-			StartedAt: playToken.StartedAt,
-			Duration:  int(finished.Sub(playToken.StartedAt).Seconds()),
+
+		txErr = s.sudokuRepo.MarkAsSolved(txCtx, solve, finished)
+		if txErr != nil {
+			return txErr
 		}
 
-		err = s.sudokuRepo.AddSolve(txCtx, solve)
-		if err != nil {
-			return err
-		}
-
-		err = s.solveAddStrikeUseCase.Execute(txCtx, solve.UserID, sudokuDate)
-		if err != nil {
-			return err
+		txErr = s.solveAddStrikeUseCase.Execute(txCtx, solve.UserID, sudokuDate)
+		if txErr != nil {
+			return txErr
 		}
 
 		return nil

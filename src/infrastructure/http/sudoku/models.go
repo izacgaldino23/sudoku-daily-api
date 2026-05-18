@@ -12,13 +12,14 @@ type (
 		Size string `query:"size" validate:"required,oneof=four six nine"`
 	}
 
-	SudokuResponse struct {
-		ID        string  `json:"id"`
-		Size      int     `json:"size"`
-		Board     []Cell  `json:"board"`
-		Date      string  `json:"date"`
-		PlayToken string  `json:"session_token"`
-		SessionID vo.UUID `json:"session_id,omitempty"`
+	GetDailySudokuResponse struct {
+		ID        string    `json:"id"`
+		Size      int       `json:"size"`
+		Board     []Cell    `json:"board"`
+		Date      string    `json:"date"`
+		PlayToken string    `json:"session_token"`
+		SessionID vo.UUID   `json:"session_id,omitempty"`
+		StartedAt time.Time `json:"started_at"`
 	}
 
 	Cell struct {
@@ -51,13 +52,14 @@ type (
 	}
 )
 
-func (g *SudokuResponse) FromDomain(s *entities.Sudoku, playToken string, sessionID vo.UUID) {
+func (g *GetDailySudokuResponse) FromDomain(s *entities.Sudoku, playToken string, sessionID vo.UUID, startedAt time.Time) {
 	g.ID = s.ID.String()
 	g.Size = s.GetSize()
 	g.Board = BoardFromDomain(s.Board)
 	g.Date = s.Date.Format(time.DateOnly)
 	g.PlayToken = playToken
 	g.SessionID = sessionID
+	g.StartedAt = startedAt
 }
 
 func BoardFromDomain(board entities.Board) []Cell {

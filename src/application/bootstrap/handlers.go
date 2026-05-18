@@ -14,6 +14,7 @@ func (c *Container) BuildHandlers() {
 		c.VerifySolution,
 		c.VerifySolutionGuest,
 		c.GetUserSolvesUseCase,
+		c.GetDailySudokuForGuest,
 	)
 
 	c.AuthHandler = auth.NewAuthHandler(

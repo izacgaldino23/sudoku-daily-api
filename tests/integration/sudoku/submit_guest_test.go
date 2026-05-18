@@ -26,13 +26,13 @@ func TestSudokuSubmitGuest(t *testing.T) {
 	solution, err := helpers.GetSudokuSolution(entities.BoardSize9)
 	assert.NoError(t, err)
 
-	dailyReq := httptest.NewRequest(http.MethodGet, "/api/sudoku?size=nine", nil)
+	dailyReq := httptest.NewRequest(http.MethodGet, "/api/sudoku/guest?size=nine", nil)
 	dailyReq.Header.Set("Content-Type", "application/json")
 	dailyResp, err := app.Test(dailyReq)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, dailyResp.StatusCode)
 
-	var sudokuResp sudoku.SudokuResponse
+	var sudokuResp sudoku.GetDailySudokuResponse
 	err = json.NewDecoder(dailyResp.Body).Decode(&sudokuResp)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, sudokuResp.PlayToken)

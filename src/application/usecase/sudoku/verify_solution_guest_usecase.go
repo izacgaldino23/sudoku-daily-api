@@ -15,7 +15,7 @@ import (
 
 type (
 	SudokuVerifySolutionGuestUseCase interface {
-		Execute(ctx context.Context, sudoku *entities.Solve, playToken string, finished time.Time) (bool, error)
+		Execute(ctx context.Context, sudoku *entities.Solve, playToken string) (bool, error)
 	}
 
 	sudokuVerifySolutionGuestUseCase struct {
@@ -40,7 +40,7 @@ func NewSudokuVerifySolutionGuestUseCase(
 	}
 }
 
-func (s *sudokuVerifySolutionGuestUseCase) Execute(ctx context.Context, input *entities.Solve, token string, finished time.Time) (bool, error) {
+func (s *sudokuVerifySolutionGuestUseCase) Execute(ctx context.Context, input *entities.Solve, token string) (bool, error) {
 	claims, err := s.tokenService.ParseToken(token)
 	if err != nil {
 		log.Ctx(ctx).Err(err).Send()

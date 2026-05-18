@@ -59,13 +59,32 @@ func (r *sudokuRepository) Create(ctx context.Context, sudoku *entities.Sudoku) 
 	return r.txManager.HandleError(ctx, err)
 }
 
-func (r *sudokuRepository) AddSolve(ctx context.Context, solve *entities.Solve) error {
+func (r *sudokuRepository) AddAttempt(ctx context.Context, solve *entities.Solve) error {
 	var solveModel = &Solve{}
 	solveModel.FromDomain(solve)
 
 	result, err := r.txManager.GetExecutor(ctx).
 		NewInsert().
 		Model(solveModel).
+		Exec(ctx)
+	if err != nil {
+		return r.txManager.HandleError(ctx, err)
+	}
+
+	_, err = result.RowsAffected()
+	return r.txManager.HandleError(ctx, err)
+}
+
+func (r *sudokuRepository) MarkAsSolved(ctx context.Context, solve *entities.Solve, completedAt time.Time) error {
+	var solveModel = &Solve{}
+	solveModel.FromDomain(solve)
+
+	solveModel.Duration = int(completedAt.Sub(solveModel.StartedAt).Seconds())
+
+	result, err := r.txManager.GetExecutor(ctx).
+		NewUpdate().
+		Model(solveModel).
+		Where("id = ?", solve.ID).
 		Exec(ctx)
 	if err != nil {
 		return r.txManager.HandleError(ctx, err)

@@ -53,13 +53,13 @@ func TestSudokuGenerate(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-			var sudoku sudoku.SudokuResponse
-			err = json.NewDecoder(resp.Body).Decode(&sudoku)
+			var response sudoku.GetDailySudokuResponse
+			err = json.NewDecoder(resp.Body).Decode(&response)
 			assert.NoError(t, err)
-			assert.NotEmpty(t, sudoku.ID)
-			assert.Equal(t, int(boardSize), sudoku.Size)
-			assert.NotEmpty(t, sudoku.Board)
-			assert.NotEmpty(t, sudoku.Date)
+			assert.NotEmpty(t, response.ID)
+			assert.Equal(t, int(boardSize), response.Size)
+			assert.NotEmpty(t, response.Board)
+			assert.NotEmpty(t, response.Date)
 		})
 	}
 }

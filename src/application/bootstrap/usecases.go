@@ -12,6 +12,12 @@ func (c *Container) BuildUseCases() {
 	c.GetDailySudoku = sudokuUsecase.NewSudokuGetDailyUseCase(
 		c.TokenService,
 		c.SudokuFetcher,
+		c.SudokuRepository,
+	)
+
+	c.GetDailySudokuForGuest = sudokuUsecase.NewSudokuGetDailyForGuestUseCase(
+		c.TokenService,
+		c.SudokuFetcher,
 	)
 
 	c.GenerateDailySudokus = sudokuUsecase.NewSudokuGenerateDailyUseCase(
