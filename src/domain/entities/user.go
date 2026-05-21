@@ -77,7 +77,7 @@ func (e *Email) IsValid() bool {
 
 	*e = Email(email.Address)
 
-	return email != nil
+	return true
 }
 
 func (e *Email) String() string {

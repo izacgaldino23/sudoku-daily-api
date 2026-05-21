@@ -1,6 +1,7 @@
 package leaderboard
 
 import (
+	"errors"
 	"time"
 
 	"sudoku-daily-api/pkg"
@@ -8,14 +9,14 @@ import (
 )
 
 type (
-	LeaderboardRequest struct {
+	GetLeaderBoardRequest struct {
 		Type  string `query:"type" validate:"oneof=daily all-time streak total"`
 		Size  string `query:"size"`
 		Limit int    `query:"limit" validate:"min=1,max=100"`
 		Page  int    `query:"page" validate:"min=1"`
 	}
 
-	LeaderboardResponse struct {
+	GetLeaderBoardResponse struct {
 		Entries []Entry `json:"solves"`
 		HasNext bool    `json:"has_next"`
 	}
@@ -31,7 +32,7 @@ type (
 	}
 )
 
-func (r *LeaderboardRequest) ToDomain() *entities.LeaderboardSearchParams {
+func (r *GetLeaderBoardRequest) ToDomain() *entities.LeaderboardSearchParams {
 	return &entities.LeaderboardSearchParams{
 		Type:  r.Type,
 		Size:  entities.BoardSizeFromName(r.Size),
@@ -40,11 +41,12 @@ func (r *LeaderboardRequest) ToDomain() *entities.LeaderboardSearchParams {
 	}
 }
 
-func (r *LeaderboardRequest) Validate() error {
+func (r *GetLeaderBoardRequest) Validate() error {
 	var errs pkg.ValidationErrors
 
 	if err := pkg.ValidateStruct(r); err != nil {
-		if validationErrs, ok := err.(pkg.ValidationErrors); ok {
+		var validationErrs pkg.ValidationErrors
+		if errors.As(err, &validationErrs) {
 			errs = append(errs, validationErrs...)
 		}
 	}
@@ -79,7 +81,7 @@ func (r *LeaderboardRequest) Validate() error {
 	return nil
 }
 
-func responseFromDomain(leaderboard *entities.Leaderboard) LeaderboardResponse {
+func responseFromDomain(leaderboard *entities.Leaderboard) GetLeaderBoardResponse {
 	var entries []Entry
 
 	for _, entry := range leaderboard.Entries {
@@ -90,7 +92,7 @@ func responseFromDomain(leaderboard *entities.Leaderboard) LeaderboardResponse {
 		})
 	}
 
-	return LeaderboardResponse{
+	return GetLeaderBoardResponse{
 		Entries: entries,
 		HasNext: leaderboard.HasNext,
 	}

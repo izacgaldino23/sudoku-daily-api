@@ -16,26 +16,26 @@ type (
 		Execute(ctx context.Context, params *entities.LeaderboardSearchParams) (*entities.Leaderboard, error)
 	}
 
-	leaderboardUsecase struct {
+	leaderboardUseCase struct {
 		userStatsRepository repository.UserStatsRepository
 		sudokuRepository    repository.SudokuRepository
 		sudokuFetcher       domain.SudokuDailyFetcher
 	}
 )
 
-func NewLeaderboardUsecase(
+func NewLeaderboardUseCase(
 	userStatsRepository repository.UserStatsRepository,
 	sudokuRepository repository.SudokuRepository,
 	sudokuFetcher domain.SudokuDailyFetcher,
 ) GetLeaderboard {
-	return &leaderboardUsecase{
+	return &leaderboardUseCase{
 		userStatsRepository: userStatsRepository,
 		sudokuRepository:    sudokuRepository,
 		sudokuFetcher:       sudokuFetcher,
 	}
 }
 
-func (l *leaderboardUsecase) Execute(ctx context.Context, params *entities.LeaderboardSearchParams) (*entities.Leaderboard, error) {
+func (l *leaderboardUseCase) Execute(ctx context.Context, params *entities.LeaderboardSearchParams) (*entities.Leaderboard, error) {
 	switch params.Type {
 	case entities.DailyLeaderboardType.String():
 		return l.getDaily(ctx, params)
@@ -50,7 +50,7 @@ func (l *leaderboardUsecase) Execute(ctx context.Context, params *entities.Leade
 	}
 }
 
-func (l *leaderboardUsecase) getDaily(ctx context.Context, params *entities.LeaderboardSearchParams) (*entities.Leaderboard, error) {
+func (l *leaderboardUseCase) getDaily(ctx context.Context, params *entities.LeaderboardSearchParams) (*entities.Leaderboard, error) {
 	sudoku, err := l.sudokuFetcher.GetDaily(ctx, params.Size)
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (l *leaderboardUsecase) getDaily(ctx context.Context, params *entities.Lead
 	return l.solvesToLeaderboardEntries(solves, hasNext), nil
 }
 
-func (l *leaderboardUsecase) getAllTimeBest(ctx context.Context, params *entities.LeaderboardSearchParams) (*entities.Leaderboard, error) {
+func (l *leaderboardUseCase) getAllTimeBest(ctx context.Context, params *entities.LeaderboardSearchParams) (*entities.Leaderboard, error) {
 	offset := (params.Page - 1) * params.Limit
 
 	solves, hasNext, err := l.sudokuRepository.GetAllTimeBestLeaderboard(ctx, params.Size, params.Limit, offset)
@@ -77,7 +77,7 @@ func (l *leaderboardUsecase) getAllTimeBest(ctx context.Context, params *entitie
 	return l.solvesToLeaderboardEntries(solves, hasNext), nil
 }
 
-func (l *leaderboardUsecase) solvesToLeaderboardEntries(solves []entities.Solve, hasNext bool) *entities.Leaderboard {
+func (l *leaderboardUseCase) solvesToLeaderboardEntries(solves []entities.Solve, hasNext bool) *entities.Leaderboard {
 	leaderboard := &entities.Leaderboard{
 		HasNext: hasNext,
 		Entries: make([]entities.Entry, len(solves)),
@@ -94,7 +94,7 @@ func (l *leaderboardUsecase) solvesToLeaderboardEntries(solves []entities.Solve,
 	return leaderboard
 }
 
-func (l *leaderboardUsecase) getByTotalSolves(ctx context.Context, params *entities.LeaderboardSearchParams) (*entities.Leaderboard, error) {
+func (l *leaderboardUseCase) getByTotalSolves(ctx context.Context, params *entities.LeaderboardSearchParams) (*entities.Leaderboard, error) {
 	offset := (params.Page - 1) * params.Limit
 
 	stats, hasNext, err := l.userStatsRepository.GetTotalSolvesLeaderboard(ctx, params.Limit, offset)
@@ -105,7 +105,7 @@ func (l *leaderboardUsecase) getByTotalSolves(ctx context.Context, params *entit
 	return l.statsToLeaderboardEntries(stats, hasNext), nil
 }
 
-func (l *leaderboardUsecase) getByStreak(ctx context.Context, params *entities.LeaderboardSearchParams) (*entities.Leaderboard, error) {
+func (l *leaderboardUseCase) getByStreak(ctx context.Context, params *entities.LeaderboardSearchParams) (*entities.Leaderboard, error) {
 	offset := (params.Page - 1) * params.Limit
 
 	stats, hasNext, err := l.userStatsRepository.GetBestStreakLeaderboard(ctx, params.Limit, offset, time.Now())
@@ -116,7 +116,7 @@ func (l *leaderboardUsecase) getByStreak(ctx context.Context, params *entities.L
 	return l.statsToLeaderboardEntries(stats, hasNext), nil
 }
 
-func (l *leaderboardUsecase) statsToLeaderboardEntries(solves []entities.UserStats, hasNext bool) *entities.Leaderboard {
+func (l *leaderboardUseCase) statsToLeaderboardEntries(solves []entities.UserStats, hasNext bool) *entities.Leaderboard {
 	leaderboard := &entities.Leaderboard{
 		HasNext: hasNext,
 		Entries: make([]entities.Entry, len(solves)),

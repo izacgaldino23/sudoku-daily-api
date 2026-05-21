@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
@@ -10,7 +11,7 @@ import (
 )
 
 type (
-	UserRegisterUseCase interface {
+	RegisterUseCase interface {
 		Execute(context.Context, *entities.User) (*entities.User, error)
 	}
 
@@ -23,7 +24,7 @@ type (
 func NewUserRegisterUseCase(
 	userRepo repository.UserRepository,
 	passwordHasher domain.PasswordHasher,
-) UserRegisterUseCase {
+) RegisterUseCase {
 	return &userRegisterUseCase{
 		userRepo:       userRepo,
 		passwordHasher: passwordHasher,
@@ -39,7 +40,7 @@ func (u *userRegisterUseCase) Execute(ctx context.Context, user *entities.User) 
 
 	// verify email is not already registered
 	existingUser, err := u.userRepo.GetByEmail(ctx, user.Email.String())
-	if err != nil && err != pkg.ErrUserNotFound {
+	if err != nil && !errors.Is(err, pkg.ErrUserNotFound) {
 		return nil, err
 	}
 	if existingUser != nil {

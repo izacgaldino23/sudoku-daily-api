@@ -14,7 +14,7 @@ import (
 )
 
 type (
-	AuthHandler interface {
+	Handler interface {
 		Register(c fiber.Ctx) error
 		Login(c fiber.Ctx) error
 		Refresh(c fiber.Ctx) error
@@ -23,21 +23,21 @@ type (
 	}
 
 	authHandler struct {
-		userRegisterUseCase     user.UserRegisterUseCase
-		userLoginUseCase        user.UserLoginUseCase
-		userRefreshTokenUseCase user.UserRefreshTokenUseCase
-		userLogoutUseCase       user.UserLogoutUseCase
-		userResumeUseCase       user.UserResumeUseCase
+		userRegisterUseCase     user.RegisterUseCase
+		userLoginUseCase        user.LoginUseCase
+		userRefreshTokenUseCase user.RefreshTokenUseCase
+		userLogoutUseCase       user.LogoutUseCase
+		userResumeUseCase       user.ResumeUseCase
 	}
 )
 
 func NewAuthHandler(
-	userRegisterUseCase user.UserRegisterUseCase,
-	userLoginUseCase user.UserLoginUseCase,
-	userRefreshTokenUseCase user.UserRefreshTokenUseCase,
-	userLogoutUseCase user.UserLogoutUseCase,
-	userResumeUseCase user.UserResumeUseCase,
-) AuthHandler {
+	userRegisterUseCase user.RegisterUseCase,
+	userLoginUseCase user.LoginUseCase,
+	userRefreshTokenUseCase user.RefreshTokenUseCase,
+	userLogoutUseCase user.LogoutUseCase,
+	userResumeUseCase user.ResumeUseCase,
+) Handler {
 	return &authHandler{
 		userRegisterUseCase:     userRegisterUseCase,
 		userLoginUseCase:        userLoginUseCase,
@@ -58,9 +58,8 @@ func NewAuthHandler(
 // @Failure 409 {object} pkg.Error "email_already_registered"
 // @Router /api/auth/register [post]
 func (a *authHandler) Register(c fiber.Ctx) error {
-	var (
-		request RegisterRequest
-	)
+	var request RegisterRequest
+
 	if err := c.Bind().Body(&request); err != nil {
 		return pkg.ErrBodyInvalid
 	}
@@ -88,9 +87,8 @@ func (a *authHandler) Register(c fiber.Ctx) error {
 // @Failure 401 {object} pkg.Error "invalid_credentials"
 // @Router /api/auth/login [post]
 func (a *authHandler) Login(c fiber.Ctx) error {
-	var (
-		request LoginRequest
-	)
+	var request LoginRequest
+
 	if err := c.Bind().Body(&request); err != nil {
 		return pkg.ErrBodyInvalid
 	}

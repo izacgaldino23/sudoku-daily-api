@@ -12,7 +12,7 @@ import (
 	"sudoku-daily-api/src/application"
 	"sudoku-daily-api/src/infrastructure/http/middlewares"
 
-	swaggo "github.com/gofiber/contrib/v3/swaggo"
+	"github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"

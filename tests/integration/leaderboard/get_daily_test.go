@@ -50,7 +50,7 @@ func TestGetDailyLeaderboard(t *testing.T) {
 		resp, err := app.Test(req)
 		assert.NoError(t, err)
 
-		var leaderboardResp leaderboard.LeaderboardResponse
+		var leaderboardResp leaderboard.GetLeaderBoardResponse
 		err = json.NewDecoder(resp.Body).Decode(&leaderboardResp)
 		assert.NoError(t, err)
 		assert.Greater(t, len(leaderboardResp.Entries), 0)
@@ -76,7 +76,7 @@ func TestGetDailyLeaderboard(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var leaderboardResp leaderboard.LeaderboardResponse
+		var leaderboardResp leaderboard.GetLeaderBoardResponse
 		err = json.NewDecoder(resp.Body).Decode(&leaderboardResp)
 		assert.NoError(t, err)
 		assert.Empty(t, leaderboardResp.Entries)
@@ -105,7 +105,7 @@ func TestGetDailyLeaderboard(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var leaderboardResp leaderboard.LeaderboardResponse
+		var leaderboardResp leaderboard.GetLeaderBoardResponse
 		err = json.NewDecoder(resp.Body).Decode(&leaderboardResp)
 		assert.NoError(t, err)
 		assert.Len(t, leaderboardResp.Entries, 2)

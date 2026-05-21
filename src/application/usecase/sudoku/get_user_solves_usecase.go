@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	SudokuGetUserSolvesUseCase interface {
+	GetUserSolvesUseCase interface {
 		Execute(ctx context.Context, userID vo.UUID) ([]entities.Solve, error)
 	}
 
@@ -19,7 +19,7 @@ type (
 	}
 )
 
-func NewSudokuGetUserSolvesUseCase(sudokuRepository repository.SudokuRepository) SudokuGetUserSolvesUseCase {
+func NewSudokuGetUserSolvesUseCase(sudokuRepository repository.SudokuRepository) GetUserSolvesUseCase {
 	return &getUserSolvesUseCase{sudokuRepository: sudokuRepository}
 }
 

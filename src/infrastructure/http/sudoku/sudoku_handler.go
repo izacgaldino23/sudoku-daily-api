@@ -25,10 +25,10 @@ type (
 
 	sudokuHandler struct {
 		getDailyUseCase                 sudoku.ISudokuGetDailyUseCase
-		createSudokuUseCase             sudoku.SudokuGenerateDailyUseCase
-		verifySolutionUseCase           sudoku.SudokuVerifySolutionUseCase
-		verifySolutionGuestUseCase      sudoku.SudokuVerifySolutionGuestUseCase
-		getUserSolvesUseCase            sudoku.SudokuGetUserSolvesUseCase
+		createSudokuUseCase             sudoku.GenerateDailyUseCase
+		verifySolutionUseCase           sudoku.VerifySolutionUseCase
+		verifySolutionGuestUseCase      sudoku.VerifySolutionGuestUseCase
+		getUserSolvesUseCase            sudoku.GetUserSolvesUseCase
 		getDailySudokuForGuest          sudoku.ISudokuGetDailyForGuestUseCase
 		removeUnfinishedAttemptsUseCase sudoku.RemoveUnfinishedAttemptsUseCase
 	}
@@ -36,10 +36,10 @@ type (
 
 func NewSudokuHandler(
 	getDailyUseCase sudoku.ISudokuGetDailyUseCase,
-	createSudokuUseCase sudoku.SudokuGenerateDailyUseCase,
-	verifySolutionUseCase sudoku.SudokuVerifySolutionUseCase,
-	verifySolutionGuestUseCase sudoku.SudokuVerifySolutionGuestUseCase,
-	getUserSolvesUseCase sudoku.SudokuGetUserSolvesUseCase,
+	createSudokuUseCase sudoku.GenerateDailyUseCase,
+	verifySolutionUseCase sudoku.VerifySolutionUseCase,
+	verifySolutionGuestUseCase sudoku.VerifySolutionGuestUseCase,
+	getUserSolvesUseCase sudoku.GetUserSolvesUseCase,
 	getDailySudokuForGuest sudoku.ISudokuGetDailyForGuestUseCase,
 	removeUnfinishedAttemptsUseCase sudoku.RemoveUnfinishedAttemptsUseCase,
 ) Handler {

@@ -8,7 +8,7 @@ import (
 
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain/entities"
-	repository "sudoku-daily-api/src/domain/repository"
+	"sudoku-daily-api/src/domain/repository"
 	"sudoku-daily-api/src/domain/vo"
 	"sudoku-daily-api/src/infrastructure/persistence/database/tx"
 
@@ -166,7 +166,7 @@ func (r *sudokuRepository) GetTodaySolvedByUser(ctx context.Context, userID vo.U
 		tomorrow = today.Add(24 * time.Hour)
 	)
 
-	var solves = []Solve{}
+	var solves []Solve
 
 	err := r.txManager.GetExecutor(ctx).
 		NewSelect().

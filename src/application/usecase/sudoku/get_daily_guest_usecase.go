@@ -36,9 +36,7 @@ func NewSudokuGetDailyForGuestUseCase(
 	}
 }
 
-func (s *sudokuGetDailyFroGuestUseCase) Execute(ctx context.Context, size entities.BoardSize) (*entities.Sudoku, string, vo.UUID, error) {
-	boardSize := entities.BoardSize(size)
-
+func (s *sudokuGetDailyFroGuestUseCase) Execute(ctx context.Context, boardSize entities.BoardSize) (*entities.Sudoku, string, vo.UUID, error) {
 	sudoku, err := s.sudokuFetcher.GetDaily(ctx, boardSize)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

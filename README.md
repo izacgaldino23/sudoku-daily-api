@@ -13,7 +13,7 @@
 ### Auth
 
 | Method | Endpoint           | Description             |
-| ------ | ------------------ | ----------------------- |
+|--------|--------------------|-------------------------|
 | POST   | /api/auth/register | Register a new user     |
 | POST   | /api/auth/login    | Login and get tokens    |
 | POST   | /api/auth/refresh  | Refresh access token    |
@@ -23,7 +23,7 @@
 ### Sudoku
 
 | Method | Endpoint             | Description             |
-| ------ | -------------------- | ----------------------- |
+|--------|----------------------|-------------------------|
 | GET    | /api/sudoku          | Get daily sudoku        |
 | POST   | /api/sudoku/generate | Generate daily sudokus  |
 | POST   | /api/sudoku/submit   | Submit solution         |
@@ -32,7 +32,7 @@
 ### Leaderboard
 
 | Method | Endpoint         | Description     |
-| ------ | ---------------- | --------------- |
+|--------|------------------|-----------------|
 | GET    | /api/leaderboard | Get leaderboard |
 
 ## Response Codes
@@ -40,7 +40,7 @@
 ### Success Codes
 
 | Code | Description                      |
-| ---- | -------------------------------- |
+|------|----------------------------------|
 | 200  | OK - Successful request          |
 | 201  | Created - Resource created       |
 | 204  | No Content - Successful deletion |
@@ -48,7 +48,7 @@
 ### Error Codes
 
 | Code                     | HTTP Status | Description                                |
-| ------------------------ | ----------- | ------------------------------------------ |
+|--------------------------|-------------|--------------------------------------------|
 | invalid_query_param      | 400         | Invalid query parameter                    |
 | invalid_email            | 401         | Invalid email format                       |
 | invalid_token            | 401         | Invalid or missing token                   |

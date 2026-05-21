@@ -12,11 +12,7 @@ const (
 	ErrorCodeBodyInvalid            = "invalid_body"
 	ErrorCodeInvalidSolution        = "invalid_solution"
 	ErrorCodeInvalidLeaderboardType = "invalid_leaderboard_type"
-	ErrorCodeSizeRequired           = "size_required"
-	ErrorCodeSizeNotAllowed         = "size_not_allowed"
 	ErrorCodeInvalidSize            = "invalid_size"
-	ErrorCodeInvalidLimit           = "invalid_limit"
-	ErrorCodeInvalidPage            = "invalid_page"
 	ErrorCodeInternalServerError    = "internal_server_error"
 	ErrorCodeTooManyRequests        = "too_many_requests"
 	ErrorCodeAlreadyPlayed          = "already_played"
@@ -25,5 +21,4 @@ const (
 	ErrorCodeSudokuNotFound       = "sudoku_not_found"
 	ErrorCodeRefreshTokenNotFound = "refresh_token_not_found"
 	ErrorCodeSolutionNotFound     = "solution_not_found"
-	ErrorCodeInvalidCronSecret    = "invalid_cron_secret"
 )

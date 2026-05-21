@@ -9,7 +9,7 @@ import (
 )
 
 type (
-	UserResumeUseCase interface {
+	ResumeUseCase interface {
 		Execute(ctx context.Context, userID vo.UUID) (*entities.Resume, error)
 	}
 
@@ -18,7 +18,7 @@ type (
 	}
 )
 
-func NewUserResumeUseCase(resumeFetcher domain.ResumeFetcher) UserResumeUseCase {
+func NewUserResumeUseCase(resumeFetcher domain.ResumeFetcher) ResumeUseCase {
 	return &userResumeUseCase{resumeFetcher: resumeFetcher}
 }
 

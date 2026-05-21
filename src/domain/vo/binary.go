@@ -13,7 +13,7 @@ func NewFullBinary(max int) Binary {
 }
 
 func (b *Binary) Add(other int) {
-	*b |= (1 << other)
+	*b |= 1 << other
 }
 
 func (b *Binary) Union(other ...Binary) {
@@ -23,7 +23,7 @@ func (b *Binary) Union(other ...Binary) {
 }
 
 func (b *Binary) Remove(other int) {
-	*b &^= (1 << other)
+	*b &^= 1 << other
 }
 
 func (b *Binary) Contains(other int) bool {

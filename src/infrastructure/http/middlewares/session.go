@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"sudoku-daily-api/pkg"
-	"sudoku-daily-api/src/domain"
 	appContext "sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/vo"
 
@@ -13,7 +12,7 @@ const (
 	XSessionIdHeader = "X-Session-Id"
 )
 
-func SessionMiddleware(tokenService domain.TokenService) func(c fiber.Ctx) error {
+func SessionMiddleware() func(c fiber.Ctx) error {
 	return func(c fiber.Ctx) error {
 		var (
 			header    = c.Get(XSessionIdHeader)
@@ -29,7 +28,7 @@ func SessionMiddleware(tokenService domain.TokenService) func(c fiber.Ctx) error
 		}
 
 		reqContext := c.Context()
-		newCtx := appContext.SetSessionIDOnContext(reqContext, vo.UUID(sessionID))
+		newCtx := appContext.SetSessionIDOnContext(reqContext, sessionID)
 
 		c.SetContext(newCtx)
 

@@ -195,6 +195,26 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/cron/unfinished-attempts": {
+            "post": {
+                "description": "Removes unfinished attempts for the daily sudoku puzzles that are past the reset threshold (e.g., 24 hours). This endpoint is intended to be called by a scheduled job to clean up old attempts and reset strikes for users who haven't completed their puzzles in time.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sudoku"
+                ],
+                "summary": "Remove unfinished attempts",
+                "responses": {
+                    "200": {
+                        "description": "Cleaned unfinished attempts"
+                    }
+                }
+            }
+        },
         "/api/leaderboard": {
             "get": {
                 "description": "Returns the leaderboard with rankings for a given type and size. For daily and all-time types, size is required. For streak and total types, size should not be provided.",
@@ -239,7 +259,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/leaderboard.LeaderboardResponse"
+                            "$ref": "#/definitions/leaderboard.GetLeaderBoardResponse"
                         }
                     },
                     "400": {
@@ -317,7 +337,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sudoku.SudokuResponse"
+                            "$ref": "#/definitions/sudoku.GetDailySudokuResponse"
                         }
                     },
                     "400": {
@@ -328,12 +348,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "sudoku_not_found",
-                        "schema": {
-                            "$ref": "#/definitions/pkg.Error"
-                        }
-                    },
-                    "409": {
-                        "description": "already_played",
                         "schema": {
                             "$ref": "#/definitions/pkg.Error"
                         }
@@ -372,7 +386,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sudoku.SudokuResponse"
+                            "$ref": "#/definitions/sudoku.GetDailySudokuResponse"
                         }
                     },
                     "400": {
@@ -647,7 +661,7 @@ const docTemplate = `{
                 }
             }
         },
-        "leaderboard.LeaderboardResponse": {
+        "leaderboard.GetLeaderBoardResponse": {
             "type": "object",
             "properties": {
                 "has_next": {
@@ -731,18 +745,7 @@ const docTemplate = `{
                 }
             }
         },
-        "sudoku.MySolvesResponse": {
-            "type": "object",
-            "properties": {
-                "solves": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/src_infrastructure_http_sudoku.Solve"
-                    }
-                }
-            }
-        },
-        "sudoku.SudokuResponse": {
+        "sudoku.GetDailySudokuResponse": {
             "type": "object",
             "properties": {
                 "board": {
@@ -765,6 +768,20 @@ const docTemplate = `{
                 },
                 "size": {
                     "type": "integer"
+                },
+                "started_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "sudoku.MySolvesResponse": {
+            "type": "object",
+            "properties": {
+                "solves": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/src_infrastructure_http_sudoku.Solve"
+                    }
                 }
             }
         },

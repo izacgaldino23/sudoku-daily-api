@@ -14,7 +14,7 @@ import (
 )
 
 type (
-	SudokuVerifySolutionGuestUseCase interface {
+	VerifySolutionGuestUseCase interface {
 		Execute(ctx context.Context, sudoku *entities.Solve, playToken string) (bool, error)
 	}
 
@@ -31,7 +31,7 @@ func NewSudokuVerifySolutionGuestUseCase(
 	tokenService domain.TokenService,
 	sudokuFetcher domain.SudokuDailyFetcher,
 	txManager repository.TransactionManager,
-) SudokuVerifySolutionGuestUseCase {
+) VerifySolutionGuestUseCase {
 	return &sudokuVerifySolutionGuestUseCase{
 		sudokuRepo:    sudokuRepo,
 		tokenService:  tokenService,

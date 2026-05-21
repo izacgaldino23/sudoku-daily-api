@@ -39,9 +39,8 @@ func NewSudokuGetDailyUseCase(
 	}
 }
 
-func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.BoardSize, userID vo.UUID) (*entities.Sudoku, string, time.Time, error) {
+func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, boardSize entities.BoardSize, userID vo.UUID) (*entities.Sudoku, string, time.Time, error) {
 	var (
-		boardSize = entities.BoardSize(size)
 		startedAt = time.Now()
 	)
 
@@ -82,7 +81,7 @@ func (s *sudokuGetDailyUseCase) Execute(ctx context.Context, size entities.Board
 		UserID:    userID,
 		StartedAt: startedAt,
 		CreatedAt: time.Now(),
-		Size:      int(size),
+		Size:      int(boardSize),
 	}); err != nil {
 		return nil, "", startedAt, err
 	}

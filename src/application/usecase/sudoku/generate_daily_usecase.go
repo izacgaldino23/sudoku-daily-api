@@ -15,7 +15,7 @@ import (
 )
 
 type (
-	SudokuGenerateDailyUseCase interface {
+	GenerateDailyUseCase interface {
 		Execute(ctx context.Context, size entities.BoardSize) (*entities.Sudoku, error)
 	}
 
@@ -32,7 +32,7 @@ func NewSudokuGenerateDailyUseCase(
 	sudokuRepo repository.SudokuRepository,
 	sudokuService domain.SudokuGenerator,
 	sudokuFetchService domain.SudokuDailyFetcher,
-) SudokuGenerateDailyUseCase {
+) GenerateDailyUseCase {
 	return &sudokuGenerateDailyUseCase{
 		txManager:            txManager,
 		sudokuRepo:           sudokuRepo,

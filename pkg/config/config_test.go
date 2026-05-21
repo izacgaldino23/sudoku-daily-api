@@ -28,7 +28,7 @@ func (e envMap) unset() {
 	}
 }
 
-func setupEnv(t *testing.T, env envMap) func() {
+func setupEnv(env envMap) func() {
 	env.set()
 	return func() { env.unset() }
 }
@@ -70,7 +70,7 @@ var defaultEnvVars = envMap{
 
 func TestLoadConfig(t *testing.T) {
 	resetConfig()
-	defer setupEnv(t, defaultEnvVars)()
+	defer setupEnv(defaultEnvVars)()
 
 	err := Load()
 	require.NoError(t, err)
@@ -109,7 +109,7 @@ func TestLoadConfigLocalEnv(t *testing.T) {
 		"DATABASE_HOST": "localhost",
 		"ENV":           "local",
 	}
-	defer setupEnv(t, env)()
+	defer setupEnv(env)()
 
 	err := Load()
 	require.NoError(t, err)
@@ -124,7 +124,7 @@ func TestGetConfigWithoutLoad(t *testing.T) {
 		"API_PORT":      "9000",
 		"DATABASE_HOST": "testhost",
 	}
-	defer setupEnv(t, env)()
+	defer setupEnv(env)()
 
 	cfg := GetConfig()
 	assert.NotNil(t, cfg)
@@ -141,7 +141,7 @@ func TestDSNPostgres(t *testing.T) {
 		"DATABASE_NAME":     "testdb",
 		"DATABASE_SSL_MODE": "disable",
 	}
-	defer setupEnv(t, env)()
+	defer setupEnv(env)()
 
 	err := Load()
 	require.NoError(t, err)
@@ -180,7 +180,7 @@ AUTH_OIDC_AUDIENCE=file-audience
 `
 
 	envFilePath := createEnvFile(t, envFileContent)
-	defer setupEnv(t, envMap{"ENV_FILE": envFilePath})()
+	defer setupEnv(envMap{"ENV_FILE": envFilePath})()
 
 	err := Load()
 	require.NoError(t, err)
@@ -223,7 +223,7 @@ DATABASE_PORT=5434`)
 		"DATABASE_HOST": "env-var-host",
 		"DATABASE_PORT": "5432",
 	}
-	defer setupEnv(t, env)()
+	defer setupEnv(env)()
 
 	err := Load()
 	require.NoError(t, err)
@@ -235,7 +235,7 @@ DATABASE_PORT=5434`)
 
 func TestLoadConfigInvalidEnvFile(t *testing.T) {
 	resetConfig()
-	defer setupEnv(t, envMap{"ENV_FILE": "/nonexistent/path/.env"})()
+	defer setupEnv(envMap{"ENV_FILE": "/nonexistent/path/.env"})()
 
 	err := Load()
 	require.Error(t, err)
@@ -249,7 +249,7 @@ func TestCORSAllowedOriginsSingle(t *testing.T) {
 		"DATABASE_HOST":        "localhost",
 		"CORS_ALLOWED_ORIGINS": "http://localhost:5173",
 	}
-	defer setupEnv(t, env)()
+	defer setupEnv(env)()
 
 	err := Load()
 	require.NoError(t, err)
@@ -265,7 +265,7 @@ func TestCORSAllowedOriginsMultiple(t *testing.T) {
 		"DATABASE_HOST":        "localhost",
 		"CORS_ALLOWED_ORIGINS": "http://localhost:5173,https://app.example.com,https://staging.example.com",
 	}
-	defer setupEnv(t, env)()
+	defer setupEnv(env)()
 
 	err := Load()
 	require.NoError(t, err)
@@ -280,7 +280,7 @@ func TestCORSAllowedOriginsEmpty(t *testing.T) {
 		"API_PORT":      "8080",
 		"DATABASE_HOST": "localhost",
 	}
-	defer setupEnv(t, env)()
+	defer setupEnv(env)()
 
 	err := Load()
 	require.NoError(t, err)

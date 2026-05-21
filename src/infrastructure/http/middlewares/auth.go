@@ -40,7 +40,7 @@ func RequireJWTMiddleware(tokenService domain.TokenService) fiber.Handler {
 			header = parts[1]
 		}
 
-		userID, err := tokenService.ValidateAccessToken(string(header))
+		userID, err := tokenService.ValidateAccessToken(header)
 		if err != nil {
 			logger.Error().Err(err).Msg("error validating token")
 			return pkg.JsonError(c, pkg.ErrInvalidToken)
@@ -60,7 +60,7 @@ func RequireJWTMiddleware(tokenService domain.TokenService) fiber.Handler {
 	}
 }
 
-func AuthMinimumMiddleware(tokenService domain.TokenService) func(c fiber.Ctx) error {
+func AuthMinimumMiddleware() func(c fiber.Ctx) error {
 	return func(c fiber.Ctx) error {
 		sessionID := appContext.GetSessionIDFromContext(c.Context())
 		userID := appContext.GetUserIDFromContext(c.Context())

@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
@@ -31,20 +32,21 @@ func ValidateStruct(s interface{}) error {
 		return nil
 	}
 
-	validationErrs, ok := err.(validator.ValidationErrors)
+	var validationErrs validator.ValidationErrors
+	ok := errors.As(err, &validationErrs)
 	if !ok {
 		return err
 	}
 
-	errors := make(ValidationErrors, 0, len(validationErrs))
+	errorList := make(ValidationErrors, 0, len(validationErrs))
 	for _, e := range validationErrs {
-		errors = append(errors, ValidationError{
+		errorList = append(errorList, ValidationError{
 			Field:   e.Field(),
 			Message: formatValidationError(e),
 		})
 	}
 
-	return errors
+	return errorList
 }
 
 func formatValidationError(e validator.FieldError) string {

@@ -78,39 +78,39 @@ make generate-docs
 
 ### Auth
 | Method | Endpoint           | Description             |
-| ------ | ------------------ | ----------------------- |
+|--------|--------------------|-------------------------|
 | POST   | /api/auth/register | Register a new user     |
 | POST   | /api/auth/login    | Login and get tokens    |
-| POST   | /api/auth/refresh  | Refresh access token   |
+| POST   | /api/auth/refresh  | Refresh access token    |
 | POST   | /api/auth/logout   | Logout and revoke token |
 | GET    | /api/auth/resume   | Get user statistics     |
 
 ### Sudoku
-| Method | Endpoint               | Description               |
-| ------ | ----------------------| ----------------------- |
-| GET    | /api/sudoku          | Get daily sudoku        |
+| Method | Endpoint                    | Description                                    |
+|--------|-----------------------------|------------------------------------------------|
+| GET    | /api/sudoku                 | Get daily sudoku                               |
 | POST   | /api/sudoku/generate/{size} | Generate daily sudokus (size: four, six, nine) |
-| POST   | /api/sudoku/submit  | Submit solution (logged) |
-| POST   | /api/sudoku/submit/guest | Submit solution (guest) |
-| GET    | /api/sudoku/me     | Get user's daily solves |
+| POST   | /api/sudoku/submit          | Submit solution (logged)                       |
+| POST   | /api/sudoku/submit/guest    | Submit solution (guest)                        |
+| GET    | /api/sudoku/me              | Get user's daily solves                        |
 
 ### Leaderboard
-| Method | Endpoint         | Description     |
-| ------ | ---------------- | --------------- |
-| GET    | /api/leaderboard | Get leaderboard |
+| Method | Endpoint               | Description                          |
+|--------|------------------------|--------------------------------------|
+| GET    | /api/leaderboard       | Get leaderboard                      |
 | POST   | /api/leaderboard/reset | Reset daily strikes (OIDC/cron auth) |
 
 ### Cron
-| Method | Endpoint               | Description                                     |
-| ------ | ---------------------- | ----------------------------------------------- |
+| Method | Endpoint                  | Description                                      |
+|--------|---------------------------|--------------------------------------------------|
 | POST   | /api/cron/generate/{size} | Generate daily sudoku for size (four, six, nine) |
-| POST   | /api/leaderboard/reset | Reset strikes (also available via cron auth)    |
+| POST   | /api/leaderboard/reset    | Reset strikes (also available via cron auth)     |
 
 ### Monitoring
-| Method | Endpoint   | Description |
-| ------ | ---------- | ----------- |
-| GET    | /metrics   | Prometheus metrics (no auth) |
-| GET    | /health    | Health check |
+| Method | Endpoint | Description                  |
+|--------|----------|------------------------------|
+| GET    | /metrics | Prometheus metrics (no auth) |
+| GET    | /health  | Health check                 |
 
 ## Error Codes
 

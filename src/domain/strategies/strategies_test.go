@@ -84,12 +84,12 @@ func TestHideStrategy(t *testing.T) {
 				}
 			}
 
-			min, max := entities.GetClue(entities.BoardSize(size), entities.DifficultyMedium)
+			minClue, maxClue := entities.GetClue(size, entities.DifficultyMedium)
 
 			totalCells := int(size * size)
 
-			assert.GreaterOrEqual(t, totalCells-emptyCells, min, "min value for difficulty %v is %v", sudoku.Difficulty, min)
-			assert.LessOrEqual(t, totalCells-emptyCells, max, "max value for difficulty %v is %v", sudoku.Difficulty, max)
+			assert.GreaterOrEqual(t, totalCells-emptyCells, minClue, "min value for difficulty %v is %v", sudoku.Difficulty, minClue)
+			assert.LessOrEqual(t, totalCells-emptyCells, maxClue, "max value for difficulty %v is %v", sudoku.Difficulty, maxClue)
 		})
 	}
 
@@ -180,7 +180,7 @@ func TestSolver(t *testing.T) {
 func generateValidSudoku(size entities.BoardSize, r *rand.Rand) *entities.Sudoku {
 	f := NewFillStrategy()
 
-	sudoku := entities.NewSudoku(entities.BoardSize(size))
+	sudoku := entities.NewSudoku(size)
 
 	f.Fill(sudoku, r)
 

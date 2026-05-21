@@ -55,7 +55,7 @@ func TestGetStreakLeaderboard(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var leaderboardResp leaderboard.LeaderboardResponse
+		var leaderboardResp leaderboard.GetLeaderBoardResponse
 		err = json.NewDecoder(resp.Body).Decode(&leaderboardResp)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, leaderboardResp.Entries)

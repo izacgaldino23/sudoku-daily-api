@@ -159,9 +159,9 @@ func (s *hideBacktracking) defineToHideCount(board *entities.Sudoku, r *rand.Ran
 		board.Difficulty = difficulties[r.IntN(len(difficulties))]
 	}
 
-	min, max := entities.GetClue(board.Size, board.Difficulty)
+	minClue, maxClue := entities.GetClue(board.Size, board.Difficulty)
 
-	clueCount := r.IntN(max-min+1) + min
+	clueCount := r.IntN(maxClue-minClue+1) + minClue
 	return board.GetSize()*board.GetSize() - clueCount
 }
 

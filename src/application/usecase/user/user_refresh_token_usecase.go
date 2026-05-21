@@ -11,7 +11,7 @@ import (
 )
 
 type (
-	UserRefreshTokenUseCase interface {
+	RefreshTokenUseCase interface {
 		Execute(ctx context.Context, tokenHash string) (accessToken, newRefreshToken string, err error)
 	}
 
@@ -26,7 +26,7 @@ func NewUserRefreshTokenUseCase(
 	txManager repository.TransactionManager,
 	refreshTokenRepo repository.RefreshTokenRepository,
 	tokenService domain.TokenService,
-) UserRefreshTokenUseCase {
+) RefreshTokenUseCase {
 	return &userRefreshTokenUseCase{
 		txManager:        txManager,
 		refreshTokenRepo: refreshTokenRepo,

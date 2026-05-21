@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"sudoku-daily-api/pkg"
-	user_stats_usecase "sudoku-daily-api/src/application/usecase/user_stats"
+	userStatsUsecase "sudoku-daily-api/src/application/usecase/user_stats"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
@@ -16,7 +16,7 @@ import (
 )
 
 type (
-	SudokuVerifySolutionUseCase interface {
+	VerifySolutionUseCase interface {
 		Execute(ctx context.Context, sudoku *entities.Solve, playToken string, finished time.Time) (bool, error)
 	}
 
@@ -24,7 +24,7 @@ type (
 		sudokuRepo            repository.SudokuRepository
 		tokenService          domain.TokenService
 		sudokuFetcher         domain.SudokuDailyFetcher
-		solveAddStrikeUseCase user_stats_usecase.SolveAddStrikeUseCase
+		solveAddStrikeUseCase userStatsUsecase.SolveAddStrikeUseCase
 		txManager             repository.TransactionManager
 	}
 )
@@ -33,9 +33,9 @@ func NewSudokuVerifySolutionUseCase(
 	sudokuRepo repository.SudokuRepository,
 	tokenService domain.TokenService,
 	sudokuFetcher domain.SudokuDailyFetcher,
-	solveAddStrikeUseCase user_stats_usecase.SolveAddStrikeUseCase,
+	solveAddStrikeUseCase userStatsUsecase.SolveAddStrikeUseCase,
 	txManager repository.TransactionManager,
-) SudokuVerifySolutionUseCase {
+) VerifySolutionUseCase {
 	return &sudokuVerifySolutionUseCase{
 		sudokuRepo:            sudokuRepo,
 		tokenService:          tokenService,

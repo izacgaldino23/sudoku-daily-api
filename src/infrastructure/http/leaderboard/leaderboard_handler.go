@@ -11,20 +11,20 @@ import (
 )
 
 type (
-	LeaderboardHandler interface {
+	Handler interface {
 		GetLeaderboard(c fiber.Ctx) error
 		ResetStrikes(c fiber.Ctx) error
 	}
 
 	leaderboardHandler struct {
-		leaderboardUsecase  usecase.GetLeaderboard
+		leaderboardUseCase  usecase.GetLeaderboard
 		resetStrikesUseCase usecase.ResetStrikesUseCase
 	}
 )
 
-func NewLeaderboardHandler(leaderboardUsecase usecase.GetLeaderboard, resetStrikesUseCase usecase.ResetStrikesUseCase) LeaderboardHandler {
+func NewLeaderboardHandler(leaderboardUseCase usecase.GetLeaderboard, resetStrikesUseCase usecase.ResetStrikesUseCase) Handler {
 	return &leaderboardHandler{
-		leaderboardUsecase:  leaderboardUsecase,
+		leaderboardUseCase:  leaderboardUseCase,
 		resetStrikesUseCase: resetStrikesUseCase,
 	}
 }
@@ -38,12 +38,12 @@ func NewLeaderboardHandler(leaderboardUsecase usecase.GetLeaderboard, resetStrik
 // @Param size query string false "Board size (four, six, nine) - required for daily and all-time, not allowed for streak and total"
 // @Param limit query int false "Number of entries to return (1-100)"
 // @Param page query int false "Page number"
-// @Success 200 {object} LeaderboardResponse
+// @Success 200 {object} GetLeaderBoardResponse
 // @Failure 400 {object} pkg.Error "invalid_leaderboard_type, invalid_size, invalid_limit, invalid_page, size_required, size_not_allowed"
 // @Router /api/leaderboard [get]
 func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 	var (
-		params LeaderboardRequest
+		params GetLeaderBoardRequest
 		err    error
 		reqCtx = c.Context()
 	)
@@ -56,7 +56,7 @@ func (h *leaderboardHandler) GetLeaderboard(c fiber.Ctx) error {
 		return pkg.JsonError(c, err)
 	}
 
-	leaderboard, err := h.leaderboardUsecase.Execute(reqCtx, params.ToDomain())
+	leaderboard, err := h.leaderboardUseCase.Execute(reqCtx, params.ToDomain())
 	if err != nil {
 		return pkg.JsonError(c, err)
 	}

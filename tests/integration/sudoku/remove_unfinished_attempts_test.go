@@ -48,8 +48,10 @@ func TestRemoveUnfinishedAttempts(t *testing.T) {
 		localID, err := helpers.GetUserIDByEmail(localUser.Email)
 		assert.NoError(t, err)
 
-		helpers.SeedSolve(localID, helpers.SudokusIDs[0], 0)
-		db.NewUpdate().Model(&solveRow{}).Set("started_at = ?", today.Add(-24*time.Hour)).Where("user_id = ?", localID).Exec(ctx)
+		err = helpers.SeedSolve(localID, helpers.SudokusIDs[0], 0)
+		assert.NoError(t, err)
+		_, err = db.NewUpdate().Model(&solveRow{}).Set("started_at = ?", today.Add(-24*time.Hour)).Where("user_id = ?", localID).Exec(ctx)
+		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodPost, "/api/cron/unfinished-attempts", nil)
 		resp, err := app.Test(req)
@@ -73,7 +75,8 @@ func TestRemoveUnfinishedAttempts(t *testing.T) {
 		localID, err := helpers.GetUserIDByEmail(localUser.Email)
 		assert.NoError(t, err)
 
-		helpers.SeedSolve(localID, helpers.SudokusIDs[0], 120)
+		err = helpers.SeedSolve(localID, helpers.SudokusIDs[0], 120)
+		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodPost, "/api/cron/unfinished-attempts", nil)
 		resp, err := app.Test(req)
@@ -97,8 +100,10 @@ func TestRemoveUnfinishedAttempts(t *testing.T) {
 		localID, err := helpers.GetUserIDByEmail(localUser.Email)
 		assert.NoError(t, err)
 
-		helpers.SeedSolve(localID, helpers.SudokusIDs[0], 0)
-		db.NewUpdate().Model(&solveRow{}).Set("started_at = ?", today.Add(-72*time.Hour)).Where("user_id = ?", localID).Exec(ctx)
+		err = helpers.SeedSolve(localID, helpers.SudokusIDs[0], 0)
+		assert.NoError(t, err)
+		_, err = db.NewUpdate().Model(&solveRow{}).Set("started_at = ?", today.Add(-72*time.Hour)).Where("user_id = ?", localID).Exec(ctx)
+		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodPost, "/api/cron/unfinished-attempts", nil)
 		resp, err := app.Test(req)
@@ -132,12 +137,17 @@ func TestRemoveUnfinishedAttempts(t *testing.T) {
 		localID, err := helpers.GetUserIDByEmail(localUser.Email)
 		assert.NoError(t, err)
 
-		helpers.SeedSolve(localID, helpers.SudokusIDs[0], 0)
-		db.NewUpdate().Model(&solveRow{}).Set("started_at = ?", today.Add(-24*time.Hour)).Where("user_id = ?", localID).Where("sudoku_id = ?", helpers.SudokusIDs[0]).Exec(ctx)
+		err = helpers.SeedSolve(localID, helpers.SudokusIDs[0], 0)
+		assert.NoError(t, err)
+		_, err = db.NewUpdate().Model(&solveRow{}).Set("started_at = ?", today.Add(-24*time.Hour)).Where("user_id = ?", localID).Where("sudoku_id = ?", helpers.SudokusIDs[0]).Exec(ctx)
+		assert.NoError(t, err)
 
-		helpers.SeedSolve(localID, helpers.SudokusIDs[1], 60)
-		helpers.SeedSolve(localID, helpers.SudokusIDs[2], 0)
-		db.NewUpdate().Model(&solveRow{}).Set("started_at = ?", today.Add(-72*time.Hour)).Where("user_id = ?", localID).Where("sudoku_id = ?", helpers.SudokusIDs[2]).Exec(ctx)
+		err = helpers.SeedSolve(localID, helpers.SudokusIDs[1], 60)
+		assert.NoError(t, err)
+		err = helpers.SeedSolve(localID, helpers.SudokusIDs[2], 0)
+		assert.NoError(t, err)
+		_, err = db.NewUpdate().Model(&solveRow{}).Set("started_at = ?", today.Add(-72*time.Hour)).Where("user_id = ?", localID).Where("sudoku_id = ?", helpers.SudokusIDs[2]).Exec(ctx)
+		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodPost, "/api/cron/unfinished-attempts", nil)
 		resp, err := app.Test(req)
@@ -161,8 +171,10 @@ func TestRemoveUnfinishedAttempts(t *testing.T) {
 		localID, err := helpers.GetUserIDByEmail(localUser.Email)
 		assert.NoError(t, err)
 
-		helpers.SeedSolve(localID, helpers.SudokusIDs[0], 0)
-		db.NewUpdate().Model(&solveRow{}).Set("started_at = ?", today.Add(-24*time.Hour)).Where("user_id = ?", localID).Exec(ctx)
+		err = helpers.SeedSolve(localID, helpers.SudokusIDs[0], 0)
+		assert.NoError(t, err)
+		_, err = db.NewUpdate().Model(&solveRow{}).Set("started_at = ?", today.Add(-24*time.Hour)).Where("user_id = ?", localID).Exec(ctx)
+		assert.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodPost, "/api/cron/unfinished-attempts", nil)
 		resp, err := app.Test(req)

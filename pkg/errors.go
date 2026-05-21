@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gofiber/fiber/v3"
@@ -27,7 +28,6 @@ var (
 	ErrSudokuNotFound       = newError(ErrorCodeSudokuNotFound, "sudoku not found", http.StatusNotFound)
 	ErrRefreshTokenNotFound = newError(ErrorCodeRefreshTokenNotFound, "refresh token not found", http.StatusNotFound)
 	ErrSolutionNotFound     = newError(ErrorCodeSolutionNotFound, "solution not found", http.StatusNotFound)
-	ErrInvalidCronSecret    = newError(ErrorCodeInvalidCronSecret, "invalid cron secret", http.StatusUnauthorized)
 )
 
 type (
@@ -56,7 +56,8 @@ func NewError(message string) *Error {
 }
 
 func FromError(err error) *Error {
-	if validationErrs, ok := err.(ValidationErrors); ok {
+	var validationErrs ValidationErrors
+	if errors.As(err, &validationErrs) {
 		return &Error{
 			Code:          "validation_error",
 			Message:       validationErrs.Error(),
@@ -64,7 +65,8 @@ func FromError(err error) *Error {
 			ValidationErr: validationErrs,
 		}
 	}
-	if e, ok := err.(*Error); ok {
+	var e *Error
+	if errors.As(err, &e) {
 		return e
 	}
 	return &Error{Code: "internal_server_error", Message: err.Error(), StatusCode: http.StatusInternalServerError}

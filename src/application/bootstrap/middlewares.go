@@ -9,8 +9,8 @@ import (
 func (c *Container) BuildMiddlewares() {
 	c.Middlewares.RequireJWT = middlewares.RequireJWTMiddleware(c.TokenService)
 	c.Middlewares.OptionalJWT = middlewares.OptionalJWTMiddleware(c.TokenService)
-	c.Middlewares.AuthMinimum = middlewares.AuthMinimumMiddleware(c.TokenService)
-	c.Middlewares.Session = middlewares.SessionMiddleware(c.TokenService)
+	c.Middlewares.AuthMinimum = middlewares.AuthMinimumMiddleware()
+	c.Middlewares.Session = middlewares.SessionMiddleware()
 	c.Middlewares.LogMiddleware = middlewares.LogMiddleware(log.Logger)
 	c.Middlewares.RequestID = middlewares.NewRequestIDMiddleware()
 	c.Middlewares.ResponseHeaders = middlewares.NewResponseHeadersMiddleware()

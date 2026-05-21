@@ -1,10 +1,10 @@
 package bootstrap
 
 import (
-	leaderboard_usecase "sudoku-daily-api/src/application/usecase/leaderboard"
+	leaderboardUsecase "sudoku-daily-api/src/application/usecase/leaderboard"
 	sudokuUsecase "sudoku-daily-api/src/application/usecase/sudoku"
 	userUsecase "sudoku-daily-api/src/application/usecase/user"
-	user_stats_usecase "sudoku-daily-api/src/application/usecase/user_stats"
+	userStatsUsecase "sudoku-daily-api/src/application/usecase/user_stats"
 )
 
 func (c *Container) BuildUseCases() {
@@ -31,7 +31,7 @@ func (c *Container) BuildUseCases() {
 		c.SudokuRepository,
 	)
 
-	c.UserStatsSolveAddStrike = user_stats_usecase.NewSolveAddStrikeUseCase(
+	c.UserStatsSolveAddStrike = userStatsUsecase.NewSolveAddStrikeUseCase(
 		c.UserStatsRepository,
 	)
 
@@ -81,13 +81,13 @@ func (c *Container) BuildUseCases() {
 		c.ResumeFetcher,
 	)
 
-	c.GetLeaderboardUseCase = leaderboard_usecase.NewLeaderboardUsecase(
+	c.GetLeaderboardUseCase = leaderboardUsecase.NewLeaderboardUseCase(
 		c.UserStatsRepository,
 		c.SudokuRepository,
 		c.SudokuFetcher,
 	)
 
-	c.ResetStrikesUseCase = leaderboard_usecase.NewResetStrikesUseCase(
+	c.ResetStrikesUseCase = leaderboardUsecase.NewResetStrikesUseCase(
 		c.UserStatsRepository,
 	)
 }

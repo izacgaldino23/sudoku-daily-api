@@ -30,7 +30,7 @@ func (r *removeUnfinishedAttemptsUseCase) Execute(ctx context.Context) error {
 
 	attempts, err := r.sudokuRepository.RemoveUnfinishedAttempts(ctx, today)
 	if err != nil {
-
+		return err
 	}
 
 	logging.Log(ctx).Info().

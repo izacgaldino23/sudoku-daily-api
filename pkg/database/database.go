@@ -14,14 +14,14 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 )
 
-type DatabaseConnection struct {
+type Connection struct {
 	SqlConnection *sql.DB
 	BunConnection *bun.DB
 	Timeout       time.Duration
 }
 
 var (
-	dbConnection DatabaseConnection
+	dbConnection Connection
 )
 
 func ConnectDB(configEnv *config.Config) (err error) {
@@ -40,7 +40,7 @@ func ConnectDB(configEnv *config.Config) (err error) {
 	dbConnection.BunConnection = bun.NewDB(sqlDB, pgdialect.New())
 
 	if configEnv.Debug || configEnv.LogLevel == "debug" {
-		dbConnection.BunConnection.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
+		dbConnection.BunConnection.WithQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
 	}
 
 	return pingWithRetry(sqlDB)
@@ -68,7 +68,7 @@ func CloseDB() {
 	}
 }
 
-func GetDB() DatabaseConnection {
+func GetDB() Connection {
 	if dbConnection.SqlConnection == nil {
 		_ = ConnectDB(config.GetConfig())
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	UserLogoutUseCase interface {
+	LogoutUseCase interface {
 		Execute(ctx context.Context, userID vo.UUID, token string) error
 	}
 
@@ -19,7 +19,7 @@ type (
 	}
 )
 
-func NewUserLogoutUseCase(refreshTokenRepo repository.RefreshTokenRepository) UserLogoutUseCase {
+func NewUserLogoutUseCase(refreshTokenRepo repository.RefreshTokenRepository) LogoutUseCase {
 	return &userLogoutUseCase{refreshTokenRepo: refreshTokenRepo}
 }
 

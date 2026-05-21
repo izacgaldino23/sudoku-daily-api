@@ -77,7 +77,7 @@ definitions:
       value:
         type: string
     type: object
-  leaderboard.LeaderboardResponse:
+  leaderboard.GetLeaderBoardResponse:
     properties:
       has_next:
         type: boolean
@@ -131,14 +131,7 @@ definitions:
       value:
         type: integer
     type: object
-  sudoku.MySolvesResponse:
-    properties:
-      solves:
-        items:
-          $ref: '#/definitions/src_infrastructure_http_sudoku.Solve'
-        type: array
-    type: object
-  sudoku.SudokuResponse:
+  sudoku.GetDailySudokuResponse:
     properties:
       board:
         items:
@@ -154,6 +147,15 @@ definitions:
         type: string
       size:
         type: integer
+      started_at:
+        type: string
+    type: object
+  sudoku.MySolvesResponse:
+    properties:
+      solves:
+        items:
+          $ref: '#/definitions/src_infrastructure_http_sudoku.Solve'
+        type: array
     type: object
   sudoku.VerifySolutionRequest:
     properties:
@@ -290,6 +292,22 @@ paths:
       summary: Get user resume
       tags:
       - auth
+  /api/cron/unfinished-attempts:
+    post:
+      consumes:
+      - application/json
+      description: Removes unfinished attempts for the daily sudoku puzzles that are
+        past the reset threshold (e.g., 24 hours). This endpoint is intended to be
+        called by a scheduled job to clean up old attempts and reset strikes for users
+        who haven't completed their puzzles in time.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cleaned unfinished attempts
+      summary: Remove unfinished attempts
+      tags:
+      - sudoku
   /api/leaderboard:
     get:
       consumes:
@@ -322,7 +340,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/leaderboard.LeaderboardResponse'
+            $ref: '#/definitions/leaderboard.GetLeaderBoardResponse'
         "400":
           description: invalid_leaderboard_type, invalid_size, invalid_limit, invalid_page,
             size_required, size_not_allowed
@@ -376,17 +394,13 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sudoku.SudokuResponse'
+            $ref: '#/definitions/sudoku.GetDailySudokuResponse'
         "400":
           description: invalid_query_param, invalid_size
           schema:
             $ref: '#/definitions/pkg.Error'
         "404":
           description: sudoku_not_found
-          schema:
-            $ref: '#/definitions/pkg.Error'
-        "409":
-          description: already_played
           schema:
             $ref: '#/definitions/pkg.Error'
       summary: Get daily sudoku
@@ -413,7 +427,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sudoku.SudokuResponse'
+            $ref: '#/definitions/sudoku.GetDailySudokuResponse'
         "400":
           description: invalid_size
           schema:

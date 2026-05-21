@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	UserLoginUseCase interface {
+	LoginUseCase interface {
 		Execute(context.Context, *entities.User) (userData *entities.User, err error)
 	}
 
@@ -29,7 +29,7 @@ func NewUserLoginUseCase(
 	refreshTokenRepo repository.RefreshTokenRepository,
 	passwordHasher domain.PasswordHasher,
 	tokenService domain.TokenService,
-) UserLoginUseCase {
+) LoginUseCase {
 	return &userLoginUseCase{
 		txManager:        txManager,
 		userRepo:         userRepo,

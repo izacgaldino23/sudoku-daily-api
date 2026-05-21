@@ -6,10 +6,10 @@ import (
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/repository"
 
-	leaderboard_usecase "sudoku-daily-api/src/application/usecase/leaderboard"
+	leaderboardUsecase "sudoku-daily-api/src/application/usecase/leaderboard"
 	sudokuUsecase "sudoku-daily-api/src/application/usecase/sudoku"
 	userUsecase "sudoku-daily-api/src/application/usecase/user"
-	user_stats_usecase "sudoku-daily-api/src/application/usecase/user_stats"
+	userStatsUsecase "sudoku-daily-api/src/application/usecase/user_stats"
 
 	"sudoku-daily-api/src/infrastructure/http/auth"
 	"sudoku-daily-api/src/infrastructure/http/leaderboard"
@@ -20,7 +20,7 @@ import (
 
 type Container struct {
 	// infra
-	DB         database.DatabaseConnection
+	DB         database.Connection
 	Config     *config.Config
 	LocalCache domain.Cache
 
@@ -41,29 +41,29 @@ type Container struct {
 	// use cases
 	GetDailySudoku           sudokuUsecase.ISudokuGetDailyUseCase
 	GetDailySudokuForGuest   sudokuUsecase.ISudokuGetDailyForGuestUseCase
-	GenerateDailySudoku      sudokuUsecase.SudokuGenerateDailyUseCase
-	VerifySolution           sudokuUsecase.SudokuVerifySolutionUseCase
-	VerifySolutionGuest      sudokuUsecase.SudokuVerifySolutionGuestUseCase
-	GetUserSolvesUseCase     sudokuUsecase.SudokuGetUserSolvesUseCase
+	GenerateDailySudoku      sudokuUsecase.GenerateDailyUseCase
+	VerifySolution           sudokuUsecase.VerifySolutionUseCase
+	VerifySolutionGuest      sudokuUsecase.VerifySolutionGuestUseCase
+	GetUserSolvesUseCase     sudokuUsecase.GetUserSolvesUseCase
 	RemoveUnfinishedAttempts sudokuUsecase.RemoveUnfinishedAttemptsUseCase
 
-	UserRegister     userUsecase.UserRegisterUseCase
-	UserLogin        userUsecase.UserLoginUseCase
-	UserRefreshToken userUsecase.UserRefreshTokenUseCase
-	UserLogout       userUsecase.UserLogoutUseCase
-	UserResume       userUsecase.UserResumeUseCase
+	UserRegister     userUsecase.RegisterUseCase
+	UserLogin        userUsecase.LoginUseCase
+	UserRefreshToken userUsecase.RefreshTokenUseCase
+	UserLogout       userUsecase.LogoutUseCase
+	UserResume       userUsecase.ResumeUseCase
 
-	UserStatsSolveAddStrike user_stats_usecase.SolveAddStrikeUseCase
+	UserStatsSolveAddStrike userStatsUsecase.SolveAddStrikeUseCase
 
-	GetLeaderboardUseCase leaderboard_usecase.GetLeaderboard
-	ResetStrikesUseCase   leaderboard_usecase.ResetStrikesUseCase
+	GetLeaderboardUseCase leaderboardUsecase.GetLeaderboard
+	ResetStrikesUseCase   leaderboardUsecase.ResetStrikesUseCase
 
 	Middlewares Middlewares
 
 	// handlers
 	SudokuHandler      httpSudoku.Handler
-	AuthHandler        auth.AuthHandler
-	LeaderboardHandler leaderboard.LeaderboardHandler
+	AuthHandler        auth.Handler
+	LeaderboardHandler leaderboard.Handler
 }
 
 type Middlewares struct {
