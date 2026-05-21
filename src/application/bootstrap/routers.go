@@ -43,6 +43,7 @@ func (c *Container) BuildRouters(app fiber.Router) {
 	// cron router
 	cronGroup := app.Group("/cron")
 	cronGroup.Post("/generate/:size", c.Middlewares.AuthOIDC, c.SudokuHandler.CreateSudoku)
+	cronGroup.Post("/unfinished-attempts", c.Middlewares.AuthOIDC, c.SudokuHandler.RemoveUnfinishedAttempts)
 }
 
 func applyMiddlewares(app fiber.Router, container *Container) {

@@ -10,11 +10,12 @@ func (c *Container) BuildHandlers() {
 
 	c.SudokuHandler = httpSudoku.NewSudokuHandler(
 		c.GetDailySudoku,
-		c.GenerateDailySudokus,
+		c.GenerateDailySudoku,
 		c.VerifySolution,
 		c.VerifySolutionGuest,
 		c.GetUserSolvesUseCase,
 		c.GetDailySudokuForGuest,
+		c.RemoveUnfinishedAttempts,
 	)
 
 	c.AuthHandler = auth.NewAuthHandler(

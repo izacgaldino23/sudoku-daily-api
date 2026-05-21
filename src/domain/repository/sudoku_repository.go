@@ -20,4 +20,5 @@ type SudokuRepository interface {
 	GetAllTimeBestLeaderboard(ctx context.Context, size entities.BoardSize, limit, offset int) ([]entities.Solve, bool, error)
 	GetSolveByIDAndUser(ctx context.Context, userID vo.UUID, sudokuID vo.UUID) (*entities.Solve, error)
 	GetSolvesByUserAndDate(ctx context.Context, userID vo.UUID, date time.Time) ([]entities.Solve, error)
+	RemoveUnfinishedAttempts(ctx context.Context, date time.Time) (int64, error)
 }

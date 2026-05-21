@@ -20,11 +20,15 @@ func (c *Container) BuildUseCases() {
 		c.SudokuFetcher,
 	)
 
-	c.GenerateDailySudokus = sudokuUsecase.NewSudokuGenerateDailyUseCase(
+	c.GenerateDailySudoku = sudokuUsecase.NewSudokuGenerateDailyUseCase(
 		c.TxManager,
 		c.SudokuRepository,
 		c.GeneratorService,
 		c.SudokuFetcher,
+	)
+
+	c.RemoveUnfinishedAttempts = sudokuUsecase.NewRemoveUnfinishedAttemptsUseCase(
+		c.SudokuRepository,
 	)
 
 	c.UserStatsSolveAddStrike = user_stats_usecase.NewSolveAddStrikeUseCase(

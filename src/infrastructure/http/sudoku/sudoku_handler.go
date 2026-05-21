@@ -20,15 +20,17 @@ type (
 		VerifySolution(c fiber.Ctx) error
 		VerifySolutionGuest(c fiber.Ctx) error
 		GetMyDailySudoku(c fiber.Ctx) error
+		RemoveUnfinishedAttempts(c fiber.Ctx) error
 	}
 
 	sudokuHandler struct {
-		getDailyUseCase            sudoku.ISudokuGetDailyUseCase
-		createSudokuUseCase        sudoku.SudokuGenerateDailyUseCase
-		verifySolutionUseCase      sudoku.SudokuVerifySolutionUseCase
-		verifySolutionGuestUseCase sudoku.SudokuVerifySolutionGuestUseCase
-		getUserSolvesUseCase       sudoku.SudokuGetUserSolvesUseCase
-		getDailySudokuForGuest     sudoku.ISudokuGetDailyForGuestUseCase
+		getDailyUseCase                 sudoku.ISudokuGetDailyUseCase
+		createSudokuUseCase             sudoku.SudokuGenerateDailyUseCase
+		verifySolutionUseCase           sudoku.SudokuVerifySolutionUseCase
+		verifySolutionGuestUseCase      sudoku.SudokuVerifySolutionGuestUseCase
+		getUserSolvesUseCase            sudoku.SudokuGetUserSolvesUseCase
+		getDailySudokuForGuest          sudoku.ISudokuGetDailyForGuestUseCase
+		removeUnfinishedAttemptsUseCase sudoku.RemoveUnfinishedAttemptsUseCase
 	}
 )
 
@@ -39,14 +41,16 @@ func NewSudokuHandler(
 	verifySolutionGuestUseCase sudoku.SudokuVerifySolutionGuestUseCase,
 	getUserSolvesUseCase sudoku.SudokuGetUserSolvesUseCase,
 	getDailySudokuForGuest sudoku.ISudokuGetDailyForGuestUseCase,
+	removeUnfinishedAttemptsUseCase sudoku.RemoveUnfinishedAttemptsUseCase,
 ) Handler {
 	return &sudokuHandler{
-		getDailyUseCase:            getDailyUseCase,
-		createSudokuUseCase:        createSudokuUseCase,
-		verifySolutionUseCase:      verifySolutionUseCase,
-		verifySolutionGuestUseCase: verifySolutionGuestUseCase,
-		getUserSolvesUseCase:       getUserSolvesUseCase,
-		getDailySudokuForGuest:     getDailySudokuForGuest,
+		getDailyUseCase:                 getDailyUseCase,
+		createSudokuUseCase:             createSudokuUseCase,
+		verifySolutionUseCase:           verifySolutionUseCase,
+		verifySolutionGuestUseCase:      verifySolutionGuestUseCase,
+		getUserSolvesUseCase:            getUserSolvesUseCase,
+		getDailySudokuForGuest:          getDailySudokuForGuest,
+		removeUnfinishedAttemptsUseCase: removeUnfinishedAttemptsUseCase,
 	}
 }
 
@@ -261,4 +265,22 @@ func (sh *sudokuHandler) GetDailySudokuForGuest(c fiber.Ctx) error {
 	response.FromDomain(dailySudoku, playToken, sessionID, time.Time{})
 
 	return c.Status(http.StatusOK).JSON(response)
+}
+
+// @Summary Remove unfinished attempts
+// @Description Removes unfinished attempts for the daily sudoku puzzles that are past the reset threshold (e.g., 24 hours). This endpoint is intended to be called by a scheduled job to clean up old attempts and reset strikes for users who haven't completed their puzzles in time.
+// @Tags sudoku
+// @Accept json
+// @Produce json
+// @Success 200 "Cleaned unfinished attempts"
+// @Router /api/cron/unfinished-attempts [post]
+func (sh *sudokuHandler) RemoveUnfinishedAttempts(c fiber.Ctx) error {
+	reqCtx := c.Context()
+
+	err := sh.removeUnfinishedAttemptsUseCase.Execute(reqCtx)
+	if err != nil {
+		return pkg.JsonError(c, err)
+	}
+
+	return c.SendStatus(http.StatusOK)
 }

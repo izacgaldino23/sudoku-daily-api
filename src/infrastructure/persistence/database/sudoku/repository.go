@@ -282,3 +282,23 @@ func (r *sudokuRepository) GetAllTimeBestLeaderboard(ctx context.Context, size e
 
 	return result, hasNext, nil
 }
+
+func (r *sudokuRepository) RemoveUnfinishedAttempts(ctx context.Context, today time.Time) (int64, error) {
+	yesterday := today.Truncate(24*time.Hour).AddDate(0, 0, -2)
+
+	result, err := r.txManager.GetExecutor(ctx).
+		NewDelete().
+		Table("solves").
+		Where("started_at >= ? AND started_at < ? AND duration = 0", yesterday, today).
+		Exec(ctx)
+	if err != nil {
+		return 0, r.txManager.HandleError(ctx, err)
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return 0, r.txManager.HandleError(ctx, err)
+	}
+
+	return count, nil
+}
