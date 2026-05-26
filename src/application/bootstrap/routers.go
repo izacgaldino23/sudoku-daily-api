@@ -19,7 +19,7 @@ func (c *Container) BuildRouters(app fiber.Router) {
 	sudokuGroup := app.Group("/sudoku")
 	sudokuGroup.Get("/guest", c.Middlewares.Session, c.SudokuHandler.GetDailySudokuForGuest)
 	sudokuGroup.Get("/", c.Middlewares.RequireJWT, c.SudokuHandler.GetDailySudoku)
-	sudokuGroup.Post("/generate/:size", c.Middlewares.AuthOIDC, c.SudokuHandler.CreateSudoku)
+	sudokuGroup.Post("/generate", c.Middlewares.AuthOIDC, c.SudokuHandler.CreateSudoku)
 	sudokuGroup.Post("/submit/guest", c.Middlewares.Session, c.SudokuHandler.VerifySolutionGuest)
 	sudokuGroup.Post("/submit", c.Middlewares.RequireJWT, c.SudokuHandler.VerifySolution)
 	sudokuGroup.Get("/me", c.Middlewares.RequireJWT, c.SudokuHandler.GetMyDailySudoku)
@@ -42,7 +42,7 @@ func (c *Container) BuildRouters(app fiber.Router) {
 
 	// cron router
 	cronGroup := app.Group("/cron")
-	cronGroup.Post("/generate/:size", c.Middlewares.AuthOIDC, c.SudokuHandler.CreateSudoku)
+	cronGroup.Post("/generate", c.Middlewares.AuthOIDC, c.SudokuHandler.CreateSudoku)
 	cronGroup.Post("/unfinished-attempts", c.Middlewares.AuthOIDC, c.SudokuHandler.RemoveUnfinishedAttempts)
 }
 

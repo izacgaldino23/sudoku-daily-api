@@ -28,6 +28,11 @@ type (
 		Value int `json:"value"`
 	}
 
+	GenerateSudokuRequest struct {
+		Size string `json:"size" validate:"required,oneof=four six nine"`
+		Date string `json:"date" validate:"required,oneof=today tomorrow" default:"today"`
+	}
+
 	VerifySolutionRequest struct {
 		Solution  [][]int `json:"solution" validate:"required"`
 		PlayToken string  `json:"play_token" validate:"required"`
@@ -51,6 +56,10 @@ type (
 		Date      time.Time `json:"date"`
 	}
 )
+
+func (g *GenerateSudokuRequest) IsTomorrow() bool {
+	return g.Date == "tomorrow"
+}
 
 func (g *GetDailySudokuResponse) FromDomain(s *entities.Sudoku, playToken string, sessionID vo.UUID, startedAt time.Time) {
 	g.ID = s.ID.String()

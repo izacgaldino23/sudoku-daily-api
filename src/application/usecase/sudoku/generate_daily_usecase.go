@@ -16,7 +16,7 @@ import (
 
 type (
 	GenerateDailyUseCase interface {
-		Execute(ctx context.Context, size entities.BoardSize) (*entities.Sudoku, error)
+		Execute(ctx context.Context, size entities.BoardSize, date time.Time) (*entities.Sudoku, error)
 	}
 
 	sudokuGenerateDailyUseCase struct {
@@ -41,10 +41,7 @@ func NewSudokuGenerateDailyUseCase(
 	}
 }
 
-func (s *sudokuGenerateDailyUseCase) Execute(ctx context.Context, size entities.BoardSize) (*entities.Sudoku, error) {
-	now := time.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-
+func (s *sudokuGenerateDailyUseCase) Execute(ctx context.Context, size entities.BoardSize, date time.Time) (*entities.Sudoku, error) {
 	logging.Log(ctx).Info().Msgf("Generating sudoku for size %v", size)
 	todayPuzzle, err := s.sudokuFetcherService.GetDaily(ctx, size)
 	if err != nil && !errors.Is(err, pkg.ErrSudokuNotFound) {
@@ -56,12 +53,12 @@ func (s *sudokuGenerateDailyUseCase) Execute(ctx context.Context, size entities.
 		return todayPuzzle, nil
 	}
 
-	sudoku, err := s.sudokuService.GenerateDaily(ctx, size, today)
+	sudoku, err := s.sudokuService.GenerateDaily(ctx, size, date)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate sudoku for size %v: %w", size, err)
 	}
 
-	sudoku.Date = today
+	sudoku.Date = date
 	sudoku.ID = vo.NewUUID()
 
 	if err := s.txManager.WithinTransaction(ctx, func(ctx context.Context) error {

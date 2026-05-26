@@ -1,6 +1,7 @@
 package sudoku_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -32,7 +33,13 @@ func TestSudokuGenerate(t *testing.T) {
 		t.Cleanup(helpers.TruncateTables)
 		app := helpers.SetupTestApp()
 
-		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate/invalid", nil)
+		body, err := json.Marshal(map[string]interface{}{
+			"size": "invalid",
+			"date": "today",
+		})
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
@@ -46,7 +53,13 @@ func TestSudokuGenerate(t *testing.T) {
 			app := helpers.SetupTestApp()
 
 			sizeName := boardSizeToName(boardSize)
-			req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate/"+sizeName, nil)
+			body, err := json.Marshal(map[string]interface{}{
+				"size": sizeName,
+				"date": "today",
+			})
+			assert.NoError(t, err)
+			
+			req := httptest.NewRequest(http.MethodPost, "/api/sudoku/generate", bytes.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
