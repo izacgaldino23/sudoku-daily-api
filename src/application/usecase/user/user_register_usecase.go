@@ -3,8 +3,10 @@ package user
 import (
 	"context"
 	"errors"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
+	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/repository"
 	"sudoku-daily-api/src/domain/vo"
@@ -55,6 +57,7 @@ func (u *userRegisterUseCase) Execute(ctx context.Context, user *entities.User) 
 	user.PasswordHash = passHash
 
 	user.ID = vo.NewUUID()
+	user.Timezone = app_context.GetTimezoneFromContext(ctx)
 
 	// Create user in database
 	err = u.userRepo.Create(ctx, user)

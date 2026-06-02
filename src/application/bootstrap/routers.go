@@ -26,9 +26,9 @@ func (c *Container) BuildRouters(app fiber.Router) {
 
 	// auth router
 	authGroup := app.Group("/auth")
-	authGroup.Post("/register", c.AuthHandler.Register)
-	authGroup.Post("/login", c.AuthHandler.Login)
-	authGroup.Post("/refresh", c.AuthHandler.Refresh)
+	authGroup.Post("/register", c.Middlewares.Timezone, c.AuthHandler.Register)
+	authGroup.Post("/login", c.Middlewares.Timezone, c.AuthHandler.Login)
+	authGroup.Post("/refresh", c.Middlewares.Timezone, c.AuthHandler.Refresh)
 
 	private := authGroup.Group("/", c.Middlewares.RequireJWT)
 
@@ -64,12 +64,14 @@ func applyMiddlewares(app fiber.Router, container *Container) {
 			"Content-Type",
 			"Accept",
 			"Authorization",
+			middlewares.TimezoneHeader,
 			middlewares.XSessionIdHeader,
 			middlewares.XRequestIDHeader,
 		},
 		ExposeHeaders: []string{
 			middlewares.XSessionIdHeader,
 			middlewares.XRequestIDHeader,
+			middlewares.TimezoneHeader,
 		},
 	}))
 

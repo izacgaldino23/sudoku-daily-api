@@ -18,4 +18,5 @@ func (c *Container) BuildMiddlewares() {
 	c.Middlewares.GlobalRateLimiter = middlewares.NewGlobalRateLimiterMiddleware(c.Config.Limits.MaxRequestCountGlobal)
 	c.Middlewares.UserRateLimiter = middlewares.NewUserRateLimitMiddleware(c.Config.Limits.MaxRequestCountUser)
 	c.Middlewares.Timeout = middlewares.TimeoutMiddleware(c.Config.Limits.Timeout)
+	c.Middlewares.Timezone = middlewares.NewTimezoneMiddleware()
 }

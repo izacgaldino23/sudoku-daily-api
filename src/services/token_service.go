@@ -3,11 +3,12 @@ package services
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"time"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/vo"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -54,7 +55,7 @@ func (s *TokenService) GenerateJWTToken(fields map[string]any, duration *int) (s
 	return token, nil
 }
 
-func (s *TokenService) GenerateRefreshToken(userID vo.UUID) (*entities.RefreshToken, error) {
+func (s *TokenService) GenerateRefreshToken(userID vo.UUID, timezone string) (*entities.RefreshToken, error) {
 	refreshToken := make([]byte, 32)
 	_, err := rand.Read(refreshToken)
 	if err != nil {
@@ -65,6 +66,7 @@ func (s *TokenService) GenerateRefreshToken(userID vo.UUID) (*entities.RefreshTo
 		UserID:    userID,
 		Hash:      base64.URLEncoding.EncodeToString(refreshToken),
 		ExpiresAt: time.Now().Add(time.Duration(s.refreshTokenDuration) * time.Second),
+		Timezone:  timezone,
 	}, err
 }
 

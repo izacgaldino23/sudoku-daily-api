@@ -78,4 +78,5 @@ type Middlewares struct {
 	GlobalRateLimiter fiber.Handler
 	UserRateLimiter   fiber.Handler
 	Timeout           fiber.Handler
+	Timezone          fiber.Handler
 }

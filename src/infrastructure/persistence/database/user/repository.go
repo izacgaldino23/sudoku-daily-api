@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/repository"
+	"sudoku-daily-api/src/domain/vo"
 	"sudoku-daily-api/src/infrastructure/persistence/database/tx"
 
 	"github.com/uptrace/bun"
@@ -54,4 +56,17 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*entitie
 	}
 
 	return userResp.ToDomain(), nil
+}
+
+func (r *userRepository) UpdateTimezone(ctx context.Context, userID vo.UUID, timezone string) error {
+	var userModel = &User{}
+
+	_, err := r.txManager.GetExecutor(ctx).
+		NewUpdate().
+		Model(userModel).
+		Set("timezone = ?", timezone).
+		Where("id = ?", userID).
+		Exec(ctx)
+
+	return r.txManager.HandleError(ctx, err)
 }

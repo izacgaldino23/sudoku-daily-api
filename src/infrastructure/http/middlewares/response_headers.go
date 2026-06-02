@@ -17,6 +17,11 @@ func NewResponseHeadersMiddleware() fiber.Handler {
 		requestID := app_context.GetRequestIDFromContext(reqCtx)
 		c.Set(XRequestIDHeader, requestID.String())
 
+		timezone := app_context.GetTimezoneFromContext(reqCtx)
+		if timezone != "" {
+			c.Set(TimezoneHeader, timezone)
+		}
+
 		return err
 	}
 }

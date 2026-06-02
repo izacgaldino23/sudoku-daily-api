@@ -11,6 +11,7 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, user *entities.User) error
 	GetByEmail(ctx context.Context, email string) (*entities.User, error)
+	UpdateTimezone(ctx context.Context, userID vo.UUID, timezone string) error
 }
 
 type UserStatsRepository interface {

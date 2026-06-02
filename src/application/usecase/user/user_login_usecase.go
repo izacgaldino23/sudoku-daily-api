@@ -3,8 +3,10 @@ package user
 import (
 	"context"
 	"errors"
+
 	"sudoku-daily-api/pkg"
 	"sudoku-daily-api/src/domain"
+	"sudoku-daily-api/src/domain/app_context"
 	"sudoku-daily-api/src/domain/entities"
 	"sudoku-daily-api/src/domain/repository"
 )
@@ -53,6 +55,15 @@ func (u *userLoginUseCase) Execute(ctx context.Context, loginData *entities.User
 			return pkg.ErrInvalidCredentials
 		}
 
+		// compare and update timezone if necessary
+		newTimezone := app_context.GetTimezoneFromContext(ctx)
+		if user.Timezone != newTimezone {
+			user.Timezone = newTimezone
+			if err := u.userRepo.UpdateTimezone(txCtx, user.ID, newTimezone); err != nil {
+				return err
+			}
+		}
+
 		user.Tokens = &entities.Tokens{}
 
 		user.Tokens.AccessToken, err = u.tokenService.GenerateJWTToken(map[string]any{"user_id": user.ID}, nil)
@@ -64,7 +75,7 @@ func (u *userLoginUseCase) Execute(ctx context.Context, loginData *entities.User
 			return err
 		}
 
-		refreshToken, err := u.tokenService.GenerateRefreshToken(user.ID)
+		refreshToken, err := u.tokenService.GenerateRefreshToken(user.ID, newTimezone)
 		if err != nil {
 			return err
 		}

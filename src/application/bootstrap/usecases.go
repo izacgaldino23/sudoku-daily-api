@@ -71,6 +71,7 @@ func (c *Container) BuildUseCases() {
 		c.TxManager,
 		c.RefreshTokenRepository,
 		c.TokenService,
+		c.UserRepository,
 	)
 
 	c.UserLogout = userUsecase.NewUserLogoutUseCase(

@@ -28,6 +28,7 @@ func TestAuthLogin(t *testing.T) {
 		})
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Timezone", "America/Sao_Paulo")
 
 		resp, err := app.Test(req)
 		assert.NoError(t, err)
@@ -46,6 +47,10 @@ func TestAuthLogin(t *testing.T) {
 		assert.NotEmpty(t, cookies[0].Value)
 		assert.True(t, cookies[0].HttpOnly)
 		assert.Equal(t, "/", cookies[0].Path)
+
+		// assert X-Timezone header is set at login response
+		timezoneHeader := resp.Header.Get("X-Timezone")
+		assert.Equal(t, "America/Sao_Paulo", timezoneHeader)
 	})
 
 	t.Run("valid login sets cookie with correct expiry", func(t *testing.T) {

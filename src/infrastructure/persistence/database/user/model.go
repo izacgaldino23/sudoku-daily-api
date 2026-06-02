@@ -20,6 +20,7 @@ type (
 		Provider      string    `bun:",notnull"`
 		ProviderID    *string   `bun:",notnull"`
 		EmailVerified bool      `bun:",notnull"`
+		Timezone      string    `bun:",notnull"`
 		CreatedAt     time.Time `bun:",notnull,default:current_timestamp"`
 		UpdatedAt     time.Time `bun:",notnull,default:current_timestamp"`
 
@@ -36,6 +37,7 @@ func (u *User) FromDomain(user *entities.User) {
 	u.EmailVerified = user.EmailVerified
 	u.CreatedAt = user.CreatedAt
 	u.PasswordHash = user.PasswordHash
+	u.Timezone = user.Timezone
 }
 
 func (u *User) ToDomain() *entities.User {
@@ -48,5 +50,6 @@ func (u *User) ToDomain() *entities.User {
 		ProviderID:    u.ProviderID,
 		EmailVerified: u.EmailVerified,
 		CreatedAt:     u.CreatedAt,
+		Timezone:      u.Timezone,
 	}
 }

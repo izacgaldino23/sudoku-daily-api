@@ -25,6 +25,7 @@ type (
 		ProviderID    *string
 		EmailVerified bool
 		CreatedAt     time.Time
+		Timezone      string
 
 		Tokens *Tokens
 	}
@@ -37,6 +38,7 @@ type (
 	RefreshToken struct {
 		ID        vo.UUID
 		UserID    vo.UUID
+		Timezone  string
 		Hash      string
 		Revoked   bool
 		ExpiresAt time.Time

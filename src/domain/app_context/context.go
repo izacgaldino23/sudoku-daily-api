@@ -10,6 +10,7 @@ type (
 	contextUserIDKey struct{}
 	sessionIDKey     struct{}
 	requestIDKey     struct{}
+	timezoneKey      struct{}
 )
 
 func SetUserIDOnContext(ctx context.Context, userID vo.UUID) context.Context {
@@ -22,6 +23,10 @@ func SetSessionIDOnContext(ctx context.Context, sessionID vo.UUID) context.Conte
 
 func SetRequestIDOnContext(ctx context.Context, requestID vo.UUID) context.Context {
 	return context.WithValue(ctx, requestIDKey{}, requestID)
+}
+
+func SetTimezoneOnContext(ctx context.Context, timezone string) context.Context {
+	return context.WithValue(ctx, timezoneKey{}, timezone)
 }
 
 func GetUserIDFromContext(ctx context.Context) vo.UUID {
@@ -49,4 +54,13 @@ func GetRequestIDFromContext(ctx context.Context) vo.UUID {
 	}
 
 	return requestID
+}
+
+func GetTimezoneFromContext(ctx context.Context) string {
+	timezone, ok := ctx.Value(timezoneKey{}).(string)
+	if !ok {
+		return "UTC"
+	}
+
+	return timezone
 }

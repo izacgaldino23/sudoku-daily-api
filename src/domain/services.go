@@ -20,7 +20,7 @@ type (
 
 	TokenService interface {
 		GenerateJWTToken(map[string]any, *int) (string, error)
-		GenerateRefreshToken(userID vo.UUID) (*entities.RefreshToken, error)
+		GenerateRefreshToken(userID vo.UUID, timezone string) (*entities.RefreshToken, error)
 		ValidateAccessToken(token string) (vo.UUID, error)
 		ParseToken(token string) (result map[string]any, err error)
 	}
